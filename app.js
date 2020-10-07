@@ -49,5 +49,51 @@ typeWriter
 	.pauseFor(1000)
 	.deleteChars(7)
 	.pauseFor(200)
-	.typeString('<strong><span style="color: grey">Full-stack</span></strong>')
+	.typeString('<strong><span style="color: grey">Full-stqck</span></strong>')
+	.deleteChars(3)
+	.typeString('<strong><span style="color: grey">ack</span></strong>')
 	.start();
+
+function dayDiff(d1, d2) {
+	d1 = d1.getTime() / 86400000;
+	d2 = d2.getTime() / 86400000;
+	return new Number(d2 - d1).toFixed(0);
+}
+
+const tasses = document.querySelector("#nb-tasses");
+const today = new Date();
+const beginDev = new Date("28 February 2020");
+tasses.textContent = dayDiff(beginDev, today) * 3;
+
+// Animation contact
+
+const inputFields = document.querySelectorAll("input");
+for (let i = 0; i < inputFields.length; i++) {
+	inputFields[i].addEventListener("input", (e) => {
+		if (e.target.value !== "") {
+			e.target.parentNode.classList.add("animation");
+		} else {
+			e.target.parentNode.classList.remove("animation");
+		}
+	});
+}
+
+// Animation Greensock & ScrollMagic
+
+const navbar = document.querySelector(".nav-gauche");
+const titre = document.querySelector('h1');
+const btn = document.querySelectorAll('.btn-acc');
+const btnMedia = document.querySelectorAll('.media');
+const btnRondAccueil = document.querySelector('.btn-rond');
+const TL1 = gsap.timeline({ paused: true });
+
+TL1.to(navbar, { left: "0px", duration: 0.6, ease: Power3.easeOut })
+	.from(titre, { y: -50, opacity: 0, ease: Power3.easeOut, duration: 0.4 })
+	.staggerFrom(btn, 1, { opacity: 0 }, 0.2, "-=0.30")
+	.staggerFrom(btnMedia, 1, { opacity: 0 }, 0.2, "-=0.75")
+	.from(btnRondAccueil, { y: -80, opacity: 0, ease: Power4.ease, duration:4, delay:13.5 });
+	
+
+window.addEventListener("load", () => {
+	TL1.play();
+});

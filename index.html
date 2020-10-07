@@ -131,7 +131,7 @@
 			</div>
 		</section>
 		<!-- PortFolio -->
-		<sectio class="portfolio" id="portfiolio">
+		<section class="portfolio" id="portfiolio">
 			<h2 class="titre-portfolio">Mon Portfolio</h2>
 			<div class="container-portfolio">
 				<div class="item vague1">
@@ -200,9 +200,138 @@
 					<a href="#" class="btn-projet">Découvrez ce projet</a>
 				</div>
 			</div>
-		</sectio>
+		</section>
+		<!-- Range -->
+		<section class="section-range" id="range">
+			<h2 class="titre-exp">Mes compétences</h2>
+			<div class="grille-skills">
+				<div class="range-container">
+					<p class="label-skill">HTML</p>
+					<div class="bar-skill b1"></div>
+					<div class="bar-bg"></div>
+					<p class="number-skill">90%</p>
+				</div>
+				<div class="range-container">
+					<p class="label-skill">CSS</p>
+					<div class="bar-skill b2"></div>
+					<div class="bar-bg"></div>
+					<p class="number-skill">75%</p>
+				</div>
+				<div class="range-container">
+					<p class="label-skill">JavaScript</p>
+					<div class="bar-skill b3"></div>
+					<div class="bar-bg"></div>
+					<p class="number-skill">70%</p>
+				</div>
+				<div class="range-container">
+					<p class="label-skill">SEO</p>
+					<div class="bar-skill b4"></div>
+					<div class="bar-bg"></div>
+					<p class="number-skill">80%</p>
+				</div>
+				<div class="range-container">
+					<p class="label-skill">Back-end</p>
+					<div class="bar-skill b5"></div>
+					<div class="bar-bg"></div>
+					<p class="number-skill">70%</p>
+				</div>
+				<div class="range-container">
+					<p class="label-skill">Vue.js</p>
+					<div class="bar-skill b6"></div>
+					<div class="bar-bg"></div>
+					<p class="number-skill">90%</p>
+				</div>
+			</div>
+		</section>
+		<section class="travail-exp" id="exp">
+			<h2 class="titre-travail-exp">Mes expériences</h2>
+			<div class="container-exp-travail">
+				<div class="vertical-bar">
+					<div class="circle-icon">
+						<img src="./ressources/equaline_logo.png" alt="Logo Equaline" />
+					</div>
+					<div class="circle-icon">
+						<img src="./ressources/amorim-logo.svg" alt="Logo Amorim" />
+					</div>
+					<div class="circle-icon">
+						<img src="./ressources/eurasie-logo.jpg" alt="Logo Eurasie" />
+					</div>
+				</div>
+				<div class="flex-container-bloc-exp">
+					<div class="bloc bloc1">
+						<div class="bloc-content">
+							<p class="titre-section-bloc">Equaline, 2016 - 2020</p>
+							<p class="txt-section">
+								Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa quae dolore eveniet quisquam quod, asperiores
+								recusandae consequatur libero, veniam voluptatibus corporis non. Eius, soluta consequatur! Quaerat repellendus et
+								soluta deleniti cupiditate in qui. Temporibus voluptatum corporis, nostrum libero hic optio.
+							</p>
+						</div>
+					</div>
+					<div class="bloc bloc2">
+						<div class="bloc-content">
+							<p class="titre-section-bloc">Amorim, 2014</p>
+							<p class="txt-section">
+								Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa quae dolore eveniet quisquam quod, asperiores
+								recusandae consequatur libero, veniam voluptatibus corporis non. Eius, soluta consequatur! Quaerat repellendus et
+								soluta deleniti cupiditate in qui. Temporibus voluptatum corporis, nostrum libero hic optio.
+							</p>
+						</div>
+					</div>
+					<div class="bloc bloc3">
+						<div class="bloc-content">
+							<p class="titre-section-bloc">Eurasie, 2011 - 2014</p>
+							<p class="txt-section">
+								Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa quae dolore eveniet quisquam quod, asperiores
+								recusandae consequatur libero, veniam voluptatibus corporis non. Eius, soluta consequatur! Quaerat repellendus et
+								soluta deleniti cupiditate in qui. Temporibus voluptatum corporis, nostrum libero hic optio.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<section class="parallax" id="#parallax">
+			<p class="txt-par"><span id="nb-tasses"></span> Tasses de café</p>
+			<p class="txt-par"><span id="nb-projets">2</span> Projets</p>
+		</section>
+
+		<!-- Contact -->
+		<section class="section-contact" id="contact">
+			<h2><strong>Rentrons</strong> en Contact</h2>
+
+			<div class="container-form">
+				<form class="form-bloc">
+					<div class="form-group">
+						<label for="prenom">Prénom</label>
+						<input type="text" required maxlength="16" id="prenom" />
+					</div>
+					<div class="form-group">
+						<label for="nom">Nom</label>
+						<input type="text" required maxlength="16" id="nom" />
+					</div>
+					<div class="form-group">
+						<textarea id="txt" placeholder="Votre message" required></textarea>
+					</div>
+
+					<div class="form-group">
+						<input type="submit" value="ENVOYER" class="button-submit" />
+					</div>
+				</form>
+			</div>
+		</section>
+		<footer>Tous droits réservés &copy; Nicolas Renard</footer>
 		<!-- Typewriter -->
 		<script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+		<!-- ScrollMagic -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js"></script>
+		<!-- GSAP -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/animation.gsap.min.js" ></script>
+		<!-- Add-Indicator -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/debug.addIndicators.min.js" ></script>
+		<!-- Greensock -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js" ></script>
+		<!-- App.js -->
 		<script src="./app.js"></script>
 	</body>
 </html>
