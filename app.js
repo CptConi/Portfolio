@@ -91,8 +91,8 @@ const TL1 = gsap.timeline({ paused: true });
 
 TL1.to(navbar, { left: "0px", duration: 0.6, ease: Power3.easeOut })
 	.from(titre, { y: -50, opacity: 0, ease: Power3.easeOut, duration: 0.4 })
-	.staggerFrom(btn, 1, { opacity: 0 }, 0.2, "-=0.30")
-	.staggerFrom(btnMedia, 1, { opacity: 0 }, 0.2, "-=0.75")
+	.staggerFrom(btn, 1, { opacity: 0 }, 0.2, "-=0.5")
+	.staggerFrom(btnMedia, 1, { opacity: 0 }, 0.2, "-=1")
 	.from(btnRondAccueil, { y: -80, opacity: 0, ease: Power4.ease, duration: 4, delay: 13.5 });
 
 window.addEventListener("load", () => {
@@ -110,7 +110,7 @@ const presListe = document.querySelectorAll(".item-liste");
 const presTimeline = new TimelineMax();
 presTimeline
 	.from(presTitre, { y: -200, opacity: 0, duration: 0.6 })
-	.from(presGauche, { y: -20, opacity: 0, duration: 0.4, delay: 0.1 })
+	.from(presGauche, { y: -20, opacity: 0, duration: 0.4 })
 	.staggerFrom(presListe, 1, { opacity: 0 }, 0.2);
 
 const scene = new ScrollMagic.Scene({
@@ -195,19 +195,77 @@ const scene5 = new ScrollMagic.Scene({
 	// .addIndicators()
 	.addTo(controller);
 
-// Scroll Spy
+// =================Scroll Spy
 
+var observer = null;
+const spies = document.querySelectorAll("[data-spy");
+const ratio = 0.6;
+const yThreshold = Math.round(window.innerHeight * ratio);
+
+/**
+ * @param {HTMLElement} el  The HTML Element who will be activated
+ */
+const currentlySpied = function (el) {
+	const id = el.getAttribute("id");
+	const anchor = document.querySelector(`a[href ="#${id}"]`).parentNode;
+	if (anchor === null) {
+		return null;
+	} else {
+		document.querySelectorAll(".scrolledTo").forEach((node) => {
+			node.classList.remove("scrolledTo");
+		});
+		anchor.classList.add("scrolledTo");
+		console.log("Added scrolledTo class atribute to: ", id);
+	}
+};
+
+/**
+ * @param {IntersectionObserverEntry} entries
+ * @param {IntersectionObserver} observer
+ */
 const spyCallback = function (entries, observer) {
-	entries.forEach(entry => {
-		// On vérifie que le scroll est bien sur la section retournée
-		if (entry.intersectionRatio > 0) {
-			console.log(entry);
+	entries.forEach((entry) => {
+		if (entry.isIntersecting) {
+			console.log("Currently intersecting with :", entry.target.getAttribute("id"));
+			currentlySpied(entry.target);
 		}
 	});
 };
 
-const spies = document.querySelectorAll("[data-spy]");
-const observer = new IntersectionObserver(spyCallback, {});
-spies.forEach((spy) => {
-	observer.observe(spy);
-});
+/**
+ * @param {NodeListOf.<Element>} elems
+ */
+const scrollSpy = function (elems) {
+	if (observer !== null) {
+		elems.forEach((elem) => observer.unobserve(elem));
+	}
+	// Permet de créer un scrollSpy de 1px de hauteur
+	observer = new IntersectionObserver(spyCallback, {
+		rootMargin: `${window.innerHeight - yThreshold - 1}px 0px -${yThreshold}px 0px`,
+	});
+	spies.forEach((elem) => {
+		observer.observe(elem);
+	});
+};
+
+const debounce = function (callback, delay) {
+	let timer;
+	return function () {
+		let args = arguments;
+		let context = this;
+		clearTimeout(timer);
+		timer = setTimeout(function () {
+			callback.apply(context, args);
+		}, delay);
+	};
+};
+
+if (spies.length > 0) {
+	scrollSpy(spies);
+	window.addEventListener(
+		"resize",
+		debounce(() => {
+			scrollSpy(spies);
+		}, 500)
+	);
+}
