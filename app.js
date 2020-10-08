@@ -79,21 +79,135 @@ for (let i = 0; i < inputFields.length; i++) {
 }
 
 // Animation Greensock & ScrollMagic
+// Greensock, landing page
 
 const navbar = document.querySelector(".nav-gauche");
-const titre = document.querySelector('h1');
-const btn = document.querySelectorAll('.btn-acc');
-const btnMedia = document.querySelectorAll('.media');
-const btnRondAccueil = document.querySelector('.btn-rond');
+const titre = document.querySelector("h1");
+const btn = document.querySelectorAll(".btn-acc");
+const btnMedia = document.querySelectorAll(".media");
+const btnRondAccueil = document.querySelector(".btn-rond");
+
 const TL1 = gsap.timeline({ paused: true });
 
 TL1.to(navbar, { left: "0px", duration: 0.6, ease: Power3.easeOut })
 	.from(titre, { y: -50, opacity: 0, ease: Power3.easeOut, duration: 0.4 })
 	.staggerFrom(btn, 1, { opacity: 0 }, 0.2, "-=0.30")
 	.staggerFrom(btnMedia, 1, { opacity: 0 }, 0.2, "-=0.75")
-	.from(btnRondAccueil, { y: -80, opacity: 0, ease: Power4.ease, duration:4, delay:13.5 });
-	
+	.from(btnRondAccueil, { y: -80, opacity: 0, ease: Power4.ease, duration: 4, delay: 13.5 });
 
 window.addEventListener("load", () => {
 	TL1.play();
+});
+
+// ---- ScrollMagic
+const controller = new ScrollMagic.Controller();
+// Présentation
+const presContainer = document.querySelector(".container-presentation");
+const presTitre = document.querySelector(".titre-pres");
+const presGauche = document.querySelector(".presentation-gauche");
+const presListe = document.querySelectorAll(".item-liste");
+
+const presTimeline = new TimelineMax();
+presTimeline
+	.from(presTitre, { y: -200, opacity: 0, duration: 0.6 })
+	.from(presGauche, { y: -20, opacity: 0, duration: 0.4, delay: 0.1 })
+	.staggerFrom(presListe, 1, { opacity: 0 }, 0.2);
+
+const scene = new ScrollMagic.Scene({
+	triggerElement: presContainer,
+	triggerHook: 0.6,
+	reverse: false,
+})
+	.setTween(presTimeline)
+	// .addIndicators()
+	.addTo(controller);
+
+// Portfolio
+
+const pfContainer = document.querySelector(".portfolio");
+const pfTitre = document.querySelector(".titre-portfolio");
+const pfItem = document.querySelectorAll(".vague1");
+
+const pfTimeline = new TimelineMax();
+pfTimeline.from(pfTitre, { y: -50, opacity: 0, duration: 0.6 }).staggerFrom(pfItem, 1, { opacity: 0 }, 0.2);
+
+const scene2 = new ScrollMagic.Scene({
+	triggerElement: pfContainer,
+	triggerHook: 0.6,
+	reverse: false,
+})
+	.setTween(pfTimeline)
+	// .addIndicators()
+	.addTo(controller);
+
+// Vague 2
+const pfItem2 = document.querySelectorAll(".vague2");
+
+const pfTimeline2 = new TimelineMax();
+pfTimeline2.staggerFrom(pfItem2, 1, { opacity: 0 }, 0.2);
+
+const scene3 = new ScrollMagic.Scene({
+	triggerElement: pfItem2,
+	triggerHook: 0.7,
+	reverse: false,
+})
+	.setTween(pfTimeline2)
+	// .addIndicators()
+	.addTo(controller);
+
+// Vague 3
+const pfItem3 = document.querySelectorAll(".vague3");
+
+const pfTimeline3 = new TimelineMax();
+pfTimeline3.staggerFrom(pfItem3, 1, { opacity: 0 }, 032);
+
+const scene4 = new ScrollMagic.Scene({
+	triggerElement: pfItem3,
+	triggerHook: 0.7,
+	reverse: false,
+})
+	.setTween(pfTimeline3)
+	// .addIndicators()
+	.addTo(controller);
+
+// Animation Range
+const compSection = document.querySelector(".section-range");
+const compTitre = document.querySelector(".titre-exp");
+const compLstLabel = document.querySelectorAll(".label-skill");
+const compLstPercent = document.querySelectorAll(".number-skill");
+const compLstBars = document.querySelectorAll(".bar-skill");
+const compLstBgBars = document.querySelectorAll(".bar-bg");
+
+const compTimeline = new TimelineMax();
+compTimeline
+	.from(compTitre, { opacity: 0, duration: 0.8 })
+	.staggerFrom(compLstLabel, 0.5, { y: -50, opacity: 0 }, 0.1, "-=0.5")
+	.staggerFrom(compLstPercent, 0.5, { y: -50, opacity: 0 }, 0.1, "-=1")
+	.staggerFrom(compLstBars, 0.5, { y: -20, opacity: 0 }, 0.1, "-=1")
+	.staggerFrom(compLstBgBars, 0.5, { y: -20, opacity: 0 }, 0.1, "-=1");
+
+const scene5 = new ScrollMagic.Scene({
+	triggerElement: compSection,
+	triggerHook: 0.5,
+	reverse: false,
+})
+	.setTween(compTimeline)
+	// .addIndicators()
+	.addTo(controller);
+
+// Scroll Spy
+
+const spyCallback = function (entries, observer) {
+	entries.forEach(entry => {
+		// On vérifie que le scroll est bien sur la section retournée
+		if (entry.intersectionRatio > 0) {
+			console.log(entry);
+		}
+	});
+};
+
+const spies = document.querySelectorAll("[data-spy]");
+const observer = new IntersectionObserver(spyCallback, {});
+spies.forEach((spy) => {
+	observer.observe(spy);
 });

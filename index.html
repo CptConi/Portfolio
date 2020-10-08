@@ -21,37 +21,42 @@
 		<nav class="nav-gauche">
 			<div class="blocs-menu">
 				<div class="cercle-portrait">
-					<img src="./ressources/portrait-min.jpg" alt="Photo de Nicolas" />
+					<!-- <img src="./ressources/portrait-min.jpg" alt="Photo de Nicolas" /> -->
 				</div>
 			</div>
 			<div class="blocs-menu">
 				<span class="nav-menu-item">
-					<a href="#"> Accueil </a>
+					<a href="#accueil"> Accueil </a>
 				</span>
 			</div>
 			<div class="blocs-menu">
 				<span class="nav-menu-item">
-					<a href="#"> Présentation </a>
+					<a href="#presentation"> Présentation </a>
 				</span>
 			</div>
 			<div class="blocs-menu">
 				<span class="nav-menu-item">
-					<a href="#"> Portfolio </a>
+					<a href="#portfolio"> Portfolio </a>
 				</span>
 			</div>
 			<div class="blocs-menu">
 				<span class="nav-menu-item">
-					<a href="#"> Compétences </a>
+					<a href="#skills"> Compétences </a>
 				</span>
 			</div>
 			<div class="blocs-menu">
 				<span class="nav-menu-item">
-					<a href="#"> Contact </a>
+					<a href="#experience"> Expériences </a>
+				</span>
+			</div>
+			<div class="blocs-menu">
+				<span class="nav-menu-item">
+					<a href="#contact"> Contact </a>
 				</span>
 			</div>
 			<div class="blocs-menu">
 				<div class="logo-cercle">
-					<a href="#">
+					<a href="#contact">
 						<img src="./ressources/contact.svg" alt="Enveloppe mail" />
 					</a>
 				</div>
@@ -59,14 +64,14 @@
 		</nav>
 		<!-- Section Accueil -->
 
-		<section class="accueil" id="accueil">
+		<section class="accueil" id="accueil" data-spy>
 			<h1>Bienvenue sur mon portfolio</h1>
 			<p class="txt-animation"></p>
-			<a href="#" class="btn-acc btn-acc1">Portfolio</a>
-			<a href="#" class="btn-acc btn-acc2">Experiences</a>
+			<a href="#portfolio" class="btn-acc btn-acc1">Portfolio</a>
+			<a href="#experience" class="btn-acc btn-acc2">Experiences</a>
 
 			<div class="medias">
-				<a href="htps://github.com" target="blank">
+				<a href="htps://github.com/cptconi" target="blank">
 					<div class="media media1">
 						<img src="./ressources/github.svg" alt="Icone Github" class="icone-medias" /></div
 				></a>
@@ -80,14 +85,14 @@
 				></a>
 			</div>
 
-			<a href="#">
+			<a href="#presentation">
 				<div class="btn-rond">
 					<img src="./ressources/arrowDown.svg" alt="Logo fleche bas" class="logo-btn-rond-accueil" />
 				</div>
 			</a>
 		</section>
 		<!-- Présentation -->
-		<section class="presentation" id="presentation">
+		<section class="presentation" id="presentation" data-spy>
 			<h2 class="titre-pres">Présentation</h2>
 			<div class="container-presentation">
 				<div class="fond-forme"></div>
@@ -131,7 +136,7 @@
 			</div>
 		</section>
 		<!-- PortFolio -->
-		<section class="portfolio" id="portfiolio">
+		<section class="portfolio" id="portfolio" data-spy>
 			<h2 class="titre-portfolio">Mon Portfolio</h2>
 			<div class="container-portfolio">
 				<div class="item vague1">
@@ -202,7 +207,7 @@
 			</div>
 		</section>
 		<!-- Range -->
-		<section class="section-range" id="range">
+		<section class="section-range" id="skills" data-spy>
 			<h2 class="titre-exp">Mes compétences</h2>
 			<div class="grille-skills">
 				<div class="range-container">
@@ -243,7 +248,7 @@
 				</div>
 			</div>
 		</section>
-		<section class="travail-exp" id="exp">
+		<section class="travail-exp" id="experience" data-spy>
 			<h2 class="titre-travail-exp">Mes expériences</h2>
 			<div class="container-exp-travail">
 				<div class="vertical-bar">
@@ -291,13 +296,14 @@
 				</div>
 			</div>
 		</section>
+		<!-- parallax -->
 		<section class="parallax" id="#parallax">
 			<p class="txt-par"><span id="nb-tasses"></span> Tasses de café</p>
 			<p class="txt-par"><span id="nb-projets">2</span> Projets</p>
 		</section>
 
 		<!-- Contact -->
-		<section class="section-contact" id="contact">
+		<section class="section-contact" id="contact" data-spy>
 			<h2><strong>Rentrons</strong> en Contact</h2>
 
 			<div class="container-form">

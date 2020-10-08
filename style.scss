@@ -99,14 +99,17 @@ body {
 		height: 150px;
 		border-radius: 50%;
 		position: relative;
-		box-shadow: 26px 26px 53px #1d1d1d, -26px -26px 53px #4b4b4b;
-		& img {
-			border-radius: 50%;
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-		}
+		box-shadow: 20px 20px 50px #1d1d1d, -20px -20px 50px #4b4b4b, inset 20px 20px 40px #1d1d1d3f,
+			inset -20px -20px 40px #4b4b4bb0;
+			background: url(./ressources/portrait-min.jpg);
+		// & img {
+		// 	border-radius: 50%;
+		// 	position: relative;
+		// 	top: 50%;
+		// 	left: 50%;
+		// 	transform: translate(-50%, -50%);
+		// 	z-index: 0;
+		// }
 	}
 }
 
