@@ -277,6 +277,12 @@ h1 {
   font-family: "Abril Fatface", sans-serif;
   margin: 0 60px;
   padding-top: 410px;
+  text-shadow: 1px 0px 1px #F1F1F1, -1px 0px 1px #F1F1F1, 0px 1px 1px #F1F1F1, 0px -1px 1px #F1F1F1;
+}
+@media (max-width: 1608px) {
+  h1 {
+    padding-top: 305px;
+  }
 }
 @media (max-width: 1000px) {
   h1 {
