@@ -195,6 +195,30 @@ const scene5 = new ScrollMagic.Scene({
 	// .addIndicators()
 	.addTo(controller);
 
+// Animation Passions
+const passionSection = document.querySelector('.passion');
+const passionTitre = document.querySelector(".passion-section-titre");
+const passionLstImg = document.querySelectorAll(".img-passion");
+const passionLstLabel = document.querySelectorAll('.titre-passion');
+const passionLstText = document.querySelectorAll('.txt-passion')
+
+const passionTimeline = new TimelineMax();
+passionTimeline
+	.from(passionTitre, { y: -200, opacity: 0, duration: 0.6 })
+	.staggerFrom(passionLstImg, 0.5, { y: -150, opacity: 0 }, 0.1, "-=1")
+	.staggerFrom(passionLstLabel, 0.5, { y: -80, opacity: 0 }, 0.1, "-=1")
+	.staggerFrom(passionLstText, 0.5, { y: -80, opacity: 0 }, 0.1, "-=1");
+
+
+const Scene6 = new ScrollMagic.Scene({
+	triggerElement: passionSection,
+	triggerHook: 0.5,
+	reverse: false
+})
+	.setTween(passionTimeline)
+	.addTo(controller);
+
+
 // =================Scroll Spy
 
 var observer = null;
