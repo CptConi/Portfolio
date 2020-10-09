@@ -1070,6 +1070,7 @@ h1 {
 
 .titre-passion {
   text-align: center;
+  margin-top: 10px;
   padding-bottom: 10px;
 }
 
@@ -1097,8 +1098,9 @@ h1 {
   display: flex;
   flex-direction: column;
   width: 250px;
+  height: 350px;
+  justify-content: start;
   align-items: center;
-  margin: auto;
 }
 .bloc-passion h3 {
   font-size: 22px;
@@ -1145,6 +1147,7 @@ h1 {
   .bloc-passion {
     flex-direction: row;
     width: 700px;
+    height: auto;
     margin-bottom: 40px;
   }
 }
