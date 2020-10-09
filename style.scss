@@ -76,24 +76,24 @@ body {
 			background-color: red;
 		}
 	}
-	& .logo-cercle {
-		width: 100px;
-		height: 100px;
-		border-radius: 50%;
-		position: absolute;
-		bottom: 40px;
-		cursor: pointer;
-		& img {
-			width: 70%;
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-		}
-		@media(max-width: $breakpoint-max){
-			display: none;
-		}
-	}
+	// & .logo-cercle {
+	// 	width: 100px;
+	// 	height: 100px;
+	// 	border-radius: 50%;
+	// 	position: absolute;
+	// 	bottom: 40px;
+	// 	cursor: pointer;
+	// 	& img {
+	// 		width: 70%;
+	// 		position: absolute;
+	// 		top: 50%;
+	// 		left: 50%;
+	// 		transform: translate(-50%, -50%);
+	// 	}
+	// 	@media (max-width: $breakpoint-max) {
+	// 		display: none;
+	// 	}
+	// }
 }
 
 .nav-menu-item.scrolledTo::after {
@@ -117,7 +117,6 @@ body {
 			width: 100px;
 			height: 100px;
 		}
-
 	}
 }
 
@@ -626,15 +625,15 @@ h1 {
 	filter: grayscale(1);
 }
 
-.item-techno{
+.item-techno {
 	display: flex;
 	flex-direction: row;
 	height: 30px;
 	justify-content: center;
-	& .icon-techno{
+	& .icon-techno {
 		margin: 5px 10px;
 		height: 30px;
-		@media(max-width: 340px){
+		@media (max-width: 340px) {
 			height: 22px;
 			margin: 0 10px;
 		}
@@ -927,6 +926,220 @@ h1 {
 	}
 }
 
+// =============Passions============ //
+
+.passion {
+	width: 100%;
+	height: auto;
+	background-color: #9213a3;
+	background-image: linear-gradient(to right, #9213a3, #751973);
+	border-top: 1px solid rgba(51, 51, 51, 0.1);
+	border-bottom: 1px solid rgba(51, 51, 51, 0.1);
+	& h2 {
+		padding: 70px 0 70px 300px;
+		text-align: center;
+		font-size: 40px;
+		@media (max-width: $breakpoint-max) {
+			padding-left: 0;
+		}
+	}
+}
+
+.titre-passion {
+	text-align: center;
+	padding-bottom: 10px;
+}
+
+.container-passion {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	padding-left: 300px;
+	padding-bottom: 100px;
+	@media (max-width: $breakpoint-max) {
+		padding-left: 0;
+	}
+	@media (max-width: 950px) {
+		flex-direction: column;
+		justify-content: center;
+		margin: auto;
+	}
+}
+
+.bloc-passion {
+	display: flex;
+	flex-direction: column;
+	width: 250px;
+	align-items: center;
+	margin: auto;
+	& h3 {
+		font-size: 22px;
+	}
+	& .txt-passion {
+		text-align: justify;
+		@media (max-width: 950px) {
+			padding: 0 40px;
+		}
+		@media (max-width: 800px) {
+			padding: 0 0 0 50px;
+		}
+		@media (max-width: 500px) {
+			padding: 0 20px 0 20px;
+		}
+	}
+	& .img-passion {
+		width: 150px;
+		
+		filter: drop-shadow(0 0 4px black);
+		transition: all 0.5s ease;
+		&1:hover {
+			transform: scale(1.2);
+			animation: vibrate-3 0.5s ease-in-out infinite both;
+		}
+		&2:hover {
+			animation: shake-bl 3s ease-in-out infinite both;
+		}
+		&3:hover {
+			animation: shake-bottom 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite alternate-reverse both;
+		}
+		@media (max-width: 800px) {
+			width: 100px;
+		}
+	}
+	@media (max-width: 950px) {
+		flex-direction: row;
+		width: 700px;
+		margin-bottom: 40px;
+	}
+	@media (max-width: 800px) {
+			width: 500px;
+		}
+	@media (max-width: 600px) {
+			width: 400px;
+		}
+	@media (max-width: 500px) {
+			flex-direction: column;
+			width: 300px;
+		}
+}
+
+// Passion Animations
+// credits to https://animista.net/
+@keyframes vibrate-3 {
+	0% {
+		-webkit-transform: translate(0);
+		transform: translate(0);
+	}
+	10% {
+		-webkit-transform: translate(-2px, -2px);
+		transform: translate(-2px, -2px);
+	}
+	20% {
+		-webkit-transform: translate(2px, -2px);
+		transform: translate(2px, -2px);
+	}
+	30% {
+		-webkit-transform: translate(-2px, 2px);
+		transform: translate(-2px, 2px);
+	}
+	40% {
+		-webkit-transform: translate(2px, 2px);
+		transform: translate(2px, 2px);
+	}
+	50% {
+		-webkit-transform: translate(-2px, -2px);
+		transform: translate(-2px, -2px);
+	}
+	60% {
+		-webkit-transform: translate(2px, -2px);
+		transform: translate(2px, -2px);
+	}
+	70% {
+		-webkit-transform: translate(-2px, 2px);
+		transform: translate(-2px, 2px);
+	}
+	80% {
+		-webkit-transform: translate(-2px, -2px);
+		transform: translate(-2px, -2px);
+	}
+	90% {
+		-webkit-transform: translate(2px, -2px);
+		transform: translate(2px, -2px);
+	}
+	100% {
+		-webkit-transform: translate(0);
+		transform: translate(0);
+	}
+}
+
+@keyframes shake-bl {
+	0%,
+	100% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+		-webkit-transform-origin: 0 100%;
+		transform-origin: 0 100%;
+	}
+	10% {
+		-webkit-transform: rotate(2deg);
+		transform: rotate(2deg);
+	}
+	20%,
+	40%,
+	60% {
+		-webkit-transform: rotate(-4deg);
+		transform: rotate(-4deg);
+	}
+	30%,
+	50%,
+	70% {
+		-webkit-transform: rotate(4deg);
+		transform: rotate(4deg);
+	}
+	80% {
+		-webkit-transform: rotate(-2deg);
+		transform: rotate(-2deg);
+	}
+	90% {
+		-webkit-transform: rotate(2deg);
+		transform: rotate(2deg);
+	}
+}
+
+@keyframes shake-bottom {
+	0%,
+	100% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+		-webkit-transform-origin: 50% 100%;
+		transform-origin: 50% 100%;
+	}
+	10% {
+		-webkit-transform: rotate(2deg);
+		transform: rotate(2deg);
+	}
+	20%,
+	40%,
+	60% {
+		-webkit-transform: rotate(-4deg);
+		transform: rotate(-4deg);
+	}
+	30%,
+	50%,
+	70% {
+		-webkit-transform: rotate(4deg);
+		transform: rotate(4deg);
+	}
+	80% {
+		-webkit-transform: rotate(-2deg);
+		transform: rotate(-2deg);
+	}
+	90% {
+		-webkit-transform: rotate(2deg);
+		transform: rotate(2deg);
+	}
+}
+
 // =============Parallax============ //
 
 .parallax {
@@ -938,6 +1151,7 @@ h1 {
 	justify-content: center;
 	align-items: center;
 	border-top: 1px solid rgba(51, 51, 51, 0.1);
+	box-shadow: 0 0 10px black;
 	@media (max-width: 550px) {
 		flex-direction: column;
 	}
