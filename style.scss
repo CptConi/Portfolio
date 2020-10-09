@@ -932,7 +932,7 @@ h1 {
 	width: 100%;
 	height: auto;
 	background-color: #9213a3;
-	background-image: radial-gradient(#815291,#4a2c53);
+	background-image: linear-gradient(to right, #815291,#705291);
 	background-size: 200%;
 	animation: bg-pan-left 3s infinite ease-in-out alternate-reverse both;
 	border-top: 1px solid rgba(51, 51, 51, 0.1);
@@ -946,6 +946,9 @@ h1 {
 			padding-left: 0;
 		}
 	}
+			@media (max-width: $breakpoint-max) {
+				animation: none;
+			}
 }
 
 .titre-passion {
