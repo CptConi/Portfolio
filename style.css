@@ -92,6 +92,11 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+@media (max-width: 1300px) {
+  .blocs-menu .logo-cercle {
+    display: none;
+  }
+}
 
 .nav-menu-item.scrolledTo::after {
   width: 100%;
@@ -277,7 +282,7 @@ h1 {
   font-family: "Abril Fatface", sans-serif;
   margin: 0 60px;
   padding-top: 410px;
-  text-shadow: 1px 0px 1px #F1F1F1, -1px 0px 1px #F1F1F1, 0px 1px 1px #F1F1F1, 0px -1px 1px #F1F1F1;
+  text-shadow: 1px 0px 1px #f1f1f1, -1px 0px 1px #f1f1f1, 0px 1px 1px #f1f1f1, 0px -1px 1px #f1f1f1;
 }
 @media (max-width: 1608px) {
   h1 {
@@ -665,9 +670,12 @@ h1 {
 }
 
 .item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   margin: 20px;
   width: 420px;
-  height: 400px;
+  height: 430px;
   background-color: #f0f2f0;
   color: #333;
   transition: transform 0.3s ease-out;
@@ -678,6 +686,7 @@ h1 {
 }
 .item h3 {
   padding: 10px 10px 0;
+  margin-top: auto;
   font-size: 22px;
 }
 .item p {
@@ -685,12 +694,12 @@ h1 {
 }
 @media (max-width: 500px) {
   .item {
-    height: 420px;
+    height: 450px;
   }
 }
 @media (max-width: 340px) {
   .item {
-    height: 380px;
+    height: 410px;
   }
 }
 
@@ -706,6 +715,27 @@ h1 {
 @media (max-width: 500px) {
   .cont-img-port {
     height: auto;
+  }
+}
+
+.grey-tint {
+  filter: grayscale(1);
+}
+
+.item-techno {
+  display: flex;
+  flex-direction: row;
+  height: 30px;
+  justify-content: center;
+}
+.item-techno .icon-techno {
+  margin: 5px 10px;
+  height: 30px;
+}
+@media (max-width: 340px) {
+  .item-techno .icon-techno {
+    height: 22px;
+    margin: 0 10px;
   }
 }
 
@@ -866,12 +896,12 @@ h1 {
 }
 
 .b3 {
-  width: 70%;
+  width: 80%;
   background-color: #f3ed92;
 }
 
 .b4 {
-  width: 80%;
+  width: 70%;
 }
 
 .b5 {

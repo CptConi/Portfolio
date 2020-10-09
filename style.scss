@@ -68,14 +68,13 @@ body {
 			background-color: #aaa;
 			transition: all 0.2s ease-out;
 		}
-		
-		&:hover::after{
+
+		&:hover::after {
 			width: 100%;
 		}
-		& .scrolledTo{
+		& .scrolledTo {
 			background-color: red;
 		}
-		
 	}
 	& .logo-cercle {
 		width: 100px;
@@ -91,10 +90,13 @@ body {
 			left: 50%;
 			transform: translate(-50%, -50%);
 		}
+		@media(max-width: $breakpoint-max){
+			display: none;
+		}
 	}
 }
 
-.nav-menu-item.scrolledTo::after{
+.nav-menu-item.scrolledTo::after {
 	width: 100%;
 }
 
@@ -108,22 +110,14 @@ body {
 		height: 150px;
 		border-radius: 50%;
 		position: relative;
-		box-shadow: 20px 20px 50px #1d1d1d, -20px -20px 50px #4b4b4b, inset 20px 20px 40px #1d1d1d3f,
-			inset -20px -20px 40px #4b4b4bb0;
-			background: url(./ressources/portrait-min.jpg) no-repeat;
-			background-size: contain;
-			@media(max-width: $breakpoint-max){
-				width: 100px;
-				height: 100px;
-			}
-		// & img {
-		// 	border-radius: 50%;
-		// 	position: relative;
-		// 	top: 50%;
-		// 	left: 50%;
-		// 	transform: translate(-50%, -50%);
-		// 	z-index: 0;
-		// }
+		box-shadow: 20px 20px 50px #1d1d1d, -20px -20px 50px #4b4b4b, inset 20px 20px 40px #1d1d1d3f, inset -20px -20px 40px #4b4b4bb0;
+		background: url(./ressources/portrait-min.jpg) no-repeat;
+		background-size: contain;
+		@media (max-width: $breakpoint-max) {
+			width: 100px;
+			height: 100px;
+		}
+
 	}
 }
 
@@ -266,8 +260,8 @@ h1 {
 	font-family: "Abril Fatface", sans-serif;
 	margin: 0 60px;
 	padding-top: 410px;
-	text-shadow: 1px 0px 1px #F1F1F1, -1px 0px 1px #F1F1F1, 0px 1px 1px #F1F1F1,0px -1px 1px #F1F1F1,;
-	@media(max-width:1608px){
+	text-shadow: 1px 0px 1px #f1f1f1, -1px 0px 1px #f1f1f1, 0px 1px 1px #f1f1f1, 0px -1px 1px #f1f1f1;
+	@media (max-width: 1608px) {
 		padding-top: 305px;
 	}
 	@media (max-width: 1000px) {
@@ -587,9 +581,12 @@ h1 {
 }
 
 .item {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 	margin: 20px;
 	width: 420px;
-	height: 400px;
+	height: 430px;
 	background-color: #f0f2f0;
 	color: #333;
 	transition: transform 0.3s ease-out;
@@ -599,16 +596,17 @@ h1 {
 	}
 	& h3 {
 		padding: 10px 10px 0;
+		margin-top: auto;
 		font-size: 22px;
 	}
 	& p {
 		padding: 10px 10px 0;
 	}
 	@media (max-width: 500px) {
-		height: 420px;
+		height: 450px;
 	}
 	@media (max-width: 340px) {
-		height: 380px;
+		height: 410px;
 	}
 }
 
@@ -622,6 +620,24 @@ h1 {
 	}
 	@media (max-width: 500px) {
 		height: auto;
+	}
+}
+.grey-tint {
+	filter: grayscale(1);
+}
+
+.item-techno{
+	display: flex;
+	flex-direction: row;
+	height: 30px;
+	justify-content: center;
+	& .icon-techno{
+		margin: 5px 10px;
+		height: 30px;
+		@media(max-width: 340px){
+			height: 22px;
+			margin: 0 10px;
+		}
 	}
 }
 
@@ -758,11 +774,11 @@ h1 {
 	background-color: rgb(243, 237, 146);
 }
 .b3 {
-	width: 70%;
+	width: 80%;
 	background-color: rgb(243, 237, 146);
 }
 .b4 {
-	width: 80%;
+	width: 70%;
 }
 .b5 {
 	width: 70%;

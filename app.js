@@ -199,7 +199,7 @@ const scene5 = new ScrollMagic.Scene({
 
 var observer = null;
 const spies = document.querySelectorAll("[data-spy");
-const ratio = 0.6;
+const ratio = 0.5;
 const yThreshold = Math.round(window.innerHeight * ratio);
 
 /**
@@ -215,7 +215,7 @@ const currentlySpied = function (el) {
 			node.classList.remove("scrolledTo");
 		});
 		anchor.classList.add("scrolledTo");
-		console.log("Added scrolledTo class atribute to: ", id);
+		// console.log("Added scrolledTo class atribute to: ", id);
 	}
 };
 
@@ -226,7 +226,7 @@ const currentlySpied = function (el) {
 const spyCallback = function (entries, observer) {
 	entries.forEach((entry) => {
 		if (entry.isIntersecting) {
-			console.log("Currently intersecting with :", entry.target.getAttribute("id"));
+			// console.log("Currently intersecting with :", entry.target.getAttribute("id"));
 			currentlySpied(entry.target);
 		}
 	});
@@ -241,7 +241,7 @@ const scrollSpy = function (elems) {
 	}
 	// Permet de créer un scrollSpy de 1px de hauteur
 	observer = new IntersectionObserver(spyCallback, {
-		rootMargin: `${window.innerHeight - yThreshold - 1}px 0px -${yThreshold}px 0px`,
+		rootMargin: `${window.innerHeight - yThreshold - 2}px 0px -${yThreshold}px 0px`,
 	});
 	spies.forEach((elem) => {
 		observer.observe(elem);
