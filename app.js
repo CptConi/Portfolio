@@ -45,13 +45,17 @@ typeWriter
 	.pauseFor(1000)
 	.deleteChars(6)
 	.pauseFor(200)
+	.typeString('<strong><span style="color: #61DBFB;">React</span></strong>')
+	.pauseFor(1000)
+	.deleteChars(6)
+	.pauseFor(200)
 	.typeString('<strong><span style="color: #3C873A">Node.js</span></strong>')
 	.pauseFor(1000)
 	.deleteChars(7)
 	.pauseFor(200)
-	.typeString('<strong><span style="color: grey">Full-stqck</span></strong>')
+	.typeString('<strong><span style="color: black">Full-stqck</span></strong>')
 	.deleteChars(3)
-	.typeString('<strong><span style="color: grey">ack</span></strong>')
+	.typeString('<strong><span style="color: black">ack</span></strong>')
 	.start();
 
 function dayDiff(d1, d2) {
