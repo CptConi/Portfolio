@@ -230,7 +230,7 @@ const contactButton = document.querySelector('.contact__sendmail');
 const contactTimeline = new TimelineMax();
 contactTimeline
     .from(contactTitre, { y: -200, opacity: 0, duration: 0.6 })
-    .staggerFrom(contactButton, 0.5, { scale: 2, opacity: 0 }, 0.3, '+=1');
+    .staggerFrom(contactButton, 0.5, { scale: 2, opacity: 0 }, 0.3);
 
 const Scene7 = new ScrollMagic.Scene({
     triggerElement: contactSection,

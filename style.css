@@ -1376,40 +1376,6 @@ h1 {
   }
 }
 
-.button-submit {
-  display: block;
-  width: auto;
-  outline: none;
-  text-decoration: none;
-  margin-left: 300px;
-  padding: 15px 60px;
-  border: 3px solid #909090;
-  border-radius: 999px;
-  background-image: linear-gradient(to right, transparent 50%, #8b97d7 50%, #aac);
-  background-size: 200%;
-  color: #333;
-  font-size: 24px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.button-submit:hover {
-  color: #fff;
-  background-position: 100%;
-  border: 3px solid #fff;
-}
-@media screen and (max-width: 1300px) {
-  .button-submit {
-    margin-left: 0;
-    font-size: 20px;
-  }
-}
-@media screen and (max-width: 450px) {
-  .button-submit {
-    font-size: 18px;
-    padding: 15px 20px;
-  }
-}
-
 .contact__sendmail {
   margin-left: 300px;
   padding: 15px 60px;
