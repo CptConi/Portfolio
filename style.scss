@@ -17,6 +17,8 @@ body {
     font-family: 'Poppins', sans-serif;
     background-color: #f1f1f1;
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&display=swap');
 // ===================   Nav   =================== //
 .nav-gauche {
     width: 300px;
@@ -217,11 +219,11 @@ body {
 #topVideo {
     position: absolute;
     right: 0;
-	margin-top: 0;
+    margin-top: 0;
     min-width: 100%;
-	min-height: 100%;
-	height: auto;
-	z-index: -1;
+    min-height: 100%;
+    height: auto;
+    z-index: -1;
 }
 
 .accueil {
@@ -781,21 +783,21 @@ h1 {
     width: 90%;
 }
 .b2 {
-    width: 75%;
+    width: 90%;
     background-color: rgb(243, 237, 146);
 }
 .b3 {
-    width: 80%;
+    width: 85%;
     background-color: rgb(243, 237, 146);
 }
 .b4 {
-    width: 70%;
+    width: 80%;
 }
 .b5 {
     width: 70%;
 }
 .b6 {
-    width: 90%;
+    width: 75%;
     background-color: rgb(243, 237, 146);
 }
 
@@ -809,7 +811,10 @@ h1 {
 }
 
 .label-skill {
-    font-size: 24px;
+    font-family: 'Fira Code', monospace;
+    font-weight: 500;
+    font-size: 26px;
+    padding-top: 20px;
     @media (max-width: 450px) {
         font-size: 20px;
     }
@@ -1215,10 +1220,10 @@ h1 {
 // =================Contact=============== //
 
 .section-contact {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
     width: 100%;
     height: auto;
     & h2 {
@@ -1233,41 +1238,59 @@ h1 {
         }
         @media (max-width: $breakpoint-max) {
             padding: 70px 0 0 0;
-		}
-		@media screen and (max-width:400px){
-			font-size: 40px;
-		}
+        }
+        @media screen and (max-width: 400px) {
+            font-size: 40px;
+        }
     }
 }
 
 .button-submit {
-	display: block;
-	width: auto;
-	outline: none;
-	text-decoration: none;
-	margin-left: 300px;	
-	padding: 15px 60px;
-	border: 3px solid rgb(144, 144, 144);
-	border-radius: 999px;
-	background-image: linear-gradient(to right, transparent 50%, #8b97d7 50%, #aac);
-	background-size: 200%;
-	color: #333;
-	font-size: 24px;
-	font-weight: 500;
-	cursor: pointer;
-	&:hover {
-		color: #fff;
-		background-position: 100%;
-		border: 3px solid #fff;
-	}
-	 @media screen and (max-width:1300px){
-		 margin-left: 0;
-		 font-size: 20px;
-	 }
-	 @media screen and (max-width:450px){
-		 font-size: 18px;
-		 padding: 15px 20px;
-	 }
+    display: block;
+    width: auto;
+    outline: none;
+    text-decoration: none;
+    margin-left: 300px;
+    padding: 15px 60px;
+    border: 3px solid rgb(144, 144, 144);
+    border-radius: 999px;
+    background-image: linear-gradient(to right, transparent 50%, #8b97d7 50%, #aac);
+    background-size: 200%;
+    color: #333;
+    font-size: 24px;
+    font-weight: 500;
+    cursor: pointer;
+    &:hover {
+        color: #fff;
+        background-position: 100%;
+        border: 3px solid #fff;
+    }
+    @media screen and (max-width: 1300px) {
+        margin-left: 0;
+        font-size: 20px;
+    }
+    @media screen and (max-width: 450px) {
+        font-size: 18px;
+        padding: 15px 20px;
+    }
+}
+
+.contact__sendmail {
+    margin-left: 300px;
+    padding: 15px 60px;
+    width: auto;
+    @media screen and (max-width: 1300px) {
+        margin-left: 0;
+        font-size: 20px;
+    }
+    @media screen and (max-width: 450px) {
+        font-size: 18px;
+        padding: 15px 20px;
+    }
+    & img{
+        width: 200px;
+        animation: shake-bottom 10s infinite;
+    }
 }
 
 // .container-form {
@@ -1333,10 +1356,8 @@ h1 {
 //         border-color: #8b97d7;
 // 	}
 // }
-	
-	
-	
-	// ANimation Contact
+
+// ANimation Contact
 // .form-group:focus-within label,
 // .form-group.animation label {
 //     top: 0;

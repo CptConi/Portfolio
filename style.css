@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&display=swap");
 *,
 ::before,
 ::after {
@@ -880,17 +881,17 @@ h1 {
 }
 
 .b2 {
-  width: 75%;
+  width: 90%;
   background-color: #f3ed92;
 }
 
 .b3 {
-  width: 80%;
+  width: 85%;
   background-color: #f3ed92;
 }
 
 .b4 {
-  width: 70%;
+  width: 80%;
 }
 
 .b5 {
@@ -898,7 +899,7 @@ h1 {
 }
 
 .b6 {
-  width: 90%;
+  width: 75%;
   background-color: #f3ed92;
 }
 
@@ -912,7 +913,10 @@ h1 {
 }
 
 .label-skill {
-  font-size: 24px;
+  font-family: "Fira Code", monospace;
+  font-weight: 500;
+  font-size: 26px;
+  padding-top: 20px;
 }
 @media (max-width: 450px) {
   .label-skill {
@@ -1404,6 +1408,28 @@ h1 {
     font-size: 18px;
     padding: 15px 20px;
   }
+}
+
+.contact__sendmail {
+  margin-left: 300px;
+  padding: 15px 60px;
+  width: auto;
+}
+@media screen and (max-width: 1300px) {
+  .contact__sendmail {
+    margin-left: 0;
+    font-size: 20px;
+  }
+}
+@media screen and (max-width: 450px) {
+  .contact__sendmail {
+    font-size: 18px;
+    padding: 15px 20px;
+  }
+}
+.contact__sendmail img {
+  width: 200px;
+  animation: shake-bottom 10s infinite;
 }
 
 footer {
