@@ -694,6 +694,7 @@ h1 {
 }
 
 .cont-img-port {
+  position: relative;
   width: 100%;
   height: 220px;
   overflow: hidden;
@@ -706,6 +707,17 @@ h1 {
   .cont-img-port {
     height: auto;
   }
+}
+.cont-img-port--git-link {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  right: 10px;
+  top: 10px;
+  transition: all 0.2s ease;
+}
+.cont-img-port--git-link:hover {
+  transform: scale(1.1);
 }
 
 .grey-tint {
