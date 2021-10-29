@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
 // =============== Vars ===================== //
 $breakpoint-max: 1300px;
 
@@ -15,7 +17,7 @@ html {
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #f1f1f1;
+    background-color: #292929;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&display=swap');
@@ -28,7 +30,6 @@ body {
     position: fixed;
     top: 0;
     left: -300px;
-    border-right: 1px solid #f1f1f1;
     z-index: 5;
     transition: all 0.3s 0.1s ease-in-out;
     @media (max-width: $breakpoint-max) {
@@ -227,10 +228,6 @@ body {
 }
 
 .accueil {
-    // background: url('./ressources/accueil2.jpg');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: right;
     height: 101vh;
     min-height: 900px;
     width: calc(100% - 300px);
@@ -265,6 +262,20 @@ body {
             margin: 30px 0 0 5px;
         }
     }
+    &::before {
+        content: '';
+        background: url('https://source.unsplash.com/weekly?computer');
+        position: absolute;
+        filter: blur(5px) brightness(0.8);
+        top: 0;
+        left: 0;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: right;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+    }
 }
 
 h1 {
@@ -293,6 +304,12 @@ h1 {
 
 .txt-animation {
     font-size: 30px;
+    // text-shadow: 1px 0px 1px #f1f1f1, -1px 0px 1px #f1f1f1, 0px 1px 1px #f1f1f1,
+    //     0px -1px 1px #f1f1f1;
+    background-color: rgba(200, 200, 200, 0.4);
+    display: inline-block;
+    padding: 1rem;
+    border-radius: 8px;
     margin: 10px 0 10px 60px;
     @media (max-width: 380px) {
         font-size: 15px !important;
@@ -431,8 +448,6 @@ h1 {
     width: 100%;
     position: relative;
     overflow: hidden;
-    border-top: 1px solid rgba(51, 51, 51, 0.1);
-    border-bottom: 1px solid rgba(51, 51, 51, 0.1);
     color: #e7e7e7;
 }
 
@@ -546,7 +561,7 @@ h1 {
 
 .fond-forme {
     background-color: #485563;
-    background-image: linear-gradient(to right top, #29323c, #3f7743);
+    background-image: linear-gradient(to right top, #29323c, #bb86fc);
     width: 2500px;
     height: 1000px;
     position: absolute;
@@ -568,6 +583,7 @@ h1 {
     padding: 50px 0;
     font-size: 50px;
     padding-left: 300px;
+    color: #e7e7e7;
     @media (max-width: $breakpoint-max) {
         font-size: 40px;
         margin: 50px 0 70px;
@@ -600,10 +616,11 @@ h1 {
     margin: 20px;
     width: 420px;
     height: 430px;
-    background-color: #f0f2f0;
-    color: #333;
+    background-color: #373737;
+    border-radius: 8px;
+    color: #c6c6c6;
     transition: transform 0.3s ease-out;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     &:hover {
         transform: translateY(-5px);
     }
@@ -627,6 +644,7 @@ h1 {
     position: relative;
     width: 100%;
     height: 220px;
+    border-radius: 8px;
     overflow: hidden;
     & img {
         width: 100%;
@@ -642,7 +660,7 @@ h1 {
         right: 10px;
         top: 10px;
         transition: all 0.2s ease;
-        &:hover{
+        &:hover {
             transform: scale(1.1);
         }
     }
@@ -710,7 +728,7 @@ h1 {
     border-bottom: 1px solid rgba(51, 51, 51, 0.1);
     background-color: #485563;
     color: #f1f1f1;
-    background-image: linear-gradient(to right top, #29323c, #3f7743);
+    background-image: linear-gradient(to right top, #29323c, #7f39fb);
     z-index: -1;
     @media (max-width: $breakpoint-max) {
         padding-left: 0;
@@ -761,7 +779,7 @@ h1 {
 
 .bar-skill {
     height: 15px;
-    background-color: rgb(167, 146, 243);
+    background-color: #70efde;
     border-radius: 5px;
     position: absolute;
     left: 0;
@@ -775,7 +793,7 @@ h1 {
     bottom: 0;
     width: 500px;
     height: 15px;
-    background-color: rgb(216, 216, 216);
+    background-color: #190078;
     border-radius: 5px;
     @media (max-width: 1400px) {
         width: 450px;
@@ -792,25 +810,25 @@ h1 {
 }
 
 .b1 {
-    width: 90%;
+    width: 95%;
 }
 .b2 {
     width: 90%;
-    background-color: rgb(243, 237, 146);
+    background-color: #ff5083;
 }
 .b3 {
-    width: 85%;
-    background-color: rgb(243, 237, 146);
+    width: 70%;
+    background-color: #ff5083;
 }
 .b4 {
-    width: 80%;
+    width: 90%;
 }
 .b5 {
     width: 70%;
 }
 .b6 {
-    width: 75%;
-    background-color: rgb(243, 237, 146);
+    width: 100%;
+    background-color: #ff5083;
 }
 
 .b1,
@@ -830,6 +848,9 @@ h1 {
     @media (max-width: 450px) {
         font-size: 20px;
     }
+    &.smaller {
+        font-size: 23px;
+    }
 }
 
 // ===========Experiences=========== //
@@ -848,7 +869,7 @@ h1 {
     text-align: center;
     margin: 70px 0;
     font-size: 40px;
-    color: #333;
+    color: #f1f1f1;
 }
 
 .container-exp-travail {
@@ -858,15 +879,25 @@ h1 {
 }
 
 .vertical-bar {
-    height: 550px;
-    width: 5px;
+    height: 830px;
+    width: 3px;
     background-color: #000;
+    background-image: linear-gradient(
+        (
+            0deg,
+            rgba(255, 179, 186, 1) 0%,
+            rgba(186, 225, 255, 1) 33%,
+            rgba(186, 255, 201, 1) 66%,
+            rgba(176, 137, 250, 1) 100%
+        )
+    );
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
     position: relative;
-    left: -30px;
+    left: -45px;
+    margin-top: 3.7rem;
     @media (max-width: 950px) {
         height: 660px;
     }
@@ -907,6 +938,10 @@ h1 {
     cursor: pointer;
     border: 1px solid #333;
     position: relative;
+    border-radius: 12px;
+    &0 {
+        background-color: #b089fa;
+    }
     &1 {
         background-color: rgb(186, 255, 201);
     }
@@ -931,12 +966,15 @@ h1 {
     width: 100%;
     height: 100%;
     border: 2px solid black;
-    background-color: #ffffff;
-    transition: transform 0.25s ease;
+    background-color: #c6c6c6;
+    transition: all 0.25s ease;
+    border-radius: 12px;
+    opacity: 0.85;
     position: relative;
     transform: translate(10px, -10px);
     &:hover {
         transform: translate(0, 0);
+        border-radius: 0px;
     }
 }
 
@@ -961,11 +999,9 @@ h1 {
     width: 100%;
     height: auto;
     background-color: #9213a3;
-    background-image: linear-gradient(to right, #815291, #705291);
+    background-image: linear-gradient(to right, #815291, #6a5291);
     background-size: 200%;
     animation: bg-pan-left 3s infinite ease-in-out alternate-reverse both;
-    border-top: 1px solid rgba(51, 51, 51, 0.1);
-    border-bottom: 1px solid rgba(51, 51, 51, 0.1);
     & h2 {
         padding: 70px 0 70px 300px;
         text-align: center;
@@ -1200,8 +1236,6 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    border-top: 1px solid rgba(51, 51, 51, 0.1);
-    box-shadow: 0 0 10px black;
     @media (max-width: 550px) {
         flex-direction: column;
     }
@@ -1240,7 +1274,7 @@ h1 {
     height: auto;
     & h2 {
         text-align: center;
-        color: #333;
+        color: #f1f1f1;
         font-size: 48px;
         font-weight: 400;
         margin-bottom: 50px;
@@ -1300,7 +1334,7 @@ h1 {
         padding: 15px 20px;
     }
     & img {
-        width: 200px;
+        width: 120px;
         animation: shake-bottom 10s infinite;
     }
 }
@@ -1383,7 +1417,12 @@ footer {
     width: 100%;
     text-align: center;
     padding: 100px 0 0 300px;
+    color: #f1f1f1;
     @media (max-width: $breakpoint-max) {
         padding-left: 0;
+    }
+    a {
+        color: #f1f1f1;
+        text-decoration: none;
     }
 }
