@@ -905,11 +905,11 @@ h1 {
 }
 
 .b1 {
-  width: 95%;
+  width: 90%;
 }
 
 .b2 {
-  width: 90%;
+  width: 80%;
   background-color: #ff5083;
 }
 
@@ -919,15 +919,15 @@ h1 {
 }
 
 .b4 {
-  width: 90%;
-}
-
-.b5 {
   width: 70%;
 }
 
+.b5 {
+  width: 90%;
+}
+
 .b6 {
-  width: 100%;
+  width: 120%;
   background-color: #ff5083;
 }
 
@@ -981,10 +981,10 @@ h1 {
 }
 
 .vertical-bar {
-  height: 830px;
-  width: 3px;
+  height: 1060px;
+  width: 4px;
   background-color: #000;
-  background-image: linear-gradient(0deg, #ffb3ba 0%, #bae1ff 33%, #baffc9 66%, #b089fa 100%);
+  background-image: linear-gradient(0deg, #ffb3ba 0%, #bae1ff 25%, #baffc9 50%, #b089fa 75%, #e6fda7 100%);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1044,16 +1044,19 @@ h1 {
   border-radius: 12px;
 }
 .bloc0 {
-  background-color: #b089fa;
+  background-color: #ffb3ba;
 }
 .bloc1 {
-  background-color: #baffc9;
-}
-.bloc2 {
   background-color: #bae1ff;
 }
+.bloc2 {
+  background-color: #baffc9;
+}
 .bloc3 {
-  background-color: #ffb3ba;
+  background-color: #b089fa;
+}
+.bloc4 {
+  background-color: #e6fda7;
 }
 @media (max-width: 950px) {
   .bloc {

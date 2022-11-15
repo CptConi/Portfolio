@@ -1,346 +1,362 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <!-- Primary Meta Tags -->
-        <meta name="title" content="Portfolio de Nicolas Renard, Développeur Web Full-stack" />
-        <meta
-            name="description"
-            content="Je suis Nicolas Renard, Développeur Web Full-stack, et ceci est mon Portfolio. Bienvenue dans mon univers."
-        />
-        <!-- Open Graph / Facebook -->
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://portfolio.cptconi.vercel.app/" />
-        <meta
-            property="og:title"
-            content="Portfolio de Nicolas Renard, Développeur Web Full-stack"
-        />
-        <meta
-            property="og:description"
-            content="Je suis Nicolas Renard, Développeur Web Full-stack, et ceci est mon Portfolio. Bienvenue dans mon univers."
-        />
-        <meta property="og:image" content="./ressources/thumbnail-meta.jpg" />
-        <!-- Twitter -->
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://portfolio.cptconi.vercel.app/" />
-        <meta
-            property="twitter:title"
-            content="Portfolio de Nicolas Renard, Développeur Web Full-stack"
-        />
-        <meta
-            property="twitter:description"
-            content="Je suis Nicolas Renard, Développeur Web Full-stack, et ceci est mon Portfolio. Bienvenue dans mon univers."
-        />
-        <meta property="twitter:image" content="./ressources/thumbnail-meta.jpg" />
-        <!-- Style -->
-        <link rel="stylesheet" href="style.css" />
-        <!-- Fonts -->
-        <link
-            href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins&display=swap"
-            rel="stylesheet"
-        />
-        <title>🦊 Nicolas Renard - Full Stack Web Developer - Portfolio</title>
-    </head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Primary Meta Tags -->
+    <meta
+      name="title"
+      content="Portfolio de Nicolas Renard, Développeur Web Full-stack"
+    />
+    <meta
+      name="description"
+      content="Je suis Nicolas Renard, Développeur Web Full-stack, et ceci est mon Portfolio. Bienvenue dans mon univers."
+    />
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://portfolio.cptconi.vercel.app/" />
+    <meta
+      property="og:title"
+      content="Portfolio de Nicolas Renard, Développeur Web Full-stack"
+    />
+    <meta
+      property="og:description"
+      content="Je suis Nicolas Renard, Développeur Web Full-stack, et ceci est mon Portfolio. Bienvenue dans mon univers."
+    />
+    <meta property="og:image" content="./ressources/thumbnail-meta.jpg" />
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="https://portfolio.cptconi.vercel.app/"
+    />
+    <meta
+      property="twitter:title"
+      content="Portfolio de Nicolas Renard, Développeur Web Full-stack"
+    />
+    <meta
+      property="twitter:description"
+      content="Je suis Nicolas Renard, Développeur Web Full-stack, et ceci est mon Portfolio. Bienvenue dans mon univers."
+    />
+    <meta property="twitter:image" content="./ressources/thumbnail-meta.jpg" />
+    <!-- Style -->
+    <link rel="stylesheet" href="style.css" />
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Poppins&display=swap"
+      rel="stylesheet"
+    />
+    <title>🦊 Nicolas Renard - Full Stack Web Developer - Portfolio</title>
+  </head>
 
-    <body>
-        <!-- Boutton flottant nav-menu -->
-        <div class="btn-rond-menu">
-            <div class="container-line">
-                <div class="line"></div>
-            </div>
+  <body>
+    <!-- Boutton flottant nav-menu -->
+    <div class="btn-rond-menu">
+      <div class="container-line">
+        <div class="line"></div>
+      </div>
+    </div>
+    <!-- Navbar -->
+    <nav class="nav-gauche">
+      <div class="blocs-menu">
+        <div class="cercle-portrait"></div>
+      </div>
+      <div class="blocs-menu">
+        <span class="nav-menu-item">
+          <a href="#accueil"> Tout en haut </a>
+        </span>
+      </div>
+      <div class="blocs-menu">
+        <span class="nav-menu-item">
+          <a href="#presentation"> Présentation </a>
+        </span>
+      </div>
+      <div class="blocs-menu">
+        <span class="nav-menu-item">
+          <a href="#portfolio"> Portfolio </a>
+        </span>
+      </div>
+      <div class="blocs-menu">
+        <span class="nav-menu-item">
+          <a href="#skills"> Skills </a>
+        </span>
+      </div>
+      <div class="blocs-menu">
+        <span class="nav-menu-item">
+          <a href="#experience"> XP </a>
+        </span>
+      </div>
+      <div class="blocs-menu">
+        <span class="nav-menu-item">
+          <a href="#passion"> Passions </a>
+        </span>
+      </div>
+      <div class="blocs-menu">
+        <span class="nav-menu-item">
+          <a href="#contact"> Tout en bas </a>
+        </span>
+      </div>
+    </nav>
+    <!-- Section Accueil -->
+
+    <section class="accueil" id="accueil" data-spy>
+      <h1>Bienvenue sur mon portfolio</h1>
+      <p class="txt-animation"></p>
+      <div>
+        <a href="#portfolio" class="btn-acc btn-acc1">Projets</a>
+        <a href="#experience" class="btn-acc btn-acc2">Experiences</a>
+      </div>
+
+      <div class="medias">
+        <a href="https://github.com/CptConi" target="blank">
+          <div class="media media1">
+            <img
+              src="./ressources/github.svg"
+              alt="Icone Github"
+              class="icone-medias"
+            /></div
+        ></a>
+        <a
+          href="https://www.linkedin.com/in/nicolas-renard-035229157/"
+          target="blank"
+        >
+          <div class="media media2">
+            <img
+              src="./ressources/linkedin.svg"
+              alt="Icone linkedin"
+              class="icone-medias"
+            /></div
+        ></a>
+        <a href="https://twitter.com/Nicolas05613268" target="blank">
+          <div class="media media3">
+            <img
+              src="./ressources/twitter.svg"
+              alt="Icone twitter"
+              class="icone-medias"
+            /></div
+        ></a>
+      </div>
+
+      <a href="#presentation">
+        <div class="btn-rond">
+          <img
+            src="./ressources/arrowDown.svg"
+            alt="Logo fleche bas"
+            class="logo-btn-rond-accueil"
+          />
         </div>
-        <!-- Navbar -->
-        <nav class="nav-gauche">
-            <div class="blocs-menu">
-                <div class="cercle-portrait"></div>
-            </div>
-            <div class="blocs-menu">
-                <span class="nav-menu-item">
-                    <a href="#accueil"> Tout en haut </a>
-                </span>
-            </div>
-            <div class="blocs-menu">
-                <span class="nav-menu-item">
-                    <a href="#presentation"> Présentation </a>
-                </span>
-            </div>
-            <div class="blocs-menu">
-                <span class="nav-menu-item">
-                    <a href="#portfolio"> Portfolio </a>
-                </span>
-            </div>
-            <div class="blocs-menu">
-                <span class="nav-menu-item">
-                    <a href="#skills"> Skills </a>
-                </span>
-            </div>
-            <div class="blocs-menu">
-                <span class="nav-menu-item">
-                    <a href="#experience"> XP </a>
-                </span>
-            </div>
-            <div class="blocs-menu">
-                <span class="nav-menu-item">
-                    <a href="#passion"> Passions </a>
-                </span>
-            </div>
-            <div class="blocs-menu">
-                <span class="nav-menu-item">
-                    <a href="#contact"> Tout en bas </a>
-                </span>
-            </div>
-        </nav>
-        <!-- Section Accueil -->
+      </a>
+    </section>
+    <!-- Présentation -->
+    <section class="presentation" id="presentation" data-spy>
+      <h2 class="titre-pres">Bonjour le monde ?</h2>
+      <div class="container-presentation">
+        <div class="fond-forme"></div>
+        <div class="presentation-gauche">
+          <h3>
+            Concepteur / Developpeur Web, je cherche constamment à améliorer mes
+            connaissances
+            <hr />
+          </h3>
+          <p>
+            Après avoir étoffé mes études en développement via un cursus
+            diplomant via les MOOC OpenClassrooms, je donne vie à mes projets
+            par la magie de la conception et du clean-code ✨
+          </p>
+          <br />
+          <p>
+            Auparavant musicien, j'ai préféré délaisser cette voie tant la
+            notoriété était pesante 🤥! Je continue cependant en amateur. La
+            pratique demande beaucoup de perséverance et de discipline.
+          </p>
+        </div>
+        <div class="presentation-droite">
+          <ul class="liste-presentation">
+            <h3>Une liste avec des chiffres et des mots cools :</h3>
+            <li class="item-liste i1">
+              <span class="chiffre-style">1.</span>
+              <p class="txt-liste">&nbsp;&nbsp;Front-end, UX / UI</p>
+            </li>
+            <li class="item-liste i2">
+              <span class="chiffre-style">2.</span>
+              <p class="txt-liste">&nbsp;&nbsp;Frameworks modernes</p>
+            </li>
+            <li class="item-liste i3">
+              <span class="chiffre-style">3.</span>
+              <p class="txt-liste">&nbsp;&nbsp;Agile et SCRUM</p>
+            </li>
 
-        <section class="accueil" id="accueil" data-spy>
-            <!-- <video autoplay muted loop id="topVideo">
-                <source src="./ressources/geometry.mp4" type="video/mp4" />
-            </video> -->
-            <!-- <img class="landing-bg" src="https://source.unsplash.com/random/1920x1080" alt="" /> -->
-            <h1>Bienvenue sur mon portfolio</h1>
-            <p class="txt-animation"></p>
-            <div>
-                <a href="#portfolio" class="btn-acc btn-acc1">Projets</a>
-                <a href="#experience" class="btn-acc btn-acc2">Experiences</a>
-            </div>
-
-            <div class="medias">
-                <a href="https://github.com/CptConi" target="blank">
-                    <div class="media media1">
-                        <img
-                            src="./ressources/github.svg"
-                            alt="Icone Github"
-                            class="icone-medias"
-                        /></div
-                ></a>
-                <a href="https://www.linkedin.com/in/nicolas-renard-035229157/" target="blank">
-                    <div class="media media2">
-                        <img
-                            src="./ressources/linkedin.svg"
-                            alt="Icone linkedin"
-                            class="icone-medias"
-                        /></div
-                ></a>
-                <a href="https://twitter.com/Nicolas05613268" target="blank">
-                    <div class="media media3">
-                        <img
-                            src="./ressources/twitter.svg"
-                            alt="Icone twitter"
-                            class="icone-medias"
-                        /></div
-                ></a>
-            </div>
-
-            <a href="#presentation">
-                <div class="btn-rond">
-                    <img
-                        src="./ressources/arrowDown.svg"
-                        alt="Logo fleche bas"
-                        class="logo-btn-rond-accueil"
-                    />
-                </div>
+            <li class="item-liste i4">
+              <span class="chiffre-style">4.</span>
+              <p class="txt-liste">&nbsp;&nbsp;Back-end et BDD</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <!-- PortFolio -->
+    <section class="portfolio" id="portfolio" data-spy>
+      <h2 class="titre-portfolio">Projets</h2>
+      <div class="container-portfolio">
+        <!-- PATRICK D ANDERNOS -->
+        <div class="item vague1">
+          <div class="cont-img-port">
+            <img
+              src="./ressources/section-portraits-min.jpg"
+              alt="Image portfolio"
+            />
+            <a
+              href="https://github.com/CptConi/Patrick-Renard-Website"
+              class="cont-img-port--git-link"
+            >
+              <img src="./ressources/github.svg" alt="Logo Github" />
             </a>
-        </section>
-        <!-- Présentation -->
-        <section class="presentation" id="presentation" data-spy>
-            <h2 class="titre-pres">Bonjour le monde ?</h2>
-            <div class="container-presentation">
-                <div class="fond-forme"></div>
-                <div class="presentation-gauche">
-                    <h3>
-                        Developpeur Web, je cherche constamment à améliorer mes connaissances
-                        <hr />
-                    </h3>
-                    <p>
-                        Après avoir suivi un cursus diplomant via les MOOC OpenClassrooms, j'ai
-                        donné vie à différents projets sous forme d'applications web.
-                    </p>
-                    <br />
-                    <p>
-                        Auparavant musicien, et ayant suivi des études de développement informatique
-                        axées developpement applicatif, je souhaite mettre à votre disposition ce
-                        mélange de sensibilité artistique et logique.
-                    </p>
-                </div>
-                <div class="presentation-droite">
-                    <ul class="liste-presentation">
-                        <li class="item-liste i1">
-                            <span class="chiffre-style">1.</span>
-                            <p class="txt-liste">&nbsp;&nbsp;Front-end, UX / UI</p>
-                        </li>
-                        <li class="item-liste i2">
-                            <span class="chiffre-style">2.</span>
-                            <p class="txt-liste">&nbsp;&nbsp;Angular et SPA</p>
-                        </li>
-                        <li class="item-liste i3">
-                            <span class="chiffre-style">3.</span>
-                            <p class="txt-liste">&nbsp;&nbsp;Agile et SCRUM</p>
-                        </li>
+          </div>
+          <div class="item-techno">
+            <img
+              src="./ressources/react-logo.svg"
+              alt="logo React.js"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/javascript-logo.svg"
+              alt="logo JavaScript"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/nodejs-logo.png"
+              alt="logo Node.js"
+              class="icon-techno"
+            />
+          </div>
+          <h3>Studio Photo</h3>
+          <p>
+            Une gallerie dévoilant l'univers d'un artiste photographe. Le site a
+            été d'abord développé en React avant d'être porté en Angular
+          </p>
+          <a href="http://patrickdandernos.fr/" class="btn-projet"
+            >Découvrez ce projet</a
+          >
+        </div>
 
-                        <li class="item-liste i4">
-                            <span class="chiffre-style">4.</span>
-                            <p class="txt-liste">&nbsp;&nbsp;Back-end et BDD</p>
-                        </li>
-                        <!-- <li class="item-liste i5">
-							<span class="chiffre-style">5.</span>
-							<p class="txt-liste">Trop de qualité, je pense que 4 suffiront, n'est-ce pas ?</p>
-						</li> -->
-                    </ul>
-                </div>
-            </div>
-        </section>
-        <!-- PortFolio -->
-        <section class="portfolio" id="portfolio" data-spy>
-            <h2 class="titre-portfolio">Projets</h2>
-            <div class="container-portfolio">
-                <!-- PATRICK D ANDERNOS -->
-                <div class="item vague1">
-                    <div class="cont-img-port">
-                        <img src="./ressources/section-portraits-min.jpg" alt="Image portfolio" />
-                        <a
-                            href="https://github.com/CptConi/Patrick-Renard-Website"
-                            class="cont-img-port--git-link"
-                        >
-                            <img src="./ressources/github.svg" alt="Logo Github" />
-                        </a>
-                    </div>
-                    <div class="item-techno">
-                        <img
-                            src="./ressources/react-logo.svg"
-                            alt="logo React.js"
-                            class="icon-techno"
-                        />
-                        <img
-                            src="./ressources/javascript-logo.svg"
-                            alt="logo JavaScript"
-                            class="icon-techno"
-                        />
-                        <img
-                            src="./ressources/nodejs-logo.png"
-                            alt="logo Node.js"
-                            class="icon-techno"
-                        />
-                    </div>
-                    <h3>Studio Photo</h3>
-                    <p>
-                        Une gallerie permettant aux visiteurs de découvrir les univers proposés par
-                        cet artiste photographe. Spoiler alert: l'artiste en question est mon père.
-                    </p>
-                    <a href="http://patrickdandernos.fr/" class="btn-projet">Découvrez ce projet</a>
-                </div>
+        <!-- WHOS MORE TRENDY -->
+        <div class="item vague1">
+          <div class="cont-img-port">
+            <img
+              src="./ressources/trendy-projet.jpg"
+              alt="Miniature portfolio projet Who's More Trendy ?"
+            />
+            <a
+              href="https://github.com/CptConi/whos-more-trendy"
+              class="cont-img-port--git-link"
+            >
+              <img src="./ressources/github.svg" alt="Logo Github" />
+            </a>
+          </div>
+          <div class="item-techno">
+            <img
+              src="./ressources/Vue-logo.svg"
+              alt="logo Vue.js"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/javascript-logo.svg"
+              alt="logo JavaScript"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/nodejs-logo.png"
+              alt="logo Node.js"
+              class="icon-techno"
+            />
+          </div>
+          <h3>Who's More Trendy ?</h3>
+          <p>
+            Jeu basé sur les résultats Google Trends. À jouer à plusieurs. Utile
+            pour déterminer qui devra s'acquiter des corvées !
+          </p>
+          <a href="https://whos-more-trendy.vercel.app/" class="btn-projet"
+            >Découvrez ce projet</a
+          >
+        </div>
 
-                <!-- WHOS MORE TRENDY -->
-                <div class="item vague1">
-                    <div class="cont-img-port">
-                        <img
-                            src="./ressources/trendy-projet.jpg"
-                            alt="Miniature portfolio projet Who's More Trendy ?"
-                        />
-                        <a
-                            href="https://github.com/CptConi/whos-more-trendy"
-                            class="cont-img-port--git-link"
-                        >
-                            <img src="./ressources/github.svg" alt="Logo Github" />
-                        </a>
-                    </div>
-                    <div class="item-techno">
-                        <img
-                            src="./ressources/Vue-logo.svg"
-                            alt="logo Vue.js"
-                            class="icon-techno"
-                        />
-                        <img
-                            src="./ressources/javascript-logo.svg"
-                            alt="logo JavaScript"
-                            class="icon-techno"
-                        />
-                        <img
-                            src="./ressources/nodejs-logo.png"
-                            alt="logo Node.js"
-                            class="icon-techno"
-                        />
-                    </div>
-                    <h3>Who's More Trendy ?</h3>
-                    <p>
-                        Jeu basé sur les résultats Google Trends. À jouer à plusieurs. Utile pour
-                        déterminer qui devra s'acquiter des corvées !
-                    </p>
-                    <a href="https://whos-more-trendy.vercel.app/" class="btn-projet"
-                        >Découvrez ce projet</a
-                    >
-                </div>
-
-                <!-- FIREPIT -->
-                <div class="item vague1">
-                    <div class="cont-img-port">
-                        <img
-                            src="./ressources/firepit-projet.jpg"
-                            alt="Miniature portfolio projet Firepit"
-                        />
-                        <a
-                            href="https://github.com/CptConi/Projet7"
-                            class="cont-img-port--git-link"
-                        >
-                            <img src="./ressources/github.svg" alt="Logo Github" />
-                        </a>
-                    </div>
-                    <div class="item-techno">
-                        <img
-                            src="./ressources/Vue-logo.svg"
-                            alt="logo Vue.js"
-                            class="icon-techno"
-                        />
-                        <img
-                            src="./ressources/bootstrap-vue-logo.png"
-                            alt="logo Bootstrap-Vue"
-                            class="icon-techno"
-                        />
-                        <img
-                            src="./ressources/javascript-logo.svg"
-                            alt="logo JavaScript"
-                            class="icon-techno"
-                        />
-                        <img
-                            src="./ressources/nodejs-logo.png"
-                            alt="logo Node.js"
-                            class="icon-techno"
-                        />
-                    </div>
-                    <div class="container-content-portfolio">
-                        <h3>Firepit</h3>
-                        <p>
-                            Social Network à petite échelle pour intégration en entreprise. Venez
-                            vous assoir autour du feu.
-                        </p>
-                        <a href="https://projet7.vercel.app/" class="btn-projet"
-                            >Découvrez ce projet</a
-                        >
-                    </div>
-                </div>
-                <!-- INTERCEPTION POINT -->
-                <div class="item vague2">
-                    <div class="cont-img-port">
-                        <img src="./ressources/interceptionpoint.jpg" alt="Image portfolio" />
-                    </div>
-                    <div class="item-techno">
-                        <img src="./ressources/CSharplogo.svg" alt="logo C#" class="icon-techno" />
-                        <img
-                            src="./ressources/MonoGameLogo.svg"
-                            alt="logo Framework Monogame"
-                            class="icon-techno"
-                        />
-                    </div>
-                    <h3>Interception Point</h3>
-                    <p>
-                        Jeu développé dans le cadre d'une Game Jam de 2 semaines. Un party game
-                        inspiré du snake / tron de notre enfance à 4 joueurs max.
-                    </p>
-                    <a href="https://cptconi.itch.io/grid-gc-gj24" class="btn-projet"
-                        >Découvrez ce projet</a
-                    >
-                </div>
-                <!-- <div class="item vague2">
+        <!-- FIREPIT -->
+        <div class="item vague1">
+          <div class="cont-img-port">
+            <img
+              src="./ressources/firepit-projet.jpg"
+              alt="Miniature portfolio projet Firepit"
+            />
+            <a
+              href="https://github.com/CptConi/Projet7"
+              class="cont-img-port--git-link"
+            >
+              <img src="./ressources/github.svg" alt="Logo Github" />
+            </a>
+          </div>
+          <div class="item-techno">
+            <img
+              src="./ressources/Vue-logo.svg"
+              alt="logo Vue.js"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/bootstrap-vue-logo.png"
+              alt="logo Bootstrap-Vue"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/javascript-logo.svg"
+              alt="logo JavaScript"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/nodejs-logo.png"
+              alt="logo Node.js"
+              class="icon-techno"
+            />
+          </div>
+          <div class="container-content-portfolio">
+            <h3>Firepit</h3>
+            <p>
+              Social Network à petite échelle pour intégration en entreprise.
+              Venez vous assoir autour du feu.
+            </p>
+            <a href="https://projet7.vercel.app/" class="btn-projet"
+              >Découvrez ce projet</a
+            >
+          </div>
+        </div>
+        <!-- INTERCEPTION POINT -->
+        <div class="item vague2">
+          <div class="cont-img-port">
+            <img
+              src="./ressources/interceptionpoint.jpg"
+              alt="Image portfolio"
+            />
+          </div>
+          <div class="item-techno">
+            <img
+              src="./ressources/CSharplogo.svg"
+              alt="logo C#"
+              class="icon-techno"
+            />
+            <img
+              src="./ressources/MonoGameLogo.svg"
+              alt="logo Framework Monogame"
+              class="icon-techno"
+            />
+          </div>
+          <h3>Interception Point</h3>
+          <p>
+            Jeu développé dans le cadre d'une Game Jam de 2 semaines. Un party
+            game inspiré du snake / tron de notre enfance à 4 joueurs max.
+          </p>
+          <a href="https://cptconi.itch.io/grid-gc-gj24" class="btn-projet"
+            >Découvrez ce projet</a
+          >
+        </div>
+        <!-- <div class="item vague2">
 					<div class="cont-img-port">
 						<img src="./ressources/d3.jpg" alt="Image portfolio" class="grey-tint" />
 					</div>
@@ -372,185 +388,199 @@
 					<p>Projet à venir ...</p>
 					<a href="#" class="btn-projet">Découvrez ce projet</a>
 				</div> -->
+      </div>
+    </section>
+    <!-- Range -->
+    <section class="section-range" id="skills" data-spy>
+      <h2 class="titre-exp">Mes compétences</h2>
+      <div class="grille-skills">
+        <div class="range-container">
+          <p class="label-skill">React, Angular</p>
+          <div class="bar-skill b1"></div>
+          <div class="bar-bg"></div>
+        </div>
+        <div class="range-container">
+          <p class="label-skill">git</p>
+          <div class="bar-skill b2"></div>
+          <div class="bar-bg"></div>
+        </div>
+        <div class="range-container">
+          <p class="label-skill">Node.js et SQL</p>
+          <div class="bar-skill b3"></div>
+          <div class="bar-bg"></div>
+        </div>
+        <div class="range-container">
+          <p class="label-skill">SCRUM, Agilité</p>
+          <div class="bar-skill b4"></div>
+          <div class="bar-bg"></div>
+        </div>
+        <div class="range-container">
+          <p class="label-skill">JavaScript / TypeScript</p>
+          <div class="bar-skill b5"></div>
+          <div class="bar-bg"></div>
+        </div>
+        <div class="range-container">
+          <p class="label-skill smaller">Centrer une div sans Stack Overflow</p>
+          <div class="bar-skill b6"></div>
+          <div class="bar-bg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Experiences -->
+    <section class="travail-exp" id="experience" data-spy>
+      <h2 class="titre-travail-exp">Mes expériences</h2>
+      <div class="container-exp-travail">
+        <div class="vertical-bar">
+          <div class="circle-icon">
+            <img src="./ressources/guarani-logo.png" alt="Logo Mirane" />
+          </div>
+          <div class="circle-icon">
+            <img src="./ressources/mirane-logo.png" alt="Logo Mirane" />
+          </div>
+          <div class="circle-icon">
+            <img src="./ressources/equaline_logo.png" alt="Logo Equaline" />
+          </div>
+          <div class="circle-icon">
+            <img src="./ressources/amorim-logo.svg" alt="Logo Amorim" />
+          </div>
+          <div class="circle-icon">
+            <img src="./ressources/eurasie-logo.png" alt="Logo Eurasie" />
+          </div>
+        </div>
+        <div class="flex-container-bloc-exp">
+          <div class="bloc bloc4">
+            <div class="bloc-content">
+              <p class="titre-section-bloc">Guarani, 2022 - Aujourd'hui</p>
+              <p class="txt-section">
+                <i>Développeur Full stack React / Node.js</i><br />
+                Chez le client Elazur, en charge de la conception et
+                développement d'une solution SAAS from scratch pour monitorer,
+                gérer et optimiser le parkage de la flotte véhicule dans les
+                dépots pour le compte des transports genevois
+              </p>
             </div>
-        </section>
-        <!-- Range -->
-        <section class="section-range" id="skills" data-spy>
-            <h2 class="titre-exp">Mes compétences</h2>
-            <div class="grille-skills">
-                <div class="range-container">
-                    <p class="label-skill">Angular</p>
-                    <div class="bar-skill b1"></div>
-                    <div class="bar-bg"></div>
-                    <!-- <p class="number-skill">90%</p> -->
-                </div>
-                <div class="range-container">
-                    <p class="label-skill">JavaScript / TypeScript</p>
-                    <div class="bar-skill b2"></div>
-                    <div class="bar-bg"></div>
-                    <!-- <p class="number-skill">90%</p> -->
-                </div>
-                <div class="range-container">
-                    <p class="label-skill">React, Vue</p>
-                    <div class="bar-skill b3"></div>
-                    <div class="bar-bg"></div>
-                    <!-- <p class="number-skill">85%</p> -->
-                </div>
-                <div class="range-container">
-                    <p class="label-skill">SCRUM, Agilité</p>
-                    <div class="bar-skill b4"></div>
-                    <div class="bar-bg"></div>
-                    <!-- <p class="number-skill">80%</p> -->
-                </div>
-                <div class="range-container">
-                    <p class="label-skill">Back-end, BDD</p>
-                    <div class="bar-skill b5"></div>
-                    <div class="bar-bg"></div>
-                    <!-- <p class="number-skill">70%</p> -->
-                </div>
-                <div class="range-container">
-                    <p class="label-skill smaller">Centrer une div sans Stack Overflow</p>
-                    <div class="bar-skill b6"></div>
-                    <div class="bar-bg"></div>
-                    <!-- <p class="number-skill">75%</p> -->
-                </div>
+          </div>
+          <div class="bloc bloc3">
+            <div class="bloc-content">
+              <p class="titre-section-bloc">Mirane, 2021 - 2022</p>
+              <p class="txt-section">
+                <i>Développeur Concepteur d'application web Angular</i><br />
+                Au sein d'une équipe SCRUM, j'assure la mission de développeur
+                front-end. J'effectue de nombreuses tâches et garantie également
+                le bon fonctionnement du BI et big data Azure interne à
+                l'application
+              </p>
             </div>
-        </section>
-
-        <!-- Experiences -->
-        <section class="travail-exp" id="experience" data-spy>
-            <h2 class="titre-travail-exp">Mes expériences</h2>
-            <div class="container-exp-travail">
-                <div class="vertical-bar">
-                    <div class="circle-icon">
-                        <img src="./ressources/mirane-logo.png" alt="Logo Mirane" />
-                    </div>
-                    <div class="circle-icon">
-                        <img src="./ressources/equaline_logo.png" alt="Logo Equaline" />
-                    </div>
-                    <div class="circle-icon">
-                        <img src="./ressources/amorim-logo.svg" alt="Logo Amorim" />
-                    </div>
-                    <div class="circle-icon">
-                        <img src="./ressources/eurasie-logo.png" alt="Logo Eurasie" />
-                    </div>
-                </div>
-                <div class="flex-container-bloc-exp">
-                    <div class="bloc bloc0">
-                        <div class="bloc-content">
-                            <p class="titre-section-bloc">Mirane, 2021 - Aujourd'hui</p>
-                            <p class="txt-section">
-                                <i>Développeur Concepteur d'application web Angular</i><br />
-                                Au sein d'une équipe SCRUM, j'assure la mission de développeur
-                                front-end. J'effectue de nombreuses tâches et garantie également le
-                                bon fonctionnement du BI et big data Azure interne à l'application
-                            </p>
-                        </div>
-                    </div>
-                    <div class="bloc bloc1">
-                        <div class="bloc-content">
-                            <p class="titre-section-bloc">Equaline, 2016 - 2020</p>
-                            <p class="txt-section">
-                                <i>Conseiller Multimedia</i><br />
-                                Equaline est un centre d'appel affilié au FAI Free. J'y ai effectué
-                                de nombreuses missions à différents postes : hotline technique
-                                niveau 1 et 2, gestion litiges et résiliations, animation d'ateliers
-                                formation ainsi que référent métier.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="bloc bloc2">
-                        <div class="bloc-content">
-                            <p class="titre-section-bloc">Amorim, 2014</p>
-                            <p class="txt-section">
-                                <i>Opérateur logistique </i><br />
-                                Réception, contrôle et organisation du stock distribution des
-                                matières premières aux ateliers de fabrication.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="bloc bloc3">
-                        <div class="bloc-content">
-                            <p class="titre-section-bloc">Eurasie, 2011 - 2014</p>
-                            <p class="txt-section">
-                                <i>Employé logistique polyvalent </i><br />
-                                Gestion de stocks, gestion des entrepôts déportés et des flux
-                                logistiques avec la zone de stockage principale, accueil et conseil
-                                client, chef du secteur alimentaire frais et surgelé, formateur.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+          </div>
+          <div class="bloc bloc2">
+            <div class="bloc-content">
+              <p class="titre-section-bloc">Equaline, 2016 - 2020</p>
+              <p class="txt-section">
+                <i>Conseiller Multimedia</i><br />
+                Equaline est un centre d'appel affilié au FAI Free. J'y ai
+                effectué de nombreuses missions à différents postes : hotline
+                technique niveau 1 et 2, gestion litiges et résiliations,
+                animation d'ateliers formation ainsi que référent métier.
+              </p>
             </div>
-        </section>
-
-        <!-- Passions -->
-        <section class="passion" id="passion" data-spy>
-            <h2 class="passion-section-titre">Mes passions</h2>
-
-            <div class="container-passion">
-                <div class="bloc-passion bloc-passion1">
-                    <div class="container-gauche-passion">
-                        <img
-                            src="./ressources/joystick.svg"
-                            alt="Image Gamepad"
-                            class="img-passion img-passion1"
-                        />
-                        <h3 class="titre-passion">Gaming</h3>
-                    </div>
-                    <p class="txt-passion">
-                        Je suis tombé dedans quand j'étais petit. Il s'agit pour moi d'un art au
-                        même titre que le cinéma ou la musique.
-                    </p>
-                </div>
-
-                <div class="bloc-passion bloc-passion2">
-                    <div class="container-gauche-passion">
-                        <img
-                            src="./ressources/guitar.svg"
-                            alt="Image guitare"
-                            class="img-passion img-passion2"
-                        />
-                        <h3 class="titre-passion">Guitare</h3>
-                    </div>
-                    <p class="txt-passion">
-                        Je la pratique depuis plus de 15 ans maintenant. <br />
-                        Avec un penchant affirmé pour le rock metal.
-                    </p>
-                </div>
-
-                <div class="bloc-passion bloc-passion3">
-                    <div class="container-gauche-passion">
-                        <img
-                            src="./ressources/cooking.svg"
-                            alt="Image chapeau de chef cuisinier"
-                            class="img-passion img-passion3"
-                        />
-                        <h3 class="titre-passion">Cuisine</h3>
-                    </div>
-                    <p class="txt-passion">
-                        Passion découverte il y a peu, mais elle mérite sa place dans ce top, tant
-                        elle apporte chaleur et réconfort.
-                        <br />
-                        Surtout quand on mange le résultat.
-                    </p>
-                </div>
+          </div>
+          <div class="bloc bloc1">
+            <div class="bloc-content">
+              <p class="titre-section-bloc">Amorim, 2014</p>
+              <p class="txt-section">
+                <i>Opérateur logistique </i><br />
+                Réception, contrôle et organisation du stock distribution des
+                matières premières aux ateliers de fabrication.
+              </p>
             </div>
-        </section>
+          </div>
+          <div class="bloc bloc0">
+            <div class="bloc-content">
+              <p class="titre-section-bloc">Eurasie, 2011 - 2014</p>
+              <p class="txt-section">
+                <i>Employé logistique polyvalent </i><br />
+                Gestion de stocks, gestion des entrepôts déportés et des flux
+                logistiques avec la zone de stockage principale, accueil et
+                conseil client, chef du secteur alimentaire frais et surgelé,
+                formateur.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <!-- parallax -->
-        <section class="parallax" id="#parallax">
-            <p class="txt-par"><span id="nb-tasses"></span> Tasses de café</p>
-            <p class="txt-par"><span id="nb-projets">4</span> Projets</p>
-        </section>
+    <!-- Passions -->
+    <section class="passion" id="passion" data-spy>
+      <h2 class="passion-section-titre">Mes passions</h2>
 
-        <!-- Contact -->
-        <section class="section-contact" id="contact" data-spy>
-            <h2 class="contact__title"><strong>Contactez</strong>-moi !</h2>
-            <a href="mailto:nicolas.renard.33@gmail.com" target="_blank" class="contact__sendmail"
-                ><img src="./ressources/email.svg" alt="Logo svg email"
-            /></a>
-            <!-- <div class="container-form">
+      <div class="container-passion">
+        <div class="bloc-passion bloc-passion1">
+          <div class="container-gauche-passion">
+            <img
+              src="./ressources/joystick.svg"
+              alt="Image Gamepad"
+              class="img-passion img-passion1"
+            />
+            <h3 class="titre-passion">Gaming</h3>
+          </div>
+          <p class="txt-passion">
+            Je suis tombé dedans quand j'étais petit. Il s'agit pour moi d'un
+            art au même titre que le cinéma ou la musique.
+          </p>
+        </div>
+
+        <div class="bloc-passion bloc-passion2">
+          <div class="container-gauche-passion">
+            <img
+              src="./ressources/guitar.svg"
+              alt="Image guitare"
+              class="img-passion img-passion2"
+            />
+            <h3 class="titre-passion">Guitare</h3>
+          </div>
+          <p class="txt-passion">
+            Je la pratique depuis plus de 15 ans maintenant. <br />
+            Avec un penchant affirmé pour le rock metal.
+          </p>
+        </div>
+
+        <div class="bloc-passion bloc-passion3">
+          <div class="container-gauche-passion">
+            <img
+              src="./ressources/cooking.svg"
+              alt="Image chapeau de chef cuisinier"
+              class="img-passion img-passion3"
+            />
+            <h3 class="titre-passion">Cuisine</h3>
+          </div>
+          <p class="txt-passion">
+            Passion découverte il y a peu, mais elle mérite sa place dans ce
+            top, tant elle apporte chaleur et réconfort.
+            <br />
+            Surtout quand on mange le résultat.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- parallax -->
+    <section class="parallax" id="#parallax">
+      <p class="txt-par"><span id="nb-tasses"></span> Tasses de café</p>
+      <p class="txt-par"><span id="nb-projets">4</span> Projets</p>
+    </section>
+
+    <!-- Contact -->
+    <section class="section-contact" id="contact" data-spy>
+      <h2 class="contact__title"><strong>Contactez</strong>-moi !</h2>
+      <a
+        href="mailto:nicolas.renard.33@gmail.com"
+        target="_blank"
+        class="contact__sendmail"
+        ><img src="./ressources/email.svg" alt="Logo svg email"
+      /></a>
+      <!-- <div class="container-form">
 				<form class="form-bloc">
 					<div class="form-group">
 						<label for="prenom">Prénom</label>
@@ -570,25 +600,28 @@
 					</div>
 				</form>
 			</div> -->
-        </section>
-        <footer>
-            Tous droits réservés &copy; Nicolas Renard
-            <br />
-            Icons made by
-            <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from
-            <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
-        </footer>
-        <!-- Typewriter -->
-        <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
-        <!-- ScrollMagic -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js"></script>
-        <!-- GSAP -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/animation.gsap.min.js"></script>
-        <!-- Add-Indicator -->
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/debug.addIndicators.min.js"></script> -->
-        <!-- Greensock -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
-        <!-- App.js -->
-        <script src="./app.js"></script>
-    </body>
+    </section>
+    <footer>
+      Tous droits réservés &copy; Nicolas Renard
+      <br />
+      Icons made by
+      <a href="https://www.flaticon.com/authors/freepik" title="Freepik"
+        >Freepik</a
+      >
+      from
+      <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
+    </footer>
+    <!-- Typewriter -->
+    <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+    <!-- ScrollMagic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/ScrollMagic.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/animation.gsap.min.js"></script>
+    <!-- Add-Indicator -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.7/plugins/debug.addIndicators.min.js"></script> -->
+    <!-- Greensock -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
+    <!-- App.js -->
+    <script src="./app.js"></script>
+  </body>
 </html>
