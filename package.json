@@ -1,15 +1,16 @@
 {
-	"name": "portfolio",
-	"version": "1.0.0",
-	"description": "",
-	"main": "app.js",
-	"dependencies": {
-		"sass": "^1.26.11"
-	},
-	"devDependencies": {},
-	"scripts": {
-		"sass": "sass --watch ./style.scss ./style.css"
-	},
-	"author": "",
-	"license": "ISC"
+  "name": "portfolio-doom",
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Portfolio FPS Doom-style de Nicolas Renard",
+  "author": "Nicolas Renard",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.11"
+  }
 }

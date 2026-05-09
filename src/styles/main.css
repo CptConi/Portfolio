@@ -1,0 +1,317 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --doom-green: #00ff41;
+  --doom-red: #ff2200;
+  --doom-dark: #0a0a0a;
+  --doom-gray: #1a1a1a;
+  --hud-height: 96px;
+  --font: 'Press Start 2P', monospace;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: var(--font);
+  color: #ccc;
+}
+
+/* ── Start Screen ── */
+#start-screen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #000;
+  cursor: pointer;
+  z-index: 100;
+  gap: 24px;
+}
+
+.start-title {
+  font-size: clamp(18px, 4vw, 36px);
+  color: var(--doom-red);
+  text-shadow: 0 0 20px var(--doom-red), 0 0 40px #ff000066;
+  text-align: center;
+  line-height: 2;
+}
+
+.start-sub {
+  font-size: clamp(8px, 1.5vw, 12px);
+  color: var(--doom-green);
+  animation: blink 1s step-end infinite;
+  text-align: center;
+}
+
+.start-controls {
+  font-size: clamp(6px, 1.2vw, 9px);
+  color: #666;
+  text-align: center;
+  line-height: 2.5;
+}
+
+/* ── Game Container ── */
+#game-container {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+}
+
+#game-canvas {
+  flex: 1;
+  width: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: crosshair;
+}
+
+/* ── HUD ── */
+#hud {
+  height: var(--hud-height);
+  background: var(--doom-gray);
+  border-top: 3px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hud-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.hud-label {
+  font-size: 7px;
+  color: #555;
+  letter-spacing: 2px;
+}
+
+.hud-value {
+  font-size: 16px;
+  color: var(--doom-green);
+}
+
+.hud-health { color: var(--doom-green); }
+
+.hud-keys-value {
+  font-size: 7px;
+  color: #888;
+  line-height: 2;
+}
+
+.hud-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-face {
+  border: 2px solid #444;
+  background: #111;
+  padding: 2px;
+  image-rendering: pixelated;
+}
+
+.hud-name {
+  font-size: 8px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.hud-title {
+  font-size: 6px;
+  color: var(--doom-green);
+  letter-spacing: 2px;
+}
+
+#hud-interact-prompt {
+  position: absolute;
+  bottom: calc(var(--hud-height) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  color: #ffdd00;
+  background: #00000099;
+  padding: 8px 16px;
+  border: 1px solid #ffdd0055;
+  white-space: nowrap;
+  animation: blink 0.8s step-end infinite;
+}
+
+/* ── Crosshair ── */
+#game-container::after {
+  content: '+';
+  position: absolute;
+  top: calc(50% - var(--hud-height) / 2);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: monospace;
+  font-size: 20px;
+  color: rgba(255,255,255,0.4);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Room Overlay ── */
+#room-overlay {
+  position: fixed; inset: 0;
+  background: #000000cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.overlay-inner {
+  background: #0a0a0a;
+  border: 2px solid;
+  padding: 24px;
+  max-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.overlay-header {
+  font-size: clamp(8px, 1.5vw, 12px);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 3px;
+}
+
+.overlay-scanline { opacity: 0.4; }
+
+.overlay-close {
+  font-size: 7px;
+  text-align: center;
+  margin-bottom: 24px;
+  opacity: 0.6;
+  letter-spacing: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+.overlay-content { display: flex; flex-direction: column; gap: 16px; }
+
+/* Skills */
+.skill-category { margin-bottom: 12px; }
+
+.skill-cat-title {
+  font-size: 8px;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.skill-items { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.skill-chip {
+  font-size: 7px;
+  padding: 4px 8px;
+  border: 1px solid;
+  letter-spacing: 1px;
+}
+
+/* Projects */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.project-card {
+  border: 1px solid;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-name { font-size: 10px; letter-spacing: 2px; }
+
+.project-meta { font-size: 6px; color: #666; line-height: 2; }
+
+.project-desc { font-size: 7px; color: #aaa; line-height: 2; }
+
+.project-stack { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.stack-tag {
+  font-size: 6px;
+  padding: 2px 6px;
+  background: #1a1a1a;
+  color: #888;
+  border: 1px solid #333;
+}
+
+.project-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.proj-tag { font-size: 6px; }
+
+.project-link {
+  font-size: 7px;
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+.project-link:hover { text-decoration: underline; }
+
+/* Passions */
+.passions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.passion-card {
+  border: 1px solid;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.passion-icon { font-size: 32px; }
+
+.passion-name { font-size: 9px; letter-spacing: 2px; }
+
+.passion-desc { font-size: 7px; color: #aaa; line-height: 2; }
+
+.passion-details {
+  list-style: none;
+  font-size: 6px;
+  color: #666;
+  line-height: 2.5;
+  text-align: left;
+  width: 100%;
+}
+
+/* ── Animations ── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Scanlines overlay */
+#game-container::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 var(--hud-height) 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
