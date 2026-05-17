@@ -1,135 +1,227 @@
-import { castRay } from './Raycaster.js';
+import * as THREE from 'three';
 import { MAP, MAP_WIDTH, MAP_HEIGHT } from './Map.js';
+import { PROPS3D } from './Props3D.js';
 
 const INTERNAL_W = 640;
 const INTERNAL_H = 360;
 
-// Distance-based brightness falloff
-function applyFog(r, g, b, dist, side) {
-  const fog = Math.max(0, 1 - dist * 0.12);
-  const sideDim = side === 1 ? 0.65 : 1.0;
-  return [
-    Math.floor(r * fog * sideDim),
-    Math.floor(g * fog * sideDim),
-    Math.floor(b * fog * sideDim),
-  ];
-}
+// Horizontal FOV = π/3 → convert to vertical FOV for Three.js
+const H_FOV    = Math.PI / 3;
+const ASPECT   = INTERNAL_W / INTERNAL_H;
+const V_FOV_DEG = 2 * Math.atan(Math.tan(H_FOV / 2) / ASPECT) * (180 / Math.PI);
 
 export class Renderer {
   constructor(canvas, textures) {
-    this.canvas = canvas;
-    this.canvas.width = INTERNAL_W;
-    this.canvas.height = INTERNAL_H;
-    this.ctx = canvas.getContext('2d');
-    this.textures = textures;
-    this.imgData = this.ctx.createImageData(INTERNAL_W, INTERNAL_H);
-    this.buf = this.imgData.data;
+    this._tex = textures;
+
+    // ── WebGL renderer ───────────────────────────────────────────────────
+    this._renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+    this._renderer.setSize(INTERNAL_W, INTERNAL_H, false);
+    this._renderer.setPixelRatio(1);
+
+    // ── Camera ───────────────────────────────────────────────────────────
+    this._camera = new THREE.PerspectiveCamera(V_FOV_DEG, ASPECT, 0.05, 50);
+    this._camera.position.y = 0.5;
+
+    // ── Scene ────────────────────────────────────────────────────────────
+    this._scene = new THREE.Scene();
+    this._scene.background = new THREE.Color(0x000000);
+    this._scene.fog = new THREE.Fog(0x000000, 2, 14);
+
+    // ── Minimap overlay canvas ────────────────────────────────────────────
+    const mm = document.createElement('canvas');
+    mm.width  = MAP_WIDTH  * 6;
+    mm.height = MAP_HEIGHT * 6;
+    Object.assign(mm.style, {
+      position: 'absolute', top: '4px', right: '4px',
+      imageRendering: 'pixelated', pointerEvents: 'none',
+    });
+    canvas.parentElement.appendChild(mm);
+    this._mm    = mm;
+    this._mmCtx = mm.getContext('2d');
+
+    this._buildScene();
   }
 
-  setPixel(x, y, r, g, b) {
-    const i = (y * INTERNAL_W + x) * 4;
-    this.buf[i]   = r;
-    this.buf[i+1] = g;
-    this.buf[i+2] = b;
-    this.buf[i+3] = 255;
+  // ── Scene construction ─────────────────────────────────────────────────
+
+  _buildScene() {
+    this._buildFloorCeiling();
+    this._buildWalls();
+    this._buildProps();
   }
 
-  drawCeilingFloor() {
-    const halfH = INTERNAL_H >> 1;
-    for (let y = 0; y < INTERNAL_H; y++) {
-      const isCeiling = y < halfH;
-      // gradient: darker at top/bottom, slightly lighter at horizon
-      const distFromHorizon = Math.abs(y - halfH) / halfH;
-      if (isCeiling) {
-        const v = Math.floor(12 + distFromHorizon * 8);
-        for (let x = 0; x < INTERNAL_W; x++) this.setPixel(x, y, v, v, v + 8);
-      } else {
-        const v = Math.floor(8 + distFromHorizon * 16);
-        for (let x = 0; x < INTERNAL_W; x++) this.setPixel(x, y, v, v - 2, v - 4);
+  _buildFloorCeiling() {
+    const tex = this._tex;
+
+    // Floor
+    const floorGeo = new THREE.PlaneGeometry(MAP_WIDTH, MAP_HEIGHT)
+      .rotateX(-Math.PI / 2);
+    this._scene.add(new THREE.Mesh(
+      floorGeo,
+      new THREE.MeshBasicMaterial({ map: tex.tiled(40, MAP_WIDTH, MAP_HEIGHT) })
+    ).translateX(MAP_WIDTH / 2).translateZ(MAP_HEIGHT / 2));
+
+    // Ceiling base
+    const ceilGeo = new THREE.PlaneGeometry(MAP_WIDTH, MAP_HEIGHT)
+      .rotateX(Math.PI / 2);
+    const ceil = new THREE.Mesh(
+      ceilGeo,
+      new THREE.MeshBasicMaterial({ map: tex.tiled(41, MAP_WIDTH, MAP_HEIGHT), color: 0x999999 })
+    );
+    ceil.position.set(MAP_WIDTH / 2, 1, MAP_HEIGHT / 2);
+    this._scene.add(ceil);
+
+    // Ceiling light panels (InstancedMesh — one quad per panel)
+    const lightPos = [];
+    for (let my = 0; my < MAP_HEIGHT; my++) {
+      for (let mx = 0; mx < MAP_WIDTH; mx++) {
+        if (MAP[my][mx] === 0 && mx % 4 === 1 && my % 4 === 1) {
+          lightPos.push(mx + 0.5, my + 0.5);
+        }
       }
+    }
+    if (lightPos.length) {
+      const count   = lightPos.length / 2;
+      const lightGeo = new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2);
+      const lightMat = new THREE.MeshBasicMaterial({ map: tex.get(42) });
+      const lightMesh = new THREE.InstancedMesh(lightGeo, lightMat, count);
+      const dummy = new THREE.Object3D();
+      for (let i = 0; i < count; i++) {
+        dummy.position.set(lightPos[i * 2], 1.002, lightPos[i * 2 + 1]);
+        dummy.updateMatrix();
+        lightMesh.setMatrixAt(i, dummy.matrix);
+      }
+      lightMesh.instanceMatrix.needsUpdate = true;
+      this._scene.add(lightMesh);
     }
   }
 
-  drawWalls(player) {
-    const halfH = INTERNAL_H >> 1;
-    for (let col = 0; col < INTERNAL_W; col++) {
-      const rayAngle = player.angle - player.fov / 2 + (col / INTERNAL_W) * player.fov;
-      const hit = castRay(player.x, player.y, rayAngle);
+  _buildWalls() {
+    // Collect faces per texId — each face: {x, z, rotY, dim}
+    const groups = new Map(); // texId → [{x, z, rotY, dim}]
 
-      const lineH = Math.min(INTERNAL_H, Math.floor(INTERNAL_H / Math.max(hit.perpWallDist, 0.01)));
-      const drawStart = halfH - (lineH >> 1);
-      const drawEnd   = halfH + (lineH >> 1);
+    const addFace = (texId, x, z, rotY, dim) => {
+      if (!groups.has(texId)) groups.set(texId, []);
+      groups.get(texId).push({ x, z, rotY, dim });
+    };
 
-      const texX = Math.floor(hit.wallX * 64);
-
-      for (let row = drawStart; row < drawEnd; row++) {
-        if (row < 0 || row >= INTERNAL_H) continue;
-        const texY = Math.floor(((row - drawStart) / lineH) * 64);
-        const [r, g, b] = this.textures.getPixel(hit.wallType, texX, texY);
-        const [fr, fg, fb] = applyFog(r, g, b, hit.perpWallDist, hit.side);
-        this.setPixel(col, row, fr, fg, fb);
-      }
-    }
-  }
-
-  drawMinimap(player) {
-    const scale = 6;
-    const offX = INTERNAL_W - MAP_WIDTH * scale - 4;
-    const offY = 4;
+    // Determine texture for a wall face from the open-side neighbor
+    const faceTexId = (mx, my, neighborVal) => {
+      if (neighborVal >= 2 && neighborVal <= 4) return neighborVal; // room-themed face
+      return 20 + ((mx * 7 + my * 13) % 14);                      // GRAYT variant
+    };
 
     for (let my = 0; my < MAP_HEIGHT; my++) {
       for (let mx = 0; mx < MAP_WIDTH; mx++) {
-        const cell = MAP[my][mx];
-        let r, g, b;
-        switch (cell) {
-          case 0: r = 40;  g = 40;  b = 40;  break;
-          case 1: r = 120; g = 100; b = 80;  break;
-          case 2: r = 20;  g = 120; b = 20;  break;
-          case 3: r = 140; g = 80;  b = 20;  break;
-          case 4: r = 100; g = 20;  b = 160; break;
-          default: r = g = b = 0;
-        }
-        for (let dy = 0; dy < scale - 1; dy++) {
-          for (let dx = 0; dx < scale - 1; dx++) {
-            const px = offX + mx * scale + dx;
-            const py = offY + my * scale + dy;
-            if (px >= 0 && px < INTERNAL_W && py >= 0 && py < INTERNAL_H) {
-              this.setPixel(px, py, r, g, b);
-            }
-          }
-        }
+        if (MAP[my][mx] !== 1) continue; // only solid walls get geometry
+
+        const nE = MAP[my][mx + 1] ?? -1;
+        const nW = MAP[my][mx - 1] ?? -1;
+        const nS = MAP[my + 1]?.[mx] ?? -1;
+        const nN = MAP[my - 1]?.[mx] ?? -1;
+
+        // East face (normal +X, bright)
+        if (nE === 0 || nE >= 2)
+          addFace(faceTexId(mx, my, nE), mx + 1, my + 0.5,  Math.PI / 2,  1.0);
+        // West face (normal -X, bright)
+        if (nW === 0 || nW >= 2)
+          addFace(faceTexId(mx, my, nW), mx,     my + 0.5, -Math.PI / 2,  1.0);
+        // South face (normal +Z, dim)
+        if (nS === 0 || nS >= 2)
+          addFace(faceTexId(mx, my, nS), mx + 0.5, my + 1,  0,            0.65);
+        // North face (normal -Z, dim)
+        if (nN === 0 || nN >= 2)
+          addFace(faceTexId(mx, my, nN), mx + 0.5, my,      Math.PI,      0.65);
+      }
+    }
+
+    const wallGeo = new THREE.PlaneGeometry(1, 1);
+    const dummy   = new THREE.Object3D();
+    const col     = new THREE.Color();
+
+    for (const [texId, faces] of groups) {
+      const mat  = new THREE.MeshBasicMaterial({ map: this._tex.get(texId) });
+      const mesh = new THREE.InstancedMesh(wallGeo, mat, faces.length);
+
+      faces.forEach(({ x, z, rotY, dim }, i) => {
+        dummy.position.set(x, 0.5, z);
+        dummy.rotation.set(0, rotY, 0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        col.setScalar(dim);
+        mesh.setColorAt(i, col);
+      });
+
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.needsUpdate  = true;
+      this._scene.add(mesh);
+    }
+  }
+
+  _buildProps() {
+    const dummy = new THREE.Object3D();
+    const col   = new THREE.Color();
+
+    for (const prop of PROPS3D) {
+      const sideMat = new THREE.MeshBasicMaterial({ map: this._tex.get(prop.texSide) });
+      const topMat  = new THREE.MeshBasicMaterial({ map: this._tex.get(prop.texTop ?? prop.texSide) });
+
+      // BoxGeometry face order: +X,-X,+Y,-Y,+Z,-Z
+      const mats = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(prop.w, prop.h, prop.d),
+        mats
+      );
+      mesh.position.set(prop.x, prop.h / 2, prop.y);
+      this._scene.add(mesh);
+    }
+  }
+
+  // ── Minimap ────────────────────────────────────────────────────────────
+
+  _drawMinimap(player) {
+    const ctx   = this._mmCtx;
+    const scale = 6;
+    const COLORS = { 0: '#282828', 1: '#786450', 2: '#147814', 3: '#8C5014', 4: '#6414A0' };
+
+    ctx.clearRect(0, 0, this._mm.width, this._mm.height);
+
+    for (let my = 0; my < MAP_HEIGHT; my++) {
+      for (let mx = 0; mx < MAP_WIDTH; mx++) {
+        ctx.fillStyle = COLORS[MAP[my][mx]] ?? '#000';
+        ctx.fillRect(mx * scale, my * scale, scale - 1, scale - 1);
       }
     }
 
     // Player dot
-    const pdx = offX + Math.floor(player.x * scale);
-    const pdy = offY + Math.floor(player.y * scale);
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        const px = pdx + dx, py = pdy + dy;
-        if (px >= 0 && px < INTERNAL_W && py >= 0 && py < INTERNAL_H) {
-          this.setPixel(px, py, 255, 0, 0);
-        }
-      }
-    }
+    const px = Math.floor(player.x * scale);
+    const py = Math.floor(player.y * scale);
+    ctx.fillStyle = '#FF0000';
+    ctx.fillRect(px - 1, py - 1, 3, 3);
 
-    // Direction indicator
-    const dlen = 4;
-    const fx = Math.cos(player.angle);
-    const fy = Math.sin(player.angle);
-    for (let i = 0; i < dlen; i++) {
-      const px = pdx + Math.round(fx * i);
-      const py = pdy + Math.round(fy * i);
-      if (px >= 0 && px < INTERNAL_W && py >= 0 && py < INTERNAL_H) {
-        this.setPixel(px, py, 255, 255, 0);
-      }
+    // Direction arrow
+    ctx.fillStyle = '#FFFF00';
+    for (let i = 1; i < 5; i++) {
+      ctx.fillRect(
+        px + Math.round(Math.cos(player.angle) * i),
+        py + Math.round(Math.sin(player.angle) * i),
+        1, 1
+      );
     }
   }
 
+  // ── Render loop ────────────────────────────────────────────────────────
+
   render(player) {
-    this.drawCeilingFloor();
-    this.drawWalls(player);
-    this.drawMinimap(player);
-    this.ctx.putImageData(this.imgData, 0, 0);
+    this._camera.position.set(player.x, 0.5, player.y);
+    this._camera.lookAt(
+      player.x + Math.cos(player.angle),
+      0.5,
+      player.y + Math.sin(player.angle)
+    );
+
+    this._renderer.render(this._scene, this._camera);
+    this._drawMinimap(player);
   }
 }
