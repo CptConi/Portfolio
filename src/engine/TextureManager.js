@@ -33,6 +33,16 @@ const SOURCES = {
   40: '/textures/FLOOR78.png',
   41: '/textures/CNCRT1.png',
   42: '/textures/TLITE5_2.png',
+  // Props
+  50: '/textures/COMPCT01.png',  // control panel tech (skills)
+  51: '/textures/LOCKER01.png',  // lockers (skills)
+  52: '/textures/SHAWNT02.png',  // sci-fi panel variant (projects)
+  53: '/textures/DARKB01.png',   // dark industrial (passions)
+  54: '/textures/SILVCOMP.png',  // silver terminal (skills)
+  55: '/textures/WOODB01.png',   // wooden crate
+  56: '/textures/METALT1.png',   // metal top surface
+  57: '/textures/BRNZGRN1.png',  // bronze-green (passions)
+  58: '/textures/COMPSP01.png',  // computer panel variant (skills)
 };
 
 const loader = new THREE.TextureLoader();

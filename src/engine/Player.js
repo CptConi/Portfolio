@@ -1,8 +1,23 @@
 import { isWall } from './Map.js';
+import { PROPS3D } from './Props3D.js';
 
 const MOVE_SPEED = 0.05;
 const ROT_SPEED = 0.04;
 const COLLISION_MARGIN = 0.2;
+
+// Expanded AABBs for prop collision — computed once at load
+const PROP_AABBS = PROPS3D.map(p => ({
+  minX: p.x - p.w / 2 - COLLISION_MARGIN,
+  maxX: p.x + p.w / 2 + COLLISION_MARGIN,
+  minZ: p.y - p.d / 2 - COLLISION_MARGIN,
+  maxZ: p.y + p.d / 2 + COLLISION_MARGIN,
+}));
+
+function hitsProp(x, z) {
+  for (const b of PROP_AABBS)
+    if (x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ) return true;
+  return false;
+}
 
 export class Player {
   constructor() {
@@ -40,7 +55,7 @@ export class Player {
   _move(dx, dy) {
     const nx = this.x + dx;
     const ny = this.y + dy;
-    if (!isWall(nx + Math.sign(dx) * COLLISION_MARGIN, this.y)) this.x = nx;
-    if (!isWall(this.x, ny + Math.sign(dy) * COLLISION_MARGIN)) this.y = ny;
+    if (!isWall(nx + Math.sign(dx) * COLLISION_MARGIN, this.y) && !hitsProp(nx, this.y)) this.x = nx;
+    if (!isWall(this.x, ny + Math.sign(dy) * COLLISION_MARGIN) && !hitsProp(this.x, ny)) this.y = ny;
   }
 }
