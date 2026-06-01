@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MAP, MAP_WIDTH, MAP_HEIGHT } from './Map.js';
 import { PROPS3D } from './Props3D.js';
+import { buildDecor } from './Decor.js';
 
 const INTERNAL_W = 640;
 const INTERNAL_H = 360;
@@ -26,7 +27,7 @@ export class Renderer {
     // ── Scene ────────────────────────────────────────────────────────────
     this._scene = new THREE.Scene();
     this._scene.background = new THREE.Color(0x000000);
-    this._scene.fog = new THREE.Fog(0x000000, 2, 14);
+    this._scene.fog = new THREE.Fog(0x000000, 2, 18);
 
     // ── Minimap overlay canvas ────────────────────────────────────────────
     const mm = document.createElement('canvas');
@@ -49,6 +50,7 @@ export class Renderer {
     this._buildFloorCeiling();
     this._buildWalls();
     this._buildProps();
+    buildDecor(this._scene);
   }
 
   _buildFloorCeiling() {
