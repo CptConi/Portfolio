@@ -2,3 +2,8 @@ node_modules/
 dist/
 .DS_Store
 *.local
+
+# Raw WAD extraction dirs — textures already copied into public/
+wad-freedoom/
+wad-assets/
+wad-textures/
