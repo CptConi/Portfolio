@@ -213,13 +213,21 @@ export class Renderer {
 
   // ── Render loop ────────────────────────────────────────────────────────
 
-  render(player) {
-    this._camera.position.set(player.x, 0.5, player.y);
-    this._camera.lookAt(
-      player.x + Math.cos(player.angle),
-      0.5,
-      player.y + Math.sin(player.angle)
-    );
+  get scene() { return this._scene; }
+
+  render(player, camOverride = null) {
+    if (camOverride) {
+      const { pos, target } = camOverride;
+      this._camera.position.set(pos.x, pos.y, pos.z);
+      this._camera.lookAt(target.x, target.y, target.z);
+    } else {
+      this._camera.position.set(player.x, 0.5, player.y);
+      this._camera.lookAt(
+        player.x + Math.cos(player.angle),
+        0.5,
+        player.y + Math.sin(player.angle)
+      );
+    }
 
     this._renderer.render(this._scene, this._camera);
     this._drawMinimap(player);

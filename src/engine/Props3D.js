@@ -25,8 +25,7 @@ export const PROPS3D = [
   { x: 3.00,  y: 16.78, w: 1.60, d: 0.42, h: 0.34, texSide: 2,  texTop: 56 },
   { x: 5.50,  y: 16.75, w: 0.65, d: 0.65, h: 0.65, texSide: 55 },
   { x: 7.50,  y: 16.78, w: 0.45, d: 0.38, h: 0.88, texSide: 54 },
-  // West wall — lab bench
-  { x: 1.28,  y: 15.00, w: 0.28, d: 0.90, h: 0.38, texSide: 5,  texTop: 56 },
+  // (west wall left clear for the SKILLS console)
 
   // ── Projects room (x: 13–20, z: 7–11) ────────────────────────────────────
   // North wall — wide desk + terminal tower + crate
@@ -39,9 +38,7 @@ export const PROPS3D = [
   { x: 14.50, y: 10.78, w: 1.10, d: 0.45, h: 0.34, texSide: 3,  texTop: 3 },
   { x: 17.00, y: 10.78, w: 0.58, d: 0.50, h: 0.85, texSide: 6 },
   { x: 18.80, y: 10.75, w: 0.65, d: 0.65, h: 0.65, texSide: 55 },
-  // East wall — workbench strip (two segments)
-  { x: 19.72, y: 8.00,  w: 0.28, d: 1.00, h: 0.40, texSide: 3,  texTop: 56 },
-  { x: 19.72, y: 9.50,  w: 0.28, d: 0.80, h: 0.70, texSide: 52 },
+  // (east wall left clear for the PROJECTS console)
 
   // ── Passions room (x: 6–15, z: 1–4) ──────────────────────────────────────
   // North wall — sofa + jukebox + amplifier

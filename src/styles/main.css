@@ -7,7 +7,7 @@
   --doom-red: #ff2200;
   --doom-dark: #0a0a0a;
   --doom-gray: #1a1a1a;
-  --hud-height: 96px;
+  --hud-height: 10vw; /* STBAR 320×32 = 10:1 ratio → height = width/10 */
   --font: 'Press Start 2P', monospace;
 }
 
@@ -67,76 +67,50 @@ html, body {
 }
 
 /* ── HUD ── */
-#hud {
-  height: var(--hud-height);
-  background: var(--doom-gray);
-  border-top: 3px solid #333;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  position: relative;
+#hud-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
   flex-shrink: 0;
-}
-
-.hud-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 180px;
-}
-
-.hud-label {
-  font-size: 7px;
-  color: #555;
-  letter-spacing: 2px;
-}
-
-.hud-value {
-  font-size: 16px;
-  color: var(--doom-green);
-}
-
-.hud-health { color: var(--doom-green); }
-
-.hud-keys-value {
-  font-size: 7px;
-  color: #888;
-  line-height: 2;
-}
-
-.hud-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.hud-face {
-  border: 2px solid #444;
-  background: #111;
-  padding: 2px;
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#hud-info {
+  position: absolute;
+  bottom: calc(var(--hud-height) + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .hud-name {
-  font-size: 8px;
+  font-size: clamp(6px, 0.8vw, 10px);
   color: #fff;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+}
+
+.hud-sep {
+  font-size: clamp(6px, 0.7vw, 9px);
+  color: #555;
 }
 
 .hud-title {
-  font-size: 6px;
+  font-size: clamp(5px, 0.65vw, 8px);
   color: var(--doom-green);
   letter-spacing: 2px;
 }
 
 #hud-interact-prompt {
   position: absolute;
-  bottom: calc(var(--hud-height) + 12px);
+  bottom: calc(var(--hud-height) + 36px);
   left: 50%;
   transform: translateX(-50%);
-  font-size: 8px;
+  font-size: clamp(6px, 0.8vw, 9px);
   color: #ffdd00;
   background: #00000099;
   padding: 8px 16px;
