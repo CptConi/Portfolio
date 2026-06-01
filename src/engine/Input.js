@@ -9,11 +9,12 @@ export class Input {
     this.interact = false;
     this.mouseDX = 0;
     this._pointerLocked = false;
+    this.lockOnClick = true;   // disabled while a screen is focused (mouse stays free)
 
     window.addEventListener('keydown', e => this._onKey(e, true));
     window.addEventListener('keyup',   e => this._onKey(e, false));
 
-    canvas.addEventListener('click', () => canvas.requestPointerLock());
+    canvas.addEventListener('click', () => { if (this.lockOnClick) canvas.requestPointerLock(); });
     document.addEventListener('pointerlockchange', () => {
       this._pointerLocked = document.pointerLockElement === canvas;
     });

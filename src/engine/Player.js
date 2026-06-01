@@ -1,6 +1,9 @@
-import { isWall } from './Map.js';
+import { isWall, floorAt, STEP_MAX } from './Map.js';
 import { PROPS3D } from './Props3D.js';
 import { consoleAABBs } from './Screens.js';
+import { spriteAABBs } from './Sprites2D.js';
+
+const EYE_OFFSET = 0.5;   // camera height above the local floor
 
 const MOVE_SPEED = 0.05;
 const ROT_SPEED  = 0.04;
@@ -15,6 +18,7 @@ const PROP_AABBS = [
     maxZ: p.y + p.d / 2 + COLLISION_MARGIN,
   })),
   ...consoleAABBs(COLLISION_MARGIN),
+  ...spriteAABBs(COLLISION_MARGIN),
 ];
 
 function hitsProp(x, z) {
@@ -25,11 +29,12 @@ function hitsProp(x, z) {
 
 export class Player {
   constructor() {
-    this.x     = 10.5;
-    this.y     = 20.5;
-    this.angle = -Math.PI / 2;
+    this.x     = 12.5;   // inside the atrium, near the south wall
+    this.y     = 15.4;
+    this.angle = -Math.PI / 2;   // facing north → landmark + quartiers hall
     this.fov   = Math.PI / 3;
 
+    this.eyeY    = floorAt(this.x, this.y) + EYE_OFFSET; // smoothed each frame
     this.hitWall = false; // consumed by HUD.update()
   }
 
@@ -53,13 +58,21 @@ export class Player {
     }
 
     this.angle = ((this.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+
+    // Camera eye smoothly follows the floor height under the player.
+    const targetEye = floorAt(this.x, this.y) + EYE_OFFSET;
+    this.eyeY += (targetEye - this.eyeY) * 0.25;
   }
 
   _move(dx, dy) {
     const nx = this.x + dx;
     const ny = this.y + dy;
-    const canX = !isWall(nx + Math.sign(dx) * COLLISION_MARGIN, this.y) && !hitsProp(nx, this.y);
-    const canY = !isWall(this.x, ny + Math.sign(dy) * COLLISION_MARGIN) && !hitsProp(this.x, ny);
+    const here = floorAt(this.x, this.y);
+    // Block walls, props, and floor steps too high to climb.
+    const canX = !isWall(nx + Math.sign(dx) * COLLISION_MARGIN, this.y) && !hitsProp(nx, this.y)
+      && floorAt(nx, this.y) - here <= STEP_MAX;
+    const canY = !isWall(this.x, ny + Math.sign(dy) * COLLISION_MARGIN) && !hitsProp(this.x, ny)
+      && floorAt(this.x, ny) - here <= STEP_MAX;
     if (canX) this.x = nx;
     if (canY) this.y = ny;
     // Ouch if any axis with meaningful intended movement was blocked

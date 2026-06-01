@@ -119,6 +119,20 @@ html, body {
   animation: blink 0.8s step-end infinite;
 }
 
+/* ── FPS overlay (debug, toggled with `) ── */
+#fps-overlay {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 8px;
+  color: var(--doom-green);
+  background: #000000aa;
+  padding: 3px 6px;
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 20;
+}
+
 /* ── Crosshair ── */
 #game-container::after {
   content: '+';

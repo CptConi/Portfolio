@@ -43,6 +43,17 @@ const SOURCES = {
   56: '/textures/METALT1.png',   // metal top surface
   57: '/textures/BRNZGRN1.png',  // bronze-green (passions)
   58: '/textures/COMPSP01.png',  // computer panel variant (skills)
+  59: '/textures/BOX_MAT1.png',  // crate
+  // 2D billboard prop sprites (Freedoom things)
+  100: '/sprites/ELECA0.png',   // tall tech pillar
+  101: '/sprites/BAR1A0.png',   // barrel
+  102: '/sprites/COL1A0.png',   // column
+  103: '/sprites/COL5A0.png',   // column variant
+  104: '/sprites/CBRAA0.png',   // candelabra
+  105: '/sprites/CANDA0.png',   // candle
+  106: '/sprites/TLMPA0.png',   // tech floor lamp
+  110: '/sprites/FCANA0.png', 111: '/sprites/FCANB0.png', 112: '/sprites/FCANC0.png',  // flaming can (anim)
+  120: '/sprites/TLP2A0.png', 121: '/sprites/TLP2B0.png', 122: '/sprites/TLP2C0.png', 123: '/sprites/TLP2D0.png',  // tech lamp (anim)
 };
 
 const loader = new THREE.TextureLoader();
