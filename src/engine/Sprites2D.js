@@ -11,7 +11,7 @@ const DEFS = {
   col1:   { tex: 102, h: 0.62, ar: 35 / 56,  solid: true },
   col5:   { tex: 103, h: 0.55, ar: 36 / 49,  solid: true },
   cbra:   { tex: 104, h: 0.66, ar: 31 / 61,  solid: true, bright: true, lc: 0xff9a44, li: 6 },
-  candle: { tex: 105, h: 0.22, ar: 16 / 19,  solid: false, bright: true, lc: 0xffb060, li: 2.5 },
+  candle: { tex: 105, h: 0.22, ar: 16 / 19,  solid: false, bright: true, lc: 0xffb060, li: 4 },
   lamp:   { tex: 106, h: 0.86, ar: 18 / 80,  solid: true, bright: true, lc: 0xbfe0ff, li: 6 },
   fcan:   { frames: [110, 111, 112], h: 0.70, ar: 25 / 63, solid: true, bright: true, fps: 8, lc: 0xff7a2a, li: 7 },
   tlamp:  { frames: [120, 121, 122, 123], h: 0.62, ar: 16 / 57, solid: true, bright: true, fps: 6, lc: 0x7fd0ff, li: 6 },
@@ -29,6 +29,8 @@ const SPRITES = [
   { x: 10.7, z: 6.4, d: 'candle' }, { x: 14.3, z: 6.4, d: 'candle' },
   // Arcade — tech lamps (no fire)
   { x: 10.0, z: 19.0, d: 'tlamp' }, { x: 15.0, z: 19.0, d: 'tlamp' },
+  // Candle on the Armurerie central table (yoff = table height)
+  { x: 4.7, z: 12.5, d: 'candle', yoff: 0.35 },
 ];
 
 const spriteW = def => def.h * def.ar;
@@ -44,7 +46,7 @@ export function buildSprites(scene, tex) {
   const anim = [], lights = [];
   for (const s of SPRITES) {
     const def = DEFS[s.d];
-    const fy = floorAt(s.x, s.z);
+    const fy = floorAt(s.x, s.z) + (s.yoff || 0);
     const firstTex = def.frames ? tex.get(def.frames[0]) : tex.get(def.tex);
     // Opaque cutout (alphaTest, not transparent): hard edges, correct depth,
     // no half-transparency, no post-process quad artifacts.

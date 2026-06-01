@@ -27,7 +27,7 @@ export const PROPS3D = [
   // ── Armurerie (W) — lockers, servers, crates, workbench ────────────────────
   { x: 4.6, y: 9.55, w: 0.5,  d: 0.3,  h: 0.85, texSide: 51 },
   { x: 5.3, y: 9.55, w: 0.5,  d: 0.3,  h: 0.85, texSide: 51 },
-  { x: 6.9, y: 12.5, w: 0.4,  d: 0.5,  h: 0.8,  texSide: 58, texTop: 56 },
+  { x: 4.7, y: 12.5, w: 1.0,  d: 0.6,  h: 0.35, texSide: 55, texTop: 56 },  // central table
   { x: 3.4, y: 15.5, w: 1.0,  d: 0.4,  h: 0.45, texSide: 50, texTop: 56 },
   { x: 5.4, y: 15.4, w: 0.45, d: 0.45, h: 0.45, texSide: 55, texTop: 56 },
   { x: 6.5, y: 15.4, w: 0.5,  d: 0.5,  h: 0.55, texSide: 53 },

@@ -108,6 +108,27 @@ function darkWall(scene, cx, cz, w, facing, fl = 0, cl = 1, op = 0.55) {
   scene.add(m);
 }
 
+// Faint painted floor guidance line (Half-Life style). One axis-aligned segment;
+// semi-transparent + polygonOffset so it reads as paint and never z-fights.
+function paintSeg(scene, color, ax, az, bx, bz, w = 0.1) {
+  const horiz = Math.abs(bx - ax) >= Math.abs(bz - az);
+  const len = Math.hypot(bx - ax, bz - az) + w;   // +w so corners overlap cleanly
+  const geo = new THREE.PlaneGeometry(horiz ? len : w, horiz ? w : len).rotateX(-Math.PI / 2);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity: 0.25, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+  }));
+  const mx = (ax + bx) / 2, mz = (az + bz) / 2;
+  m.position.set(mx, floorAt(mx, mz) + 0.012, mz);
+  scene.add(m);
+}
+
+// Painted polyline through a list of [x,z] points.
+function paintPath(scene, color, pts) {
+  for (let i = 1; i < pts.length; i++)
+    paintSeg(scene, color, pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
+}
+
 // Flat plane on floor (or ceiling), additive-blended.
 function flatGlow(scene, color, cx, cz, w, d, { y = 0.02, opacity = 0.1, down = false } = {}) {
   const geo = new THREE.PlaneGeometry(w, d).rotateX(down ? Math.PI / 2 : -Math.PI / 2);
@@ -229,6 +250,12 @@ export function buildDecor(scene) {
   // Arcade glow (pool reaches slightly toward the player to the north).
   softPool(scene, SCOL, AX, AZ - 0.25, 1.9, { y: sf + 0.07, opacity: 0.42 });
   softPool(scene, 0x37ffe0, AX, AZ - 0.2, 1.1, { y: sc - 0.015, opacity: 0.5, down: true });
+
+  // ── Black-Mesa guidance lines — start at the south wall, split mid-room ──────
+  const GREEN = 0x2a9d4a, AMBER = 0xb5701a, VIOLET = 0x7d3aa8;
+  paintPath(scene, GREEN,  [[12.3, 15.5], [12.3, 12.5], [9.0, 12.5]]);   // → Armurerie (W door centre z12.5)
+  paintPath(scene, VIOLET, [[12.5, 15.5], [12.5, 9.0]]);                 // → Quartiers (N door centre x12.5)
+  paintPath(scene, AMBER,  [[12.7, 15.5], [12.7, 12.5], [16.0, 12.5]]);  // → Trophées (E door centre z12.5)
 
   return {
     update(t) {
