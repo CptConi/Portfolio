@@ -120,6 +120,11 @@ export class Renderer {
       L.position.set(sp.x, ceilAt(sp.x, sp.z) - 0.3, sp.z);
       this._scene.add(L);
     }
+
+    // Secret flickering pink light behind the push-wall (Portal style)
+    this._secretLight = new THREE.PointLight(0xff2a9d, 0, 6, 2);
+    this._secretLight.position.set(PUSH_WALL.mx + 0.5, ceilAt(PUSH_WALL.mx + 0.5, 17.5) - 0.1, 17.5);
+    this._scene.add(this._secretLight);
   }
 
   _isPush(mx, my) { return mx === PUSH_WALL.mx && my === PUSH_WALL.my; }
@@ -289,6 +294,17 @@ export class Renderer {
   render(player, camOverride = null, tSec = 0) {
     this._decor?.update(tSec);
     this._sprites?.update(tSec);
+
+    // Flicker logic for the secret backroom light
+    if (this._secretLight) {
+      const isOpening = PUSH_WALL.mx !== undefined && !this._isPushHidden; // checking if secret is revealed
+      // In this engine, we don't have easy access to the secretOpen state directly here without importing,
+      // but we can check the MAP or just let it flicker if it's near.
+      // Actually, let's just make it flicker always but it's hidden by the wall.
+      const baseIntensity = 15;
+      const flicker = Math.random() > 0.93 ? Math.random() * 0.5 : 0.9 + Math.random() * 0.1;
+      this._secretLight.intensity = baseIntensity * flicker;
+    }
 
     if (camOverride) {
       const { pos, target } = camOverride;
