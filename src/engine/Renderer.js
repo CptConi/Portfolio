@@ -3,7 +3,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { MAP, MAP_WIDTH, MAP_HEIGHT, PUSH_WALL, floorAt, ceilAt } from './Map.js';
+import { MAP, MAP_WIDTH, MAP_HEIGHT, PUSH_WALL, floorAt, ceilAt, isSecretOpen } from './Map.js';
 import { PROPS3D } from './Props3D.js';
 import { SCREENS, ARCADE } from './Screens.js';
 import { buildSprites } from './Sprites2D.js';
@@ -21,6 +21,8 @@ const V_FOV_DEG = vFovDeg(ASPECT);
 
 const IS_MOBILE = typeof window !== 'undefined' &&
   ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
+const lerp = (a, b, u) => a + (b - a) * u;
 
 export class Renderer {
   constructor(canvas, textures) {
@@ -297,15 +299,19 @@ export class Renderer {
     this._decor?.update(tSec);
     this._sprites?.update(tSec);
 
-    // Flicker logic for the secret backroom light
+    // Flicker + Ease-in logic for the secret backroom light
     if (this._secretLight) {
-      const isOpening = PUSH_WALL.mx !== undefined && !this._isPushHidden; // checking if secret is revealed
-      // In this engine, we don't have easy access to the secretOpen state directly here without importing,
-      // but we can check the MAP or just let it flicker if it's near.
-      // Actually, let's just make it flicker always but it's hidden by the wall.
-      const baseIntensity = 15;
-      const flicker = Math.random() > 0.93 ? Math.random() * 0.5 : 0.9 + Math.random() * 0.1;
-      this._secretLight.intensity = baseIntensity * flicker;
+      // Base intensity reduced to ~20% of previous (from 15 to 3).
+      // We also ease it in if the secret is open/opening.
+      const targetIntensity = isSecretOpen() ? 3.0 : 0.0;
+      
+      // Smoothly approach the target intensity (ease out)
+      this._secretLight.intensity = lerp(this._secretLight.intensity, targetIntensity, 0.05);
+
+      if (this._secretLight.intensity > 0.01) {
+        const flicker = Math.random() > 0.93 ? Math.random() * 0.5 : 0.9 + Math.random() * 0.1;
+        this._secretLight.intensity *= flicker;
+      }
     }
 
     if (camOverride) {
