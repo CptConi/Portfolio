@@ -17,8 +17,21 @@ export class PushWall {
     // 20 + ((mx*7 + my*13) % 14) = 20 + ((84+208)%14) = 32.
     // Spans the full atrium wall height (2.0). Slightly inset (0.94) so its side
     // faces don't z-fight the framing wall faces the neighbours render toward it.
-    const mat = new THREE.MeshBasicMaterial({ map: tex.get(32) });
-    this.mesh = new THREE.Mesh(new THREE.BoxGeometry(0.94, 2, 0.94), mat);
+    const mat = new THREE.MeshLambertMaterial({ map: tex.get(32), color: 0xb0b0b0, vertexColors: true });
+    const geo = new THREE.BoxGeometry(0.94, 2, 0.94);
+
+    // Apply per-face shading to match the corridor's orientation-based lighting.
+    // In Renderer.js, north/south walls (Z-facing) are dimmed to 0.65.
+    const nor = geo.attributes.normal;
+    const colors = new Float32Array(geo.attributes.position.count * 3);
+    for (let i = 0; i < geo.attributes.position.count; i++) {
+      // In Renderer: DIRS[2,3] are Z-facing (rotY 0/PI) and have dim 0.65.
+      const dim = Math.abs(nor.getZ(i)) > 0.5 ? 0.65 : 1.0;
+      colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = dim;
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.position.set(PUSH_WALL.mx + 0.5, 1.0, PUSH_WALL.my + 0.5);
     scene.add(this.mesh);
   }
