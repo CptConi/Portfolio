@@ -367,6 +367,8 @@ body.is-touch #viewmodel {
   box-shadow: inset 0 0 14px #ffdd0022, 0 0 12px #00000088;
 }
 .tc-action.on { background: #ffdd0055; box-shadow: inset 0 0 18px #ffdd00aa, 0 0 16px #ffdd00aa; }
+/* Force monochrome white for emojis/icons in the action button */
+.tc-action { filter: grayscale(1) brightness(2); }
 
 /* Console paging — bottom-centre pair */
 .tc-page {

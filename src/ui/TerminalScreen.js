@@ -2,20 +2,25 @@ import * as THREE from 'three';
 import { skills } from '../data/skills.js';
 import { projects } from '../data/projects.js';
 import { passions } from '../data/passions.js';
+import { contact } from '../data/contact.js';
 import { techOf } from '../data/tech.js';
 
 // Native canvas resolution for the screen texture (4:3-ish, matches plane ratio).
 const CW = 480, CH = 304;
 const FONT = '"Press Start 2P", monospace';
 
-const DATA = { skills, projects, passions };
+const DATA = { skills, projects, passions, contact };
 
 // Shared logo <img> cache (devicon SVGs in public/logos). Returns an Image that
 // may still be decoding — callers draw it only once `complete && naturalWidth`.
 const _logoImgs = {};
-function logoImg(f) {
+function logoImg(f, path = '/logos/') {
   let im = _logoImgs[f];
-  if (!im) { im = new Image(); im.src = '/logos/' + f + '.svg'; _logoImgs[f] = im; }
+  if (!im) { 
+    im = new Image(); 
+    im.src = path + f + (f.endsWith('.svg') || f.endsWith('.png') ? '' : '.svg'); 
+    _logoImgs[f] = im; 
+  }
   return im;
 }
 
@@ -40,6 +45,11 @@ export class TerminalScreen {
     const names = def.type === 'skills' ? DATA.skills.flatMap(c => c.items)
       : def.type === 'projects' ? DATA.projects.flatMap(p => p.stack) : [];
     for (const n of names) { const m = techOf(n); if (m.f) logoImg(m.f); }
+
+    // Preload contact logos from resources
+    if (def.type === 'contact') {
+      for (const c of DATA.contact) logoImg(c.icon, '/ressources/');
+    }
 
     this.draw({ focused: false, t: 0 });
   }
@@ -79,7 +89,12 @@ export class TerminalScreen {
     c.fillText(this.def.title, 18, 22);
 
     // Body
-    const body = { skills: this._skills, projects: this._projects, passions: this._passions }[this.def.type];
+    const body = { 
+      skills: this._skills, 
+      projects: this._projects, 
+      passions: this._passions,
+      contact: this._contact 
+    }[this.def.type];
     body.call(this, c, col, DATA[this.def.type][this.page]);
 
     // Footer — pagination + nav hint + blinking cursor
@@ -91,7 +106,12 @@ export class TerminalScreen {
     c.fillText(label, 18, CH - 14);
     const cursor = (Math.floor(t * 2) % 2) === 0 ? '_' : ' ';
     c.fillStyle = '#888';
-    c.fillText(focused ? '▲▼ NAVIGUER   ESC SORTIR ' + cursor : 'E POUR ACCÉDER ' + cursor, 150, CH - 14);
+    
+    let hint = focused ? '▲▼ NAVIGUER   ESC SORTIR ' + cursor : 'E POUR ACCÉDER ' + cursor;
+    if (focused && this.def.type === 'contact') {
+      hint = 'ENTRÉE OUVRIR   ▲▼ NAVIGUER   ESC SORTIR ' + cursor;
+    }
+    c.fillText(hint, 150, CH - 14);
 
     // Scanlines
     c.fillStyle = 'rgba(0,0,0,0.28)';
@@ -103,7 +123,7 @@ export class TerminalScreen {
   // ── Text helpers ─────────────────────────────────────────────────────────
 
   _wrap(c, text, maxW) {
-    const words = text.split(' ');
+    const words = String(text).split(' ');
     const lines = []; let line = '';
     for (const w of words) {
       const test = line ? line + ' ' + w : w;
@@ -207,5 +227,41 @@ export class TerminalScreen {
     y += 6;
     c.fillStyle = '#888';
     for (const d of p.details) { c.fillText('> ' + d, 18, y); y += 16; }
+  }
+
+  _contact(c, col, p) {
+    c.textBaseline = 'middle';
+    
+    // Icon
+    const im = logoImg(p.icon, '/ressources/');
+    if (im && im.complete && im.naturalWidth) {
+      c.imageSmoothingEnabled = true;
+      const logoSz = 64;
+      const s = Math.min(logoSz / im.naturalWidth, logoSz / im.naturalHeight);
+      const w = im.naturalWidth * s, h = im.naturalHeight * s;
+      c.drawImage(im, 20, 50, w, h);
+      c.imageSmoothingEnabled = false;
+    }
+
+    c.fillStyle = col; c.font = '16px ' + FONT;
+    c.fillText(p.name, 100, 65);
+
+    c.fillStyle = '#bbb'; c.font = '10px ' + FONT;
+    c.fillText(p.value, 100, 95);
+
+    c.fillStyle = '#888'; c.font = '9px ' + FONT;
+    let y = 130;
+    for (const line of this._wrap(c, p.description, CW - 40)) { c.fillText(line, 20, y); y += 18; }
+
+    // CTA
+    y += 40;
+    c.strokeStyle = p.color;
+    c.lineWidth = 2;
+    c.strokeRect(CW/2 - 100, y, 200, 40);
+    c.fillStyle = p.color;
+    c.textAlign = 'center';
+    c.font = '10px ' + FONT;
+    c.fillText('OUVRIR LE LIEN', CW/2, y + 20);
+    c.textAlign = 'left';
   }
 }

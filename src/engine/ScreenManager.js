@@ -3,7 +3,9 @@ import { SCREENS, SCREEN_CY, FOCUS_RANGE, FOCUS_DIST, ARCADE } from './Screens.j
 import { floorAt } from './Map.js';
 import { TerminalScreen } from '../ui/TerminalScreen.js';
 import { ArcadeGame } from '../ui/ArcadeGame.js';
+import { contact } from '../data/contact.js';
 
+const DATA_MAP = { contact };
 const FOCUS_TIME = 0.4;            // seconds for the camera glide
 const SCREEN_LZ  = 0.205;          // screen centre offset (local Z, toward the player)
 const SCREEN_TILT = -0.347;        // screen plane lean-back to match the slanted panel
@@ -102,6 +104,14 @@ class Console {
     if (next && !this._pn) this.terminal.next();
     if (prev && !this._pp) this.terminal.prev();
     this._pn = next; this._pp = prev;
+
+    // Handle link opening for contact terminal
+    if (this.def.type === 'contact' && input.interact && !this._pi) {
+      const entry = DATA_MAP.contact[this.terminal.page];
+      if (entry && entry.url) window.open(entry.url, '_blank');
+    }
+    this._pi = input.interact;
+
     this.terminal.draw({ focused: true, t });
     return input.consumeInteract() || esc;   // E or ESC exits a console
   }

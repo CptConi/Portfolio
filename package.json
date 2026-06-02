@@ -10,6 +10,9 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "devDependencies": {
     "vite": "^5.0.11"
   },
