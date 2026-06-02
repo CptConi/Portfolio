@@ -2,6 +2,7 @@ import { isWall, floorAt, STEP_MAX } from './Map.js';
 import { PROPS3D } from './Props3D.js';
 import { consoleAABBs } from './Screens.js';
 import { spriteAABBs } from './Sprites2D.js';
+import { ARMORY_RACK_AABBS } from './Decor.js';
 
 const EYE_OFFSET = 0.5;   // camera height above the local floor
 
@@ -19,6 +20,10 @@ const PROP_AABBS = [
   })),
   ...consoleAABBs(COLLISION_MARGIN),
   ...spriteAABBs(COLLISION_MARGIN),
+  ...ARMORY_RACK_AABBS.map(b => ({
+    minX: b.minX - COLLISION_MARGIN, maxX: b.maxX + COLLISION_MARGIN,
+    minZ: b.minZ - COLLISION_MARGIN, maxZ: b.maxZ + COLLISION_MARGIN,
+  })),
 ];
 
 function hitsProp(x, z) {

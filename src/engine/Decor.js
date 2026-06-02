@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { projects } from '../data/projects.js';
+import { skills } from '../data/skills.js';
 import { techOf } from '../data/tech.js';
 import { floorAt, ceilAt } from './Map.js';
 
@@ -53,6 +54,14 @@ function logoTexture(name) {
   return (_logoCache[name] = tex);
 }
 
+// Armurerie tech racks — slanted 3D props lining the N/S side walls. Shared so
+// Player.js can derive their collision boxes (the racks protrude into the room).
+const ARMORY = { X0: 3.0, X1: 7.0, DBOT: 0.42, DTOP: 0.2, H: 1.0, NZ: 9.0, SZ: 16.0 };
+export const ARMORY_RACK_AABBS = [
+  { minX: ARMORY.X0, maxX: ARMORY.X1, minZ: ARMORY.NZ, maxZ: ARMORY.NZ + ARMORY.DBOT },
+  { minX: ARMORY.X0, maxX: ARMORY.X1, minZ: ARMORY.SZ - ARMORY.DBOT, maxZ: ARMORY.SZ },
+];
+
 const hex = c => '#' + c.toString(16).padStart(6, '0');
 
 function textTexture(lines, color, { w = 256, h = 64, font = 16, border = true } = {}) {
@@ -92,6 +101,36 @@ function radialTex(color) {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return (_radCache[color] = t);
+}
+
+// Additive wall-wash texture for the LED strip: bright at the bottom (the tube)
+// fading up, AND tapering to transparent at the left/right ends so the band
+// doesn't cut off with a hard vertical edge. Cached per colour.
+const _gradCache = {};
+function gradTex(color) {
+  if (_gradCache[color]) return _gradCache[color];
+  const W = 128, H = 64;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  const vg = ctx.createLinearGradient(0, 0, 0, H);
+  vg.addColorStop(0, hex(color) + '00');   // top (toward ceiling) → transparent
+  vg.addColorStop(0.55, hex(color) + '55');
+  vg.addColorStop(1, hex(color));          // bottom (at the tube) → bright
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, W, H);
+  // Horizontal taper — keep centre, fade the two ends.
+  ctx.globalCompositeOperation = 'destination-in';
+  const hg = ctx.createLinearGradient(0, 0, W, 0);
+  hg.addColorStop(0, '#00000000');
+  hg.addColorStop(0.16, '#000000ff');
+  hg.addColorStop(0.84, '#000000ff');
+  hg.addColorStop(1, '#00000000');
+  ctx.fillStyle = hg;
+  ctx.fillRect(0, 0, W, H);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return (_gradCache[color] = t);
 }
 
 // Soft circular light pool on floor (or ceiling) — radial falloff, not a hard aplat.
@@ -198,7 +237,7 @@ function holo(scene, color, x, y, z, r) {
   return line;
 }
 
-export function buildDecor(scene) {
+export function buildDecor(scene, tex = null) {
   const anim = [];   // { node, ry, rx, y0, amp, spd }
 
   // ── Per-room palette + thresholds + signage ──────────────────────────────
@@ -296,12 +335,87 @@ export function buildDecor(scene) {
     }
   });
 
-  // ── Room accents — thematic set-dressing lighting ────────────────────────
-  // Armurerie: vertical rack-light strips in the wall niches (armory feel).
-  const skF = floorAt(4.5, 12);
-  for (const x of [3.5, 5.5]) {
-    glowBar(scene, 0x00ff41, x, skF + 0.55, 9.08, 0.06, 0.6, [0, 1]);    // north wall
-    glowBar(scene, 0x00ff41, x, skF + 0.55, 15.92, 0.06, 0.6, [0, -1]);  // south wall
+  // ── Armurerie weapon racks — slanted 3D props lining the side walls, each
+  // wide enough to hold its logo grid; the front face leans back toward the top
+  // (top shallower than bottom) for a real "rack" silhouette. ────────────────
+  const GREENA = 0x00ff41;
+  {
+    const skF = floorAt(4.5, 12);
+    const { X0, X1, DBOT, DTOP, H, NZ, SZ } = ARMORY;
+    const W = X1 - X0, cx = (X0 + X1) / 2;
+    const theta = Math.atan2(DBOT - DTOP, H);   // front-face lean → logo tilt
+
+    const seen = new Set();
+    const arsenal = skills.flatMap(cat => cat.items).map(techOf)
+      .filter(m => m.f && !seen.has(m.f) && seen.add(m.f));   // unique logos
+    const half = Math.ceil(arsenal.length / 2);
+    const walls = [
+      { items: arsenal.slice(0, half), z: NZ, ry: 0 },          // north wall, faces +Z
+      { items: arsenal.slice(half),    z: SZ, ry: Math.PI },    // south wall, faces -Z
+    ];
+
+    // Shared slanted body geometry (profile in depth×height, extruded along width).
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0); shape.lineTo(DBOT, 0); shape.lineTo(DTOP, H); shape.lineTo(0, H); shape.closePath();
+    const bodyGeo = new THREE.ExtrudeGeometry(shape, { depth: W, bevelEnabled: false });
+    bodyGeo.rotateY(-Math.PI / 2); bodyGeo.translate(W / 2, 0, 0);
+
+    const PER = 8, rowY = [0.26, 0.55, 0.84];
+    for (const wl of walls) {
+      const grp = new THREE.Group();
+      grp.position.set(cx, skF, wl.z);
+      grp.rotation.y = wl.ry;
+
+      grp.add(new THREE.Mesh(bodyGeo, tex
+        ? new THREE.MeshLambertMaterial({ map: tex.get(53), color: 0x9fb4a4 })
+        : new THREE.MeshBasicMaterial({ color: 0x223026 })));
+
+      // Bottom front edge — a faint additive glow line (no longer hiding logos).
+      const bot = new THREE.Mesh(new THREE.BoxGeometry(W + 0.06, 0.05, 0.05),
+        new THREE.MeshBasicMaterial({ color: GREENA, transparent: true, opacity: 0.14,
+          blending: THREE.AdditiveBlending, depthWrite: false }));
+      bot.position.set(0, 0.04, DBOT + 0.02); grp.add(bot);
+
+      // Top neon tube on the BACK edge (against the wall) + a point light washing
+      // the wall behind — reads like a real neon strip lighting the alcove.
+      const top = new THREE.Mesh(new THREE.BoxGeometry(W + 0.06, 0.05, 0.05),
+        new THREE.MeshBasicMaterial({ color: GREENA }));
+      top.position.set(0, H - 0.04, 0.05); grp.add(top);
+      // Continuous LED-strip wash: a full-width additive gradient plane on the
+      // wall ABOVE the rack (bright at the tube, fading up to the ceiling) — the
+      // wall behind the body is hidden, so the glow reads in the gap above it.
+      const ceilLocal = ceilAt(4.5, 12) - skF;
+      const washH = Math.max(0.22, ceilLocal - H + 0.04);
+      const wash = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.98, washH),
+        new THREE.MeshBasicMaterial({ map: gradTex(GREENA), transparent: true, opacity: 0.3,
+          blending: THREE.AdditiveBlending, depthWrite: false }));
+      wash.position.set(0, H - 0.02 + washH / 2, 0.02); grp.add(wash);
+
+      // Soft "hemisphere" glow at each end so the side walls catch light too.
+      for (const sx of [-1, 1]) {
+        const end = new THREE.PointLight(0x33ff66, 0.4, 1.1, 2);
+        end.position.set(sx * (W / 2 + 0.05), H - 0.12, 0.12);
+        grp.add(end);
+      }
+
+      wl.items.forEach((m, i) => {
+        const col = i % PER, row = Math.floor(i / PER);
+        if (row >= rowY.length) return;
+        const lx = -W / 2 + (col + 0.5) / PER * W;
+        const ly = rowY[row];
+        const lz = DBOT + (DTOP - DBOT) * (ly / H);   // depth of the slanted face at this height
+
+        const halo = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.4),
+          new THREE.MeshBasicMaterial({ map: radialTex(m.c), transparent: true, opacity: 0.5,
+            blending: THREE.AdditiveBlending, depthWrite: false }));
+        halo.position.set(lx, ly, lz + 0.01); halo.rotation.x = -theta; grp.add(halo);
+
+        const card = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.26),
+          new THREE.MeshBasicMaterial({ map: logoTexture(m.f), transparent: true, depthWrite: false }));
+        card.position.set(lx, ly, lz + 0.02); card.rotation.x = -theta; grp.add(card);
+      });
+      scene.add(grp);
+    }
   }
   // Quartiers: warm hearth glow over the lounge — cozy warmth layered on the purple.
   softPool(scene, 0xff7a33, 12.0, 4.0, 3.4, { y: floorAt(12, 4) + 0.02, opacity: 0.16 });

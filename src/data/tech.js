@@ -13,7 +13,7 @@ export const TECH = {
   'HTML5':             { c: 0xe34f26, f: 'html5' },
   'CSS3':              { c: 0x2965f1, f: 'css3' },
   'GraphQL':           { c: 0xe535ab, f: 'graphql' },
-  'YAML':              { c: 0xcb171e, l: 'YAML' },
+  'YAML':              { c: 0xff6e6e, f: 'yaml' },
   // Frontend
   'React':             { c: 0x61dafb, f: 'react' },
   'Vue.js':            { c: 0x42b883, f: 'vuejs' },
@@ -23,9 +23,9 @@ export const TECH = {
   'Ionic':             { c: 0x3880ff, f: 'ionic' },
   'Bootstrap':         { c: 0x7952b3, f: 'bootstrap' },
   'SASS':              { c: 0xcc6699, f: 'sass' },
-  'Styled Components': { c: 0xdb7093, l: 'Styled' },
-  'Chart.js':          { c: 0xff6384, l: 'Chart.js' },
-  'GSAP':              { c: 0x88ce02, l: 'GSAP' },
+  'Styled Components': { c: 0xdb7093, f: 'styled' },
+  'Chart.js':          { c: 0xff6384, f: 'chartjs' },
+  'GSAP':              { c: 0x88ce02, f: 'greensock' },
   'Vite':              { c: 0x9b6cf2, f: 'vitejs' },
   // Backend
   'Node.js':           { c: 0x68a063, f: 'nodejs' },
@@ -33,13 +33,13 @@ export const TECH = {
   'NestJS':            { c: 0xe0234e, f: 'nestjs' },
   'Socket.io':         { c: 0xdddddd, f: 'socketio' },
   'WebSocket':         { c: 0x37c0ff, l: 'WS' },
-  'Strapi':            { c: 0x8c7bff, l: 'Strapi' },
-  'JWT':               { c: 0xd63aff, l: 'JWT' },
+  'Strapi':            { c: 0x8e75ff, f: 'strapi' },
+  'JWT':               { c: 0xd63aff, f: 'jwt' },
   'RxJS':              { c: 0xe6007e, f: 'rxjs' },
   // Mobile
   'Flutter':           { c: 0x47c5fb, f: 'flutter' },
-  'Capacitor':         { c: 0x53b9ff, l: 'Capacitor' },
-  'Fastlane':          { c: 0x9ccb3b, l: 'Fastlane' },
+  'Capacitor':         { c: 0x53b9ff, f: 'capacitor' },
+  'Fastlane':          { c: 0x9ccb3b, f: 'fastlane' },
   'Firebase':          { c: 0xffca28, f: 'firebase' },
   'Firebase / Firestore': { c: 0xffca28, f: 'firebase' },
   'Unity VR':          { c: 0xdddddd, f: 'unity' },
@@ -59,13 +59,13 @@ export const TECH = {
   // Tools
   'Git':               { c: 0xf05033, f: 'git' },
   'Jest':              { c: 0xc21325, f: 'jest' },
-  'Sentry':            { c: 0x362d59, l: 'Sentry' },
-  'OpenTelemetry':     { c: 0xf5a800, l: 'OTel' },
+  'Sentry':            { c: 0xb889ff, f: 'sentry' },
+  'OpenTelemetry':     { c: 0xf5a800, f: 'otel' },
   'Swagger':           { c: 0x85ea2d, f: 'swagger' },
-  'Stripe':            { c: 0x635bff, l: 'Stripe' },
-  'Power BI':          { c: 0xf2c811, l: 'PowerBI' },
+  'Stripe':            { c: 0x8c87ff, f: 'stripe' },
+  'Power BI':          { c: 0xf2c811, f: 'powerbi' },
   // Misc
-  'Google Maps API':   { c: 0x42a85f, l: 'Maps' },
+  'Google Maps API':   { c: 0x4caf6a, f: 'googlemaps' },
   'MonoGame':          { c: 0xe73c00, l: 'Mono' },
 };
 

@@ -36,6 +36,13 @@ const startScreen = document.getElementById('start-screen');
     if (!screens.focused && document.pointerLockElement) hands.drink();
   });
 
+  // Desktop cursor hint (top-left) — shown only while the pointer is locked.
+  const cursorHint = document.createElement('div');
+  cursorHint.id = 'cursor-hint';
+  cursorHint.textContent = 'ESC POUR LIBÉRER LE CURSEUR';
+  cursorHint.style.display = 'none';
+  container.appendChild(cursorHint);
+
   // FPS overlay (toggle with the ` key) — hidden by default.
   const fpsEl = document.createElement('div');
   fpsEl.id = 'fps-overlay';
@@ -88,6 +95,7 @@ const startScreen = document.getElementById('start-screen');
     hud.setSector(getCellType(player.x, player.y));
     hands.update(player, dt, tSec);
     touch.update({ prompt, focused, kind: screens.activeKind });
+    cursorHint.style.display = document.pointerLockElement === canvas ? 'block' : 'none';
 
     renderer.render(player, s.cameraOverride, tSec);
     requestAnimationFrame(loop);

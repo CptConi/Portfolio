@@ -103,7 +103,7 @@ export class Renderer {
     this._buildWalls();
     this._buildProps();
     this._sprites = buildSprites(this._scene, this._tex);
-    this._decor = buildDecor(this._scene);
+    this._decor = buildDecor(this._scene, this._tex);
   }
 
   // Low ambient + a coloured point light at each ceiling spot (consoles, atrium,
