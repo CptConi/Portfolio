@@ -363,7 +363,7 @@ body.is-touch #viewmodel {
   border-radius: 50%;
   font-size: 26px; /* Double the emoji size */
   letter-spacing: 2px;
-  border-color: #ffdd00cc;
+  border-color: #ffdd00; /* Match yellow label */
   color: #ffdd00;
   background: linear-gradient(180deg, #ffffff0c, #ffdd0018);
   box-shadow: inset 0 0 14px #ffdd0022, 0 0 12px #00000088;
@@ -373,10 +373,12 @@ body.is-touch #viewmodel {
 
 /* Console paging — bottom-centre pair */
 .tc-page {
-  bottom: 40px;
+  bottom: 120px; /* Lifted from 40px (at ~600px height, 40+120=160px is ~20% more) */
   width: 84px; height: 64px;
   border-radius: 8px;
   font-size: 22px;
+  border-color: #ffffffaa; /* White borders as requested */
+  color: #ffffff;
 }
 .tc-prev { left: calc(50% - 96px); }
 .tc-next { left: calc(50% + 12px); }

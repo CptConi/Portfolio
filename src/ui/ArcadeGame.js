@@ -133,21 +133,30 @@ export class ArcadeGame {
     if (this.time <= 0) { this.time = 0; this.state = 'over'; this.overReason = 'deadline'; this._draw(t); return; }
 
     // Move + fire
-    const left  = input.rotLeft  || input.strafeLeft;
-    const right = input.rotRight || input.strafeRight;
-    const up    = input.forward;
-    const down  = input.backward;
-    if (left)  this.px -= 160 * dt;
-    if (right) this.px += 160 * dt;
-    if (up)    this.py -= 150 * dt;
-    if (down)  this.py += 150 * dt;
+    // Support analog movement from touch joystick (moveX/moveY) or fallback to discrete keys
+    let dx = input.moveX;
+    let dy = -input.moveY; // moveY is +forward in engine, -up in arcade canvas
+
+    if (Math.abs(dx) < 0.01) {
+      const left  = input.rotLeft  || input.strafeLeft;
+      const right = input.rotRight || input.strafeRight;
+      dx = (right ? 1 : 0) - (left ? 1 : 0);
+    }
+    if (Math.abs(dy) < 0.01) {
+      const up    = input.forward;
+      const down  = input.backward;
+      dy = (down ? 1 : 0) - (up ? 1 : 0);
+    }
+
+    this.px += dx * 160 * dt;
+    this.py += dy * 150 * dt;
+
     this.px = Math.max(PF_X + 14, Math.min(PF_R - 14, this.px));
     this.py = Math.max(PLAYER_MIN_Y, Math.min(PLAYER_Y, this.py));
 
     // Auto-scroll background (top→bottom) + parallax that drifts with the player.
-    const dir = (right ? 1 : 0) - (left ? 1 : 0);
     this.bgY += 72 * dt;
-    this.bgX += ((dir * 10) - this.bgX) * Math.min(1, dt * 4);
+    this.bgX += ((dx * 10) - this.bgX) * Math.min(1, dt * 4);
 
     this._fireCd -= dt;
     if (held && this._fireCd <= 0) { this.bullets.push({ x: this.px, y: this.py - 14 }); this._fireCd = 0.15; }
