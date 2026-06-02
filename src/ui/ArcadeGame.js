@@ -65,7 +65,7 @@ export class ArcadeGame {
   _rnd() { this._seed = (this._seed * 1103515245 + 12345) & 0x7fffffff; return this._seed / 0x7fffffff; }
 
   reset() {
-    this.state = 'play';            // 'play' | 'boss' | 'delivering' | 'win' | 'over'
+    this.state = 'ready';           // 'ready' | 'play' | 'boss' | 'delivering' | 'win' | 'over'
     this.overReason = '';
     this.px = PF_X + PF_W / 2;
     this.py = PLAYER_Y;
@@ -85,7 +85,7 @@ export class ArcadeGame {
     this.boss = null;
     this._fireCd = 0;
     this._spawnCd = 0.5;
-    this._firePrev = false;
+    this._firePrev = true;   // require a release before the first shot can start play
     this._flash = 0;
   }
 
@@ -108,6 +108,12 @@ export class ArcadeGame {
     // Particles always animate (used by end screens too).
     for (const p of this.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
     this.parts = this.parts.filter(p => p.life > 0);
+
+    if (this.state === 'ready') {
+      if (fireEdge) this.state = 'play';
+      this._draw(t);
+      return;
+    }
 
     if (this.state === 'win' || this.state === 'over') {
       if (fireEdge) this.reset();
@@ -332,6 +338,7 @@ export class ArcadeGame {
     // Overlays for delivering / end states
     if (this.state === 'delivering') this._delivering(c, t);
     else if (this.state === 'win' || this.state === 'over') this._endScreen(c, t);
+    else if (this.state === 'ready') this._readyScreen(c, t);
 
     this.texture.needsUpdate = true;
   }
@@ -383,6 +390,18 @@ export class ArcadeGame {
     c.fillText('← → BOUGER', rx, H - 48);
     c.fillText('ESPACE TIRER', rx, H - 34);
     c.fillText('ESC SORTIR', rx, H - 20);
+  }
+
+  _readyScreen(c, t) {
+    c.fillStyle = 'rgba(0,0,0,0.8)'; c.fillRect(0, H / 2 - 52, W, 104);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillStyle = '#ffdd33'; c.font = '13px ' + FONT;
+    c.fillText('FIX ALL BUGS', W / 2, H / 2 - 26);
+    c.fillText('BEFORE DEADLINE !', W / 2, H / 2 - 4);
+    if (Math.floor(t * 1.5) % 2 === 0) {
+      c.fillStyle = '#37ffe0'; c.font = '10px ' + FONT;
+      c.fillText('SHOOT TO START', W / 2, H / 2 + 26);
+    }
   }
 
   _delivering(c, t) {

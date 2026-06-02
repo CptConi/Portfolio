@@ -84,6 +84,7 @@ function animateLeds(lights, t) {
 class Console {
   constructor(def, scene, tex) {
     this.def      = def;
+    this.kind     = 'console';
     this.cx = def.x; this.cz = def.z;
     this.prompt = 'ACCÉDER — ' + def.title;
     this.terminal = new TerminalScreen(def);
@@ -110,6 +111,7 @@ class Console {
 class Arcade {
   constructor(scene, tex) {
     this.game = new ArcadeGame();
+    this.kind = 'arcade';
     this.cx = ARCADE.x; this.cz = ARCADE.z;
     this.prompt = 'JOUER — BUG HUNTER';
     const { lights, pose } = buildMainframe(scene, tex, ARCADE, this.game.texture);
@@ -143,6 +145,9 @@ export class ScreenManager {
 
   get focused() { return this._state !== 'idle'; }
 
+  // 'console' | 'arcade' | null — what the player is currently focused on.
+  get activeKind() { return this.focused && this._active ? this._active.kind : null; }
+
   _candidate(player) {
     const fwdX = Math.cos(player.angle), fwdZ = Math.sin(player.angle);
     let best = null, bestD = FOCUS_RANGE;
@@ -159,7 +164,7 @@ export class ScreenManager {
   // Returns { cameraOverride, prompt, blockMovement }
   update(player, input, dt, tSec) {
     for (const it of this._items) it.animate(tSec);
-    const eatEsc = () => { const v = this._escape; this._escape = false; return v; };
+    const eatEsc = () => { const v = this._escape || input.escape; this._escape = false; input.escape = false; return v; };
 
     if (this._state === 'idle') {
       eatEsc();

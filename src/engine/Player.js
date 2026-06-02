@@ -34,8 +34,11 @@ export class Player {
     this.angle = -Math.PI / 2;   // facing north → landmark + quartiers hall
     this.fov   = Math.PI / 3;
 
-    this.eyeY    = floorAt(this.x, this.y) + EYE_OFFSET; // smoothed each frame
-    this.hitWall = false; // consumed by HUD.update()
+    this._eyeBase = floorAt(this.x, this.y) + EYE_OFFSET; // smoothed floor follow
+    this._bob     = 0;   // head-bob phase
+    this._bobAmp  = 0;   // eases in/out with movement
+    this.eyeY     = this._eyeBase;
+    this.hitWall  = false; // consumed by HUD.update()
   }
 
   update(input) {
@@ -44,10 +47,11 @@ export class Player {
     const rx = Math.cos(this.angle + Math.PI / 2);
     const ry = Math.sin(this.angle + Math.PI / 2);
 
-    if (input.forward)     this._move( dx * MOVE_SPEED,  dy * MOVE_SPEED);
-    if (input.backward)    this._move(-dx * MOVE_SPEED, -dy * MOVE_SPEED);
-    if (input.strafeLeft)  this._move(-rx * MOVE_SPEED, -ry * MOVE_SPEED);
-    if (input.strafeRight) this._move( rx * MOVE_SPEED,  ry * MOVE_SPEED);
+    // Analog locomotion — magnitude from the axes (keyboard = ±1, touch stick =
+    // fractional pull), so a half-pushed stick walks at half speed.
+    const mvY = input.moveY, mvX = input.moveX;
+    if (mvY) this._move(dx * MOVE_SPEED * mvY, dy * MOVE_SPEED * mvY);
+    if (mvX) this._move(rx * MOVE_SPEED * mvX, ry * MOVE_SPEED * mvX);
 
     if (input.rotLeft)  this.angle -= ROT_SPEED;
     if (input.rotRight) this.angle += ROT_SPEED;
@@ -59,9 +63,15 @@ export class Player {
 
     this.angle = ((this.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
 
-    // Camera eye smoothly follows the floor height under the player.
+    // Head bob — advance phase while moving, ease the amplitude in/out.
+    const moving = mvX !== 0 || mvY !== 0;
+    if (moving) this._bob += 0.165;
+    this._bobAmp += ((moving ? 1 : 0) - this._bobAmp) * 0.12;
+
+    // Camera eye smoothly follows the floor, plus the bob offset.
     const targetEye = floorAt(this.x, this.y) + EYE_OFFSET;
-    this.eyeY += (targetEye - this.eyeY) * 0.25;
+    this._eyeBase += (targetEye - this._eyeBase) * 0.25;
+    this.eyeY = this._eyeBase + Math.sin(this._bob) * 0.022 * this._bobAmp;
   }
 
   _move(dx, dy) {

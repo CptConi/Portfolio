@@ -6,7 +6,10 @@ export class Input {
     this.rotRight = false;
     this.strafeLeft = false;
     this.strafeRight = false;
+    this.moveX = 0;   // analog strafe  (-1 left … +1 right)
+    this.moveY = 0;   // analog forward (-1 back … +1 forward)
     this.interact = false;
+    this.escape = false;       // set by touch exit button; consumed by ScreenManager
     this.mouseDX = 0;
     this._pointerLocked = false;
     this.lockOnClick = true;   // disabled while a screen is focused (mouse stays free)
@@ -14,7 +17,9 @@ export class Input {
     window.addEventListener('keydown', e => this._onKey(e, true));
     window.addEventListener('keyup',   e => this._onKey(e, false));
 
-    canvas.addEventListener('click', () => { if (this.lockOnClick) canvas.requestPointerLock(); });
+    canvas.addEventListener('click', () => {
+      if (this.lockOnClick) try { canvas.requestPointerLock()?.catch?.(() => {}); } catch {}
+    });
     document.addEventListener('pointerlockchange', () => {
       this._pointerLocked = document.pointerLockElement === canvas;
     });
@@ -36,6 +41,10 @@ export class Input {
         if (!down) this.interact = false;
         break;
     }
+    // Keyboard drives the analog axes at full magnitude; the touch stick
+    // overwrites them with a fractional pull (see TouchControls).
+    this.moveY = (this.forward ? 1 : 0) - (this.backward ? 1 : 0);
+    this.moveX = (this.strafeRight ? 1 : 0) - (this.strafeLeft ? 1 : 0);
   }
 
   consumeInteract() {

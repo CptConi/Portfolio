@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { projects } from '../data/projects.js';
+import { techOf } from '../data/tech.js';
 import { floorAt, ceilAt } from './Map.js';
 
 // Level-design decor layer — additive geometry over the existing scene.
@@ -25,6 +26,32 @@ const PLINTHS = [
   { x: 17.7, z: 15.4, face: [0, -1] }, { x: 19.0, z: 15.4, face: [0, -1] },
   { x: 20.3, z: 15.4, face: [0, -1] }, { x: 21.6, z: 15.4, face: [0, -1] },
 ];
+
+// Load a logo SVG into a CanvasTexture (rasterised, contained with padding).
+// Async: the texture starts blank and refreshes once the image decodes.
+const _logoCache = {};
+function logoTexture(name) {
+  if (_logoCache[name]) return _logoCache[name];
+  const S = 128, pad = 14;
+  const cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const ctx = cv.getContext('2d');
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const img = new Image();
+  img.onload = () => {
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    if (iw && ih) {
+      const sc = Math.min((S - 2 * pad) / iw, (S - 2 * pad) / ih);
+      const w = iw * sc, h = ih * sc;
+      ctx.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+    } else {
+      ctx.drawImage(img, pad, pad, S - 2 * pad, S - 2 * pad);  // SVG w/o intrinsic size
+    }
+    tex.needsUpdate = true;
+  };
+  img.src = '/logos/' + name + '.svg';
+  return (_logoCache[name] = tex);
+}
 
 const hex = c => '#' + c.toString(16).padStart(6, '0');
 
@@ -209,7 +236,7 @@ export function buildDecor(scene) {
   const hub = holo(scene, HCOL, HX, HY, HZ, 0.42);
   anim.push({ node: hub, ry: 0.6, rx: 0.18, y0: HY, amp: 0.05, spd: 1.4 });
   // Banner faces south toward the spawn — readable in the tall atrium.
-  textPanel(scene, textTexture(['NICOLAS RENARD', 'LEAD DEV // DIRECTORY'], HCOL, { w: 320, h: 72, font: 14 }),
+  textPanel(scene, textTexture(['NICOLAS RENARD', 'LEAD DEV // PORTFOLIO'], HCOL, { w: 320, h: 72, font: 14 }),
     HX, 1.35, HZ, 1.5, 0.34, [0, 1]);
 
   // ── Projects trophy gallery ───────────────────────────────────────────────
@@ -224,6 +251,48 @@ export function buildDecor(scene) {
     if (proj) {
       textPanel(scene, textTexture(wrapName(proj.name), PLINTH_COLOR, { w: 224, h: 64, font: 11, border: false }),
         p.x, pf + 0.56, p.z + p.face[1] * 0.27, 0.52, 0.18, p.face);
+
+      // Floating tech-logo ring above the plinth — 2-4 brand-coloured chips, each
+      // backed by a halo in its dominant colour; the whole ring slowly orbits.
+      const techs = proj.stack.slice(0, 4).map(techOf);
+      const ringY = pf + 1.06, R = techs.length > 1 ? 0.3 : 0;
+      const grp = new THREE.Group();
+      grp.position.set(p.x, ringY, p.z);
+      techs.forEach((tk, k) => {
+        const ang = (k / techs.length) * Math.PI * 2;
+        const lx = Math.sin(ang) * R, lz = Math.cos(ang) * R;
+        const ox = Math.sin(ang), oz = Math.cos(ang);   // outward normal
+
+        const halo = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.46),
+          new THREE.MeshBasicMaterial({ map: radialTex(tk.c), transparent: true, opacity: 0.5,
+            blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false }));
+        halo.position.set(lx - ox * 0.02, 0, lz - oz * 0.02);
+        halo.rotation.y = ang;
+        grp.add(halo);
+
+        if (tk.f) {
+          // Real brand logo on a transparent card, visible from both sides.
+          const card = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.32),
+            new THREE.MeshBasicMaterial({ map: logoTexture(tk.f), transparent: true,
+              side: THREE.DoubleSide, depthWrite: false }));
+          card.position.set(lx, 0, lz);
+          card.rotation.y = ang;
+          grp.add(card);
+        } else {
+          // Text chip fallback (techs without a fetched logo), readable both sides.
+          const font = Math.max(10, Math.min(18, Math.floor(118 / Math.max(2, tk.l.length))));
+          const tex = textTexture([tk.l], tk.c, { w: 144, h: 64, font });
+          for (const s of [1, -1]) {
+            const chip = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.16),
+              new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+            chip.position.set(lx + ox * 0.012 * s, 0, lz + oz * 0.012 * s);
+            chip.rotation.y = ang + (s < 0 ? Math.PI : 0);
+            grp.add(chip);
+          }
+        }
+      });
+      scene.add(grp);
+      anim.push({ node: grp, ry: 0.45 + i * 0.03, rx: 0, y0: ringY, amp: 0.04, spd: 1.0 + i * 0.08 });
     }
   });
 

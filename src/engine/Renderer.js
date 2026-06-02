@@ -15,7 +15,12 @@ const INTERNAL_H = 360;
 // Horizontal FOV = π/3 → convert to vertical FOV for Three.js
 const H_FOV    = Math.PI / 3;
 const ASPECT   = INTERNAL_W / INTERNAL_H;
-const V_FOV_DEG = 2 * Math.atan(Math.tan(H_FOV / 2) / ASPECT) * (180 / Math.PI);
+// Vertical FOV that preserves a fixed horizontal FOV at a given aspect ratio.
+const vFovDeg  = aspect => 2 * Math.atan(Math.tan(H_FOV / 2) / aspect) * (180 / Math.PI);
+const V_FOV_DEG = vFovDeg(ASPECT);
+
+const IS_MOBILE = typeof window !== 'undefined' &&
+  ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
 export class Renderer {
   constructor(canvas, textures) {
@@ -61,6 +66,28 @@ export class Renderer {
     );
     this._composer.addPass(this._bloom);
     this._composer.addPass(new OutputPass());
+
+    // Mobile: render at the real device resolution with a viewport-matched
+    // aspect (horizontal FOV stays fixed) instead of upscaling the 640×360
+    // retro buffer with object-fit:cover — keeps console text crisp, no crop.
+    if (IS_MOBILE) {
+      this._resize();
+      window.addEventListener('resize', () => this._resize());
+      window.addEventListener('orientationchange', () => this._resize());
+    }
+  }
+
+  _resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this._renderer.setPixelRatio(dpr);
+    this._renderer.setSize(w, h, false);
+    this._composer.setPixelRatio(dpr);
+    this._composer.setSize(w, h);   // resizes all passes (incl. bloom) to w*dpr
+    const aspect = w / h;
+    this._camera.aspect = aspect;
+    this._camera.fov = vFovDeg(aspect);
+    this._camera.updateProjectionMatrix();
   }
 
   // Quality level: 1 = bloom, 0 = none.

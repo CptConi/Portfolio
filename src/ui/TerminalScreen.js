@@ -2,12 +2,22 @@ import * as THREE from 'three';
 import { skills } from '../data/skills.js';
 import { projects } from '../data/projects.js';
 import { passions } from '../data/passions.js';
+import { techOf } from '../data/tech.js';
 
 // Native canvas resolution for the screen texture (4:3-ish, matches plane ratio).
 const CW = 480, CH = 304;
 const FONT = '"Press Start 2P", monospace';
 
 const DATA = { skills, projects, passions };
+
+// Shared logo <img> cache (devicon SVGs in public/logos). Returns an Image that
+// may still be decoding — callers draw it only once `complete && naturalWidth`.
+const _logoImgs = {};
+function logoImg(f) {
+  let im = _logoImgs[f];
+  if (!im) { im = new Image(); im.src = '/logos/' + f + '.svg'; _logoImgs[f] = im; }
+  return im;
+}
 
 export class TerminalScreen {
   constructor(def) {
@@ -25,6 +35,11 @@ export class TerminalScreen {
     this.texture.magFilter = THREE.NearestFilter;
     this.texture.minFilter = THREE.NearestFilter;
     this.texture.colorSpace = THREE.SRGBColorSpace;
+
+    // Preload this console's tech logos so they're decoded before the player reads.
+    const names = def.type === 'skills' ? DATA.skills.flatMap(c => c.items)
+      : def.type === 'projects' ? DATA.projects.flatMap(p => p.stack) : [];
+    for (const n of names) { const m = techOf(n); if (m.f) logoImg(m.f); }
 
     this.draw({ focused: false, t: 0 });
   }
@@ -114,14 +129,47 @@ export class TerminalScreen {
     return cy + lh;
   }
 
+  // Tech grid — each cell is a brand logo on top + the name below; cells without
+  // a known logo just leave the top empty. Returns the y below the last row.
+  _techGrid(c, items, x, y, maxW, col, { cols = 4, logoSz = 32, cellH = 56, nameFont = 7 } = {}) {
+    const cellW = maxW / cols;
+    items.forEach((item, i) => {
+      const meta = techOf(item);
+      const cx = x + (i % cols) * cellW + cellW / 2;
+      const top = y + Math.floor(i / cols) * cellH;
+
+      const im = meta.f ? logoImg(meta.f) : null;
+      if (im && im.complete && im.naturalWidth) {
+        c.imageSmoothingEnabled = true;
+        const s = Math.min(logoSz / im.naturalWidth, logoSz / im.naturalHeight);
+        const w = im.naturalWidth * s, h = im.naturalHeight * s;
+        c.drawImage(im, cx - w / 2, top + (logoSz - h) / 2, w, h);
+        c.imageSmoothingEnabled = false;
+      } else if (im && im.complete) {
+        c.imageSmoothingEnabled = true;
+        c.drawImage(im, cx - logoSz / 2, top, logoSz, logoSz);   // SVG w/o intrinsic size
+        c.imageSmoothingEnabled = false;
+      }
+
+      c.fillStyle = col;
+      c.font = nameFont + 'px ' + FONT;
+      c.textAlign = 'center';
+      this._wrap(c, item, cellW - 8).slice(0, 2)
+        .forEach((ln, li) => c.fillText(ln, cx, top + logoSz + 12 + li * (nameFont + 4)));
+      c.textAlign = 'left';
+    });
+    return y + Math.ceil(items.length / cols) * cellH;
+  }
+
   // ── Per-type bodies ────────────────────────────────────────────────────
 
   _skills(c, _col, cat) {
     c.textBaseline = 'middle';
     c.fillStyle = cat.color;
     c.font = '12px ' + FONT;
-    c.fillText('> ' + cat.category, 18, 58);
-    this._chips(c, cat.items, 18, 92, CW - 36, cat.color, 20);
+    c.fillText('> ' + cat.category, 18, 56);
+    const cols = cat.items.length > 8 ? 5 : 4;
+    this._techGrid(c, cat.items, 18, 80, CW - 36, cat.color, { cols, logoSz: 30, cellH: 58, nameFont: 7 });
   }
 
   _projects(c, col, p) {
@@ -139,11 +187,9 @@ export class TerminalScreen {
     let y = 100;
     for (const line of this._wrap(c, p.description, CW - 40)) { c.fillText(line, 18, y); y += 16; }
 
-    y = this._chips(c, p.stack, 18, y + 10, CW - 36, '#888', 18);
-    if (p.url) {
-      c.fillStyle = col; c.font = '8px ' + FONT;
-      c.fillText('→ ' + p.tags.join(' / '), 18, y + 2);
-    }
+    y = this._techGrid(c, p.stack, 18, y + 12, CW - 36, col, { cols: 4, logoSz: 38, cellH: 64, nameFont: 8 });
+    c.fillStyle = '#888'; c.font = '8px ' + FONT;
+    c.fillText('→ ' + p.tags.join(' / '), 18, y + 4);
   }
 
   _passions(c, col, p) {

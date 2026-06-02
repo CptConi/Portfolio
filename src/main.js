@@ -4,7 +4,10 @@ import { Renderer } from './engine/Renderer.js';
 import { TextureManager } from './engine/TextureManager.js';
 import { ScreenManager } from './engine/ScreenManager.js';
 import { PushWall } from './engine/PushWall.js';
+import { getCellType } from './engine/Map.js';
 import { HUD } from './ui/HUD.js';
+import { Hands } from './ui/Hands.js';
+import { TouchControls } from './ui/Touch.js';
 
 const canvas = document.getElementById('game-canvas');
 const container = document.getElementById('game-container');
@@ -20,8 +23,18 @@ const startScreen = document.getElementById('start-screen');
   const player   = new Player();
   const input    = new Input(canvas);
   const hud      = new HUD(container);
+  const hands    = new Hands(container);
+  const touch    = new TouchControls(container, input);
   const screens  = new ScreenManager(renderer.scene, textures);
   const pushwall = new PushWall(renderer.scene, textures);
+
+  // Pointer lock rejects on touch devices — swallow the promise so it's quiet.
+  const lock = () => { try { canvas.requestPointerLock()?.catch?.(() => {}); } catch {} };
+
+  // Click drinks the coffee (only while exploring / pointer locked).
+  document.addEventListener('mousedown', () => {
+    if (!screens.focused && document.pointerLockElement) hands.drink();
+  });
 
   // FPS overlay (toggle with the ` key) — hidden by default.
   const fpsEl = document.createElement('div');
@@ -58,7 +71,7 @@ const startScreen = document.getElementById('start-screen');
     // Manage pointer lock across focus transitions.
     const focused = screens.focused;
     if (focused && !wasFocused) document.exitPointerLock();
-    else if (!focused && wasFocused) canvas.requestPointerLock();
+    else if (!focused && wasFocused) lock();
     input.lockOnClick = !focused;
     wasFocused = focused;
 
@@ -72,14 +85,23 @@ const startScreen = document.getElementById('start-screen');
     }
     hud.update(player);
     hud.updatePrompt(prompt);
+    hud.setSector(getCellType(player.x, player.y));
+    hands.update(player, dt, tSec);
+    touch.update({ prompt, focused, kind: screens.activeKind });
 
     renderer.render(player, s.cameraOverride, tSec);
     requestAnimationFrame(loop);
   }
 
-  startScreen.addEventListener('click', () => {
+  // Enter the game on any input — click/tap or any keyboard key.
+  let started = false;
+  const start = () => {
+    if (started) return;
+    started = true;
     startScreen.style.display = 'none';
-    canvas.requestPointerLock();
+    lock();
     requestAnimationFrame(loop);
-  });
+  };
+  startScreen.addEventListener('click', start);
+  window.addEventListener('keydown', start);
 })();
