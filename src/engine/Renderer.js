@@ -122,7 +122,9 @@ export class Renderer {
     }
 
     // Secret flickering pink light behind the push-wall (Portal style)
-    this._secretLight = new THREE.PointLight(0xff2a9d, 0, 6, 2);
+    // - distance: 3.5 (very short range to avoid bleeding into the atrium/rooms)
+    // - decay: 3 (sharp falloff)
+    this._secretLight = new THREE.PointLight(0xff2a9d, 0, 3.5, 3);
     this._secretLight.position.set(PUSH_WALL.mx + 0.5, ceilAt(PUSH_WALL.mx + 0.5, 17.5) - 0.1, 17.5);
     this._scene.add(this._secretLight);
   }
