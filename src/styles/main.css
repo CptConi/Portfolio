@@ -295,13 +295,13 @@ body.is-touch #viewmodel {
 
 #hud-interact-prompt {
   position: absolute;
-  bottom: 64px;
+  top: 40%;
   left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(6px, 0.8vw, 9px);
+  transform: translate(-50%, -50%);
+  font-size: clamp(12px, 1.6vw, 18px); /* Multiplied by ~2 from original */
   color: #ffdd00;
   background: #00000099;
-  padding: 8px 16px;
+  padding: 12px 24px;
   border: 1px solid #ffdd0055;
   white-space: nowrap;
   animation: blink 0.8s step-end infinite;
@@ -357,18 +357,19 @@ body.is-touch #viewmodel {
 .tc-btn.on { background: #05d9e844; box-shadow: inset 0 0 18px #05d9e8aa, 0 0 16px #05d9e8aa; }
 
 .tc-action {
-  right: 28px; bottom: 92px;
-  width: 96px; height: 96px;
+  right: 28px; 
+  bottom: 30%; /* 30% from bottom as requested */
+  width: 110px; height: 110px;
   border-radius: 50%;
-  font-size: 13px; letter-spacing: 2px;
+  font-size: 26px; /* Double the emoji size */
+  letter-spacing: 2px;
   border-color: #ffdd00cc;
   color: #ffdd00;
   background: linear-gradient(180deg, #ffffff0c, #ffdd0018);
   box-shadow: inset 0 0 14px #ffdd0022, 0 0 12px #00000088;
+  filter: grayscale(1) brightness(2); /* Maintain monochrome white hand */
 }
 .tc-action.on { background: #ffdd0055; box-shadow: inset 0 0 18px #ffdd00aa, 0 0 16px #ffdd00aa; }
-/* Force monochrome white for emojis/icons in the action button */
-.tc-action { filter: grayscale(1) brightness(2); }
 
 /* Console paging — bottom-centre pair */
 .tc-page {

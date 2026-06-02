@@ -37,7 +37,9 @@ export class HUD {
   }
 
   updatePrompt(text) {
-    this._prompt.textContent = text;
+    const isTouch = document.body.classList.contains('is-touch');
+    const label = isTouch ? text.replace('[ E ] ', '') : text;
+    this._prompt.textContent = label;
     this._prompt.style.display = text ? 'block' : 'none';
   }
 }
