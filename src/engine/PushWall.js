@@ -13,11 +13,9 @@ export class PushWall {
     this._opening = false;
     this._done = false;
 
-    // Texture matches the GRAYT variant the static builder picks for this cell:
-    // 20 + ((mx*7 + my*13) % 14) = 20 + ((84+208)%14) = 32.
-    // Spans the full atrium wall height (2.0). Slightly inset (0.94) so its side
-    // faces don't z-fight the framing wall faces the neighbours render toward it.
-    const mat = new THREE.MeshLambertMaterial({ map: tex.get(32), color: 0xb0b0b0, vertexColors: true });
+    // Affordance : au lieu de la texture 32 (mur standard), on utilise la 56 (métallique/tech)
+    // qui est plus cohérente avec l'idée d'une porte mécanique cachée.
+    const mat = new THREE.MeshLambertMaterial({ map: tex.get(56), color: 0xb0b0b0, vertexColors: true });
     const geo = new THREE.BoxGeometry(0.94, 2, 0.94);
 
     // Apply per-face shading to match the corridor's orientation-based lighting.

@@ -123,6 +123,22 @@ export class Renderer {
       this._scene.add(L);
     }
 
+    // --- Level Design : Wayfinding Lights (Spill into Atrium) ---
+    // Armurerie (West) - Green
+    const L_West = new THREE.PointLight(0x00ff41, 10, 6, 2.5);
+    L_West.position.set(8.5, 0.5, 12.5); // Inside West vestibule
+    this._scene.add(L_West);
+
+    // Trophées (East) - Orange
+    const L_East = new THREE.PointLight(0xff8c00, 10, 6, 2.5);
+    L_East.position.set(16.5, 0.5, 12.5); // Inside East vestibule
+    this._scene.add(L_East);
+
+    // Quartiers (North) - Violet
+    const L_North = new THREE.PointLight(0xcc44ff, 10, 6, 2.5);
+    L_North.position.set(12.5, 0.5, 8.5); // Inside North vestibule
+    this._scene.add(L_North);
+
     // Secret flickering pink light behind the push-wall (Portal style)
     // - distance: 3.5 (very short range to avoid bleeding into the atrium/rooms)
     // - decay: 3 (sharp falloff)
