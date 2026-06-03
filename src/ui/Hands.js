@@ -63,12 +63,12 @@ export class Hands {
         zoom = 1 + curve * 2.2;
         tilt = curve * 5;
       } else if (p < T_RAISE + T_HOLD) {
-        // Phase 2: Sip & Shake (Minecraft-style eating/drinking bounces)
+        // Phase 2: Sip & Shake (Subtle Minecraft-style bounces)
         const u = (p - T_RAISE) / T_HOLD;
-        const sips = Math.sin(u * Math.PI * 3.5); // ~3-4 distinct "gulps"
-        raise = 1.0 + sips * 0.06; // vertical bounce
-        zoom = 3.2 + sips * 0.15;  // zoom bounce
-        tilt = 13 + sips * 4;      // tilt bounce
+        const sips = Math.sin(u * Math.PI * 3.5); 
+        raise = 1.0 + sips * 0.03; // reduced vertical bounce
+        zoom = 3.2 + sips * 0.07;  // reduced zoom bounce
+        tilt = 13 + sips * 2;      // reduced tilt bounce
         shake = Math.sin(t * 70) * 3;
       } else if (p < TOTAL) {
         // Phase 3: Drop back
