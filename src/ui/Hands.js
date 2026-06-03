@@ -81,19 +81,24 @@ export class Hands {
       }
     }
 
-    // Centering logic: as we zoom, we want the rim to stay focused.
-    // transform-origin is set to the rim (see _layout)
-    this._el.style.transformOrigin = `${RIM_FX * 100}% ${RIM_FY * 100}%`;
+    // Centering logic: calculate translation to bring the rim to mouth level (center-ish)
+    // Target is roughly center-x and 55% down the screen.
+    const targetX = CW / 2;
+    const targetY = CH * 0.55;
+    const tx = (targetX - this._rimX) * raise;
+    const ty = (targetY - this._rimY) * raise;
 
     // Head-bob sway
     const amp = player._bobAmp ?? 0;
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
     const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
     
-    // Translation + Scale + Rotation
-    // raise * 120 pushes it up, zoom handles the "face collision"
+    // transform-origin is set to the rim (see _layout)
+    this._el.style.transformOrigin = `${RIM_FX * 100}% ${RIM_FY * 100}%`;
+
+    // Translation (bob + centering) + Scale + Rotation
     this._el.style.transform =
-      `translate(${bx}px, ${by - raise * 60}px) scale(${zoom}) rotate(${-tilt}deg)`;
+      `translate(${bx + tx}px, ${by + ty}px) scale(${zoom}) rotate(${-tilt}deg)`;
 
     this._step(dt, raise);
     this._draw();
