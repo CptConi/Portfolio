@@ -219,6 +219,7 @@ body.is-touch .start-touch-only { display: flex; }
 #game-container {
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
+  perspective: 1000px; /* Enable 3D depth for viewmodels */
 }
 
 #game-canvas {

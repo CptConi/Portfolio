@@ -63,17 +63,17 @@ export class Hands {
         zoom = 1 + curve * 2.2;
         tilt = curve * 5;
       } else if (p < T_RAISE + T_HOLD) {
-        // Phase 2: Sip & Shake (Subtle Minecraft-style bounces)
+        // Phase 2: Sip & Shake (Ultra-smooth subtle breathing)
         const u = (p - T_RAISE) / T_HOLD;
-        const sips = Math.sin(u * Math.PI * 3.5); 
-        raise = 1.0 + sips * 0.03; // reduced vertical bounce
-        zoom = 3.2 + sips * 0.07;  // reduced zoom bounce
-        tilt = 13 + sips * 2;      // reduced tilt bounce
-        shake = Math.sin(t * 70) * 3;
+        const sips = Math.sin(u * Math.PI * 2.0); // Slowed down frequency
+        raise = 1.0 + sips * 0.01; // Ultra subtle vertical breathing
+        zoom = 3.2 + sips * 0.02;  // Ultra subtle zoom breathing
+        tilt = 13 + sips * 1;      // Ultra subtle tilt breathing
+        shake = Math.sin(t * 70) * 2;
       } else if (p < TOTAL) {
         // Phase 3: Drop back
         const u = (p - (T_RAISE + T_HOLD)) / T_DROP;
-        const curve = 1.0 - (u * u); // ease-in
+        const curve = 1.0 - (u * (2 - u)); // ease-out-back like return
         raise = curve;
         zoom = 1 + curve * 2.2;
         tilt = curve * 5;
@@ -88,7 +88,6 @@ export class Hands {
     this._el.style.transformOrigin = `${rimXpct}% ${rimYpct}%`;
 
     // Centering logic: calculate translation to bring the rim towards screen center.
-    // tx: -240 (more centered), ty: -40 (10% lower than the previous -100)
     const tx = -240 * raise; 
     const ty = -40 * raise; 
 
@@ -97,11 +96,10 @@ export class Hands {
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
     const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
     
-    // Final transform with 3D perspective tilt
-    // - rotateX(-tilt*1.2): tilts the bottom of the mug towards the camera
-    // - skewX(tilt*0.3): subtle horizontal distortion to "fake" 3D volume
+    // Final transform with amplified 3D perspective tilt
+    // Now visible thanks to CSS perspective: 1000px
     this._el.style.transform =
-      `translate(${bx + tx}px, ${by + ty}px) scale(${zoom}) rotate(${-tilt}deg) rotateX(${-tilt * 1.5}deg) skewX(${tilt * 0.3}deg)`;
+      `translate3d(${bx + tx}px, ${by + ty}px, 0) scale(${zoom}) rotateZ(${-tilt}deg) rotateX(${-tilt * 3.5}deg) skewX(${tilt * 0.2}deg)`;
 
     this._step(dt, raise);
     this._draw();
