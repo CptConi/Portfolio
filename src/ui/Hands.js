@@ -60,15 +60,16 @@ export class Hands {
         const u = p / T_RAISE;
         const curve = u * (2 - u); // ease-out
         raise = curve;
-        zoom = 1 + curve * 2.2; // 1x to 3.2x zoom
-        tilt = curve * 5; // very slight tilt
+        zoom = 1 + curve * 2.2;
+        tilt = curve * 5;
       } else if (p < T_RAISE + T_HOLD) {
-        // Phase 2: Sip & Shake
+        // Phase 2: Sip & Shake (Minecraft-style eating/drinking bounces)
         const u = (p - T_RAISE) / T_HOLD;
-        raise = 1.0;
-        zoom = 3.2 + Math.sin(u * Math.PI) * 0.3; // breath-like zoom pulse
-        tilt = 5 + Math.sin(u * Math.PI) * 8; // slight tilt during sip
-        shake = Math.sin(t * 70) * 3; // micro-tremble
+        const sips = Math.sin(u * Math.PI * 3.5); // ~3-4 distinct "gulps"
+        raise = 1.0 + sips * 0.06; // vertical bounce
+        zoom = 3.2 + sips * 0.15;  // zoom bounce
+        tilt = 13 + sips * 4;      // tilt bounce
+        shake = Math.sin(t * 70) * 3;
       } else if (p < TOTAL) {
         // Phase 3: Drop back
         const u = (p - (T_RAISE + T_HOLD)) / T_DROP;
@@ -87,10 +88,9 @@ export class Hands {
     this._el.style.transformOrigin = `${rimXpct}% ${rimYpct}%`;
 
     // Centering logic: calculate translation to bring the rim towards screen center.
-    // Since the canvas is anchored right, moving it to the center requires a large negative X translation.
-    // ty pushes it up to mouth level.
-    const tx = -180 * raise; // Move left
-    const ty = -100 * raise; // Move up
+    // tx: -240 (more centered), ty: -40 (10% lower than the previous -100)
+    const tx = -240 * raise; 
+    const ty = -40 * raise; 
 
     // Head-bob sway
     const amp = player._bobAmp ?? 0;
