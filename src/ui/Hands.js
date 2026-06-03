@@ -81,22 +81,23 @@ export class Hands {
       }
     }
 
-    // Centering logic: calculate translation to bring the rim to mouth level (center-ish)
-    // Target is roughly center-x and 55% down the screen.
-    const targetX = CW / 2;
-    const targetY = CH * 0.55;
-    const tx = (targetX - this._rimX) * raise;
-    const ty = (targetY - this._rimY) * raise;
+    // Correct transform-origin: rim position as percentage of the total canvas (300x264)
+    const rimXpct = (this._rimX / CW) * 100;
+    const rimYpct = (this._rimY / CH) * 100;
+    this._el.style.transformOrigin = `${rimXpct}% ${rimYpct}%`;
+
+    // Centering logic: calculate translation to bring the rim towards screen center.
+    // Since the canvas is anchored right, moving it to the center requires a large negative X translation.
+    // ty pushes it up to mouth level.
+    const tx = -180 * raise; // Move left
+    const ty = -100 * raise; // Move up
 
     // Head-bob sway
     const amp = player._bobAmp ?? 0;
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
     const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
     
-    // transform-origin is set to the rim (see _layout)
-    this._el.style.transformOrigin = `${RIM_FX * 100}% ${RIM_FY * 100}%`;
-
-    // Translation (bob + centering) + Scale + Rotation
+    // Final transform
     this._el.style.transform =
       `translate(${bx + tx}px, ${by + ty}px) scale(${zoom}) rotate(${-tilt}deg)`;
 
