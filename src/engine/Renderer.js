@@ -178,6 +178,12 @@ export class Renderer {
     place(new THREE.InstancedMesh(floorGeo, new THREE.MeshLambertMaterial({ map: tex.get(40), color: 0x9a9a9a }), cells.length),
       (mx, my) => floorAt(mx + 0.5, my + 0.5));
 
+    // Secret hallway grate floor (Environmental storytelling)
+    const grateGeo = new THREE.PlaneGeometry(0.99, 0.99).rotateX(-Math.PI / 2);
+    const grateMesh = new THREE.Mesh(grateGeo, new THREE.MeshLambertMaterial({ map: tex.get(2), transparent: true, alphaTest: 0.5 }));
+    grateMesh.position.set(12.5, floorAt(12.5, 17.5) + 0.005, 17.5);
+    this._scene.add(grateMesh);
+
     const ceilGeo = new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2);
     place(new THREE.InstancedMesh(ceilGeo, new THREE.MeshLambertMaterial({ map: tex.get(41), color: 0x707070 }), cells.length),
       (mx, my) => ceilAt(mx + 0.5, my + 0.5));
@@ -319,13 +325,19 @@ export class Renderer {
     if (this._secretLight) {
       // Base intensity reduced to ~20% of previous (from 15 to 3).
       // We also ease it in if the secret is open/opening.
-      const targetIntensity = isSecretOpen() ? 3.0 : 0.0;
+      const targetIntensity = isSecretOpen() ? 3.5 : 0.0;
       
       // Smoothly approach the target intensity (ease out)
       this._secretLight.intensity = lerp(this._secretLight.intensity, targetIntensity, 0.05);
 
-      if (this._secretLight.intensity > 0.01) {
-        const flicker = Math.random() > 0.93 ? Math.random() * 0.5 : 0.9 + Math.random() * 0.1;
+      if (this._secretLight.intensity > 0.1) {
+        // High-contrast electric short-circuit flicker
+        const chance = Math.random();
+        let flicker = 1.0;
+        if (chance > 0.96) flicker = 0.0; // Total blackout
+        else if (chance > 0.85) flicker = 0.2 + Math.random() * 0.3; // Low light
+        else flicker = 0.9 + Math.random() * 0.2; // Normal-ish
+        
         this._secretLight.intensity *= flicker;
       }
     }

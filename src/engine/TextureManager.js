@@ -54,6 +54,9 @@ const SOURCES = {
   106: '/sprites/TLMPA0.png',   // tech floor lamp
   110: '/sprites/FCANA0.png', 111: '/sprites/FCANB0.png', 112: '/sprites/FCANC0.png',  // flaming can (anim)
   120: '/sprites/TLP2A0.png', 121: '/sprites/TLP2B0.png', 122: '/sprites/TLP2C0.png', 123: '/sprites/TLP2D0.png',  // tech lamp (anim)
+  // Maintenance / Secret Place
+  130: '/sprites/ELECA0.png',   // hanging wires
+  131: '/sprites/CBRAA0.png',   // floor cables
 };
 
 const loader = new THREE.TextureLoader();

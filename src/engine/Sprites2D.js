@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { floorAt } from './Map.js';
+import { floorAt, ceilAt } from './Map.js';
 
 // 2D billboard props (Freedoom sprites) — camera-facing THREE.Sprites anchored to
 // the floor. `bright` props stay full-bright (fire / lit lamps → they bloom);
@@ -15,6 +15,9 @@ const DEFS = {
   lamp:   { tex: 106, h: 0.86, ar: 18 / 80,  solid: true, bright: true, lc: 0xbfe0ff, li: 6 },
   fcan:   { frames: [110, 111, 112], h: 0.70, ar: 25 / 63, solid: true, bright: true, fps: 8, lc: 0xff7a2a, li: 7 },
   tlamp:  { frames: [120, 121, 122, 123], h: 0.62, ar: 16 / 57, solid: true, bright: true, fps: 6, lc: 0x7fd0ff, li: 6 },
+  // Secret Place / Maintenance assets
+  elec_box: { tex: 130, h: 0.90, ar: 16 / 64, solid: false }, // ELECA0: cables hanging from ceiling
+  cables:   { tex: 131, h: 0.25, ar: 31 / 61, solid: false }, // CBRAA0: cables on floor
 };
 
 const SPRITES = [
@@ -27,8 +30,12 @@ const SPRITES = [
   // Quartiers — warm candelabra + candles on the sides (entry centre kept clear)
   { x: 9.5, z: 6.0, d: 'cbra' }, { x: 15.5, z: 6.0, d: 'cbra' },
   { x: 10.7, z: 6.4, d: 'candle' }, { x: 14.3, z: 6.4, d: 'candle' },
-  // Arcade — tech lamps (no fire)
+  // Secret Place — tech lamps + maintenance decay
   { x: 10.0, z: 19.0, d: 'tlamp' }, { x: 15.0, z: 19.0, d: 'tlamp' },
+  { x: 12.2, z: 17.2, d: 'elec_box', anchor: 'top' }, // Ceiling wires (inside vestibule)
+  { x: 12.8, z: 17.5, d: 'elec_box', anchor: 'top' }, // Ceiling wires (inside vestibule)
+  { x: 11.5, z: 20.5, d: 'cables' }, // Floor cables (inside arcade room)
+  { x: 14.2, z: 18.8, d: 'cables' },
   // Candle on the Armurerie central table (yoff = table height)
   { x: 4.7, z: 12.5, d: 'candle', yoff: 0.35 },
 ];
@@ -46,25 +53,24 @@ export function buildSprites(scene, tex) {
   const anim = [], lights = [];
   for (const s of SPRITES) {
     const def = DEFS[s.d];
-    const fy = floorAt(s.x, s.z) + (s.yoff || 0);
+    const isTop = s.anchor === 'top';
+    const fy = isTop ? ceilAt(s.x, s.z) : floorAt(s.x, s.z) + (s.yoff || 0);
     const firstTex = def.frames ? tex.get(def.frames[0]) : tex.get(def.tex);
-    // Opaque cutout (alphaTest, not transparent): hard edges, correct depth,
-    // no half-transparency, no post-process quad artifacts.
+    
     const mat = new THREE.SpriteMaterial({
       map: firstTex, transparent: false, alphaTest: 0.5,
       color: def.bright ? 0xffffff : 0xb0b0b0,
     });
     const spr = new THREE.Sprite(mat);
-    spr.center.set(0.5, 0);                       // anchor bottom to the floor
+    spr.center.set(0.5, isTop ? 1.0 : 0);          // anchor bottom to floor OR top to ceiling
     spr.scale.set(spriteW(def), def.h, 1);
     spr.position.set(s.x, fy, s.z);
     scene.add(spr);
     if (def.frames) anim.push({ mat, frames: def.frames, fps: def.fps });
 
-    // Flickering point light on flares / lit / animated props.
     if (def.lc) {
       const light = new THREE.PointLight(def.lc, def.li, 4.5, 2);
-      light.position.set(s.x, fy + def.h * 0.7, s.z);
+      light.position.set(s.x, fy + def.h * (isTop ? -0.3 : 0.7), s.z);
       scene.add(light);
       lights.push({ light, base: def.li, phase: lights.length * 1.7 });
     }
