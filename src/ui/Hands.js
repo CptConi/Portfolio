@@ -44,45 +44,56 @@ export class Hands {
   _rnd() { this._seed = (this._seed * 1103515245 + 12345) & 0x7fffffff; return this._seed / 0x7fffffff; }
 
   update(player, dt, t) {
-    // Drink animation (Punchy 3-phase sequence)
-    let raise = 0, tilt = 0, shake = 0;
+    // Drink animation (Punchy 3-phase sequence with massive zoom)
+    let raise = 0, tilt = 0, shake = 0, zoom = 1;
     if (this._drink > 0) {
       this._drink += dt;
-      const T_RAISE = 0.18; // Fast snap up
-      const T_HOLD  = 0.45; // Sip duration
-      const T_DROP  = 0.35; // Return time
+      const T_RAISE = 0.22; // Quick approach
+      const T_HOLD  = 0.40; // Sip
+      const T_DROP  = 0.35; // Return
       const TOTAL   = T_RAISE + T_HOLD + T_DROP;
       
       const p = this._drink;
 
       if (p < T_RAISE) {
-        // Phase 1: Snap up
+        // Phase 1: Zoom in & Snap up
         const u = p / T_RAISE;
-        raise = u * u; // quadratic ease-in for snap
-        tilt = u * 0.5;
+        const curve = u * (2 - u); // ease-out
+        raise = curve;
+        zoom = 1 + curve * 2.2; // 1x to 3.2x zoom
+        tilt = curve * 5; // very slight tilt
       } else if (p < T_RAISE + T_HOLD) {
         // Phase 2: Sip & Shake
         const u = (p - T_RAISE) / T_HOLD;
         raise = 1.0;
-        tilt = 0.5 + Math.sin(u * Math.PI) * 0.6; // tilt more during sip
-        shake = Math.sin(t * 65) * 2.5; // micro-tremble
+        zoom = 3.2 + Math.sin(u * Math.PI) * 0.3; // breath-like zoom pulse
+        tilt = 5 + Math.sin(u * Math.PI) * 8; // slight tilt during sip
+        shake = Math.sin(t * 70) * 3; // micro-tremble
       } else if (p < TOTAL) {
-        // Phase 3: Drop with bounce
+        // Phase 3: Drop back
         const u = (p - (T_RAISE + T_HOLD)) / T_DROP;
-        raise = 1.0 - Math.sin(u * Math.PI * 0.5); // smooth drop
-        if (u > 0.8) raise += Math.sin((u - 0.8) * 15) * 0.05; // tiny bounce at end
-        tilt = raise * 0.5;
+        const curve = 1.0 - (u * u); // ease-in
+        raise = curve;
+        zoom = 1 + curve * 2.2;
+        tilt = curve * 5;
       } else {
         this._drink = 0;
       }
     }
 
-    // Head-bob sway (reads the player's bob phase/amplitude)
+    // Centering logic: as we zoom, we want the rim to stay focused.
+    // transform-origin is set to the rim (see _layout)
+    this._el.style.transformOrigin = `${RIM_FX * 100}% ${RIM_FY * 100}%`;
+
+    // Head-bob sway
     const amp = player._bobAmp ?? 0;
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
     const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
+    
+    // Translation + Scale + Rotation
+    // raise * 120 pushes it up, zoom handles the "face collision"
     this._el.style.transform =
-      `translate(${bx}px, ${by - raise * 110}px) rotate(${-tilt * 24}deg)`;
+      `translate(${bx}px, ${by - raise * 60}px) scale(${zoom}) rotate(${-tilt}deg)`;
 
     this._step(dt, raise);
     this._draw();
