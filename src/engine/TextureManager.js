@@ -33,6 +33,17 @@ const SOURCES = {
   40: '/textures/FLOOR78.png',
   41: '/textures/CNCRT1.png',
   42: '/textures/TLITE5_2.png',
+  // Maintenance / Secret Place
+  6:  '/textures/WARNWL01.png',
+  60: '/textures/GRAYCMP2.png',
+  61: '/textures/METLT02.png',   // metal floor
+  70: '/textures/COMPSP06.png',  // side walls mix
+  71: '/textures/COMPSP07.png',
+  72: '/textures/COMPSP08.png',
+  80: '/textures/PIPEWAL5.png',  // back wall
+  81: '/textures/PIPEWAL6.png',
+  85: '/textures/MIDBRN09.png',  // ceiling panels
+  86: '/textures/DOSPI1B.png',   // oblique pipe
   // Props
   50: '/textures/COMPCT01.png',  // control panel tech (skills)
   51: '/textures/LOCKER01.png',  // lockers (skills)
@@ -54,9 +65,10 @@ const SOURCES = {
   106: '/sprites/TLMPA0.png',   // tech floor lamp
   110: '/sprites/FCANA0.png', 111: '/sprites/FCANB0.png', 112: '/sprites/FCANC0.png',  // flaming can (anim)
   120: '/sprites/TLP2A0.png', 121: '/sprites/TLP2B0.png', 122: '/sprites/TLP2C0.png', 123: '/sprites/TLP2D0.png',  // tech lamp (anim)
-  // Maintenance / Secret Place
-  130: '/sprites/ELECA0.png',   // hanging wires
+  130: '/sprites/ELECA0.png',   // tall tech pillar
   131: '/sprites/CBRAA0.png',   // floor cables
+  140: '/sprites/WIRE1.png',    // hanging wires 1
+  141: '/sprites/WIRE2.png',    // hanging wires 2
 };
 
 const loader = new THREE.TextureLoader();

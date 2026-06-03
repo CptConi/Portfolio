@@ -15,9 +15,6 @@ const DEFS = {
   lamp:   { tex: 106, h: 0.86, ar: 18 / 80,  solid: true, bright: true, lc: 0xbfe0ff, li: 6 },
   fcan:   { frames: [110, 111, 112], h: 0.70, ar: 25 / 63, solid: true, bright: true, fps: 8, lc: 0xff7a2a, li: 7 },
   tlamp:  { frames: [120, 121, 122, 123], h: 0.62, ar: 16 / 57, solid: true, bright: true, fps: 6, lc: 0x7fd0ff, li: 6 },
-  // Secret Place / Maintenance assets
-  elec_box: { tex: 130, h: 0.90, ar: 16 / 64, solid: false }, // ELECA0: cables hanging from ceiling
-  cables:   { tex: 131, h: 0.25, ar: 31 / 61, solid: false }, // CBRAA0: cables on floor
 };
 
 const SPRITES = [
@@ -30,12 +27,8 @@ const SPRITES = [
   // Quartiers — warm candelabra + candles on the sides (entry centre kept clear)
   { x: 9.5, z: 6.0, d: 'cbra' }, { x: 15.5, z: 6.0, d: 'cbra' },
   { x: 10.7, z: 6.4, d: 'candle' }, { x: 14.3, z: 6.4, d: 'candle' },
-  // Secret Place — tech lamps + maintenance decay
+  // Secret Place — tech lamps
   { x: 10.0, z: 19.0, d: 'tlamp' }, { x: 15.0, z: 19.0, d: 'tlamp' },
-  { x: 12.2, z: 17.2, d: 'elec_box', anchor: 'top' }, // Ceiling wires (inside vestibule)
-  { x: 12.8, z: 17.5, d: 'elec_box', anchor: 'top' }, // Ceiling wires (inside vestibule)
-  { x: 11.5, z: 20.5, d: 'cables' }, // Floor cables (inside arcade room)
-  { x: 14.2, z: 18.8, d: 'cables' },
   // Candle on the Armurerie central table (yoff = table height)
   { x: 4.7, z: 12.5, d: 'candle', yoff: 0.35 },
 ];

@@ -3,7 +3,7 @@
 
 const SECTORS = {
   0: 'COULOIR', 1: '—', 2: 'ARMURERIE', 3: 'TROPHÉES',
-  4: 'QUARTIERS', 5: 'SECRET PLACE', 6: 'ATRIUM',
+  4: 'QUARTIERS', 5: '??? Secret Place', 6: 'ATRIUM',
 };
 
 export class HUD {

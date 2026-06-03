@@ -425,11 +425,12 @@ export function buildDecor(scene, tex = null) {
   const sf = floorAt(12.5, 20.5), sc = ceilAt(12.5, 20.5);  // arcade floor/ceil
   // Dim the whole room: black overlays over floor, ceiling and the 3 solid walls
   // (north wall has the entrance, left lit).
-  darkPanel(scene, 12.5, 20.5, 7, 5, sf + 0.05, false, 0.62);
-  darkPanel(scene, 12.5, 20.5, 7, 5, sc - 0.01, true, 0.7);
-  darkWall(scene, 12.5, 23.0, 7, [0, -1], sf, sc);    // south wall
-  darkWall(scene, 9.0,  20.5, 5, [1, 0],  sf, sc);    // west wall
-  darkWall(scene, 16.0, 20.5, 5, [-1, 0], sf, sc);    // east wall
+  // Increased opacity to 0.94 for extreme darkness.
+  darkPanel(scene, 12.5, 20.5, 7, 5, sf + 0.05, false, 0.94); 
+  darkPanel(scene, 12.5, 20.5, 7, 5, sc - 0.01, true, 0.94);
+  darkWall(scene, 12.5, 23.0, 7, [0, -1], sf, sc, 0.94);    // south wall
+  darkWall(scene, 9.0,  20.5, 5, [1, 0],  sf, sc, 0.94);    // west wall
+  darkWall(scene, 16.0, 20.5, 5, [-1, 0], sf, sc, 0.94);    // east wall
   // Arcade glow (pool reaches slightly toward the player to the north).
   softPool(scene, SCOL, AX, AZ - 0.25, 1.9, { y: sf + 0.07, opacity: 0.42 });
   softPool(scene, 0x37ffe0, AX, AZ - 0.2, 1.1, { y: sc - 0.015, opacity: 0.5, down: true });

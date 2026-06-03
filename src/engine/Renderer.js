@@ -178,15 +178,37 @@ export class Renderer {
     place(new THREE.InstancedMesh(floorGeo, new THREE.MeshLambertMaterial({ map: tex.get(40), color: 0x9a9a9a }), cells.length),
       (mx, my) => floorAt(mx + 0.5, my + 0.5));
 
+    // Secret room floor override with METLT02 (id 61)
+    // Starts at my=18 to cover the room threshold
+    const secretFloorCells = cells.filter(([mx, my]) => my >= 18 && mx >= 9 && mx <= 16);
+    if (secretFloorCells.length) {
+      const sFloorGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+      const sFloorMesh = new THREE.InstancedMesh(sFloorGeo, new THREE.MeshLambertMaterial({ map: tex.get(61) }), secretFloorCells.length);
+      secretFloorCells.forEach(([mx, my], i) => {
+        dummy.position.set(mx + 0.5, floorAt(mx + 0.5, my + 0.5) + 0.002, my + 0.5);
+        dummy.updateMatrix(); sFloorMesh.setMatrixAt(i, dummy.matrix);
+      });
+      sFloorMesh.instanceMatrix.needsUpdate = true;
+      this._scene.add(sFloorMesh);
+    }
+
     // Secret hallway grate floor (Environmental storytelling)
-    const grateGeo = new THREE.PlaneGeometry(0.99, 0.99).rotateX(-Math.PI / 2);
+    // Adjusted to fix the Z-glitch and avoid doubling the floor plane
+    const grateGeo = new THREE.PlaneGeometry(0.99, 1.98).rotateX(-Math.PI / 2);
     const grateMesh = new THREE.Mesh(grateGeo, new THREE.MeshLambertMaterial({ map: tex.get(2), transparent: true, alphaTest: 0.5 }));
-    grateMesh.position.set(12.5, floorAt(12.5, 17.5) + 0.005, 17.5);
+    // Placed slightly lower to avoid z-fighting but high enough to be seen as the only floor
+    grateMesh.position.set(12.5, floorAt(12.5, 16.5) + 0.01, 16.5);
     this._scene.add(grateMesh);
 
     const ceilGeo = new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2);
     place(new THREE.InstancedMesh(ceilGeo, new THREE.MeshLambertMaterial({ map: tex.get(41), color: 0x707070 }), cells.length),
       (mx, my) => ceilAt(mx + 0.5, my + 0.5));
+
+    // Secret room ceiling panels (MIDBRN09 id 85)
+    const ceilP1 = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2), new THREE.MeshLambertMaterial({ map: tex.get(85) }));
+    ceilP1.position.set(10.5, ceilAt(10.5, 20.5) - 0.005, 20.5); this._scene.add(ceilP1);
+    const ceilP2 = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2), new THREE.MeshLambertMaterial({ map: tex.get(85) }));
+    ceilP2.position.set(14.5, ceilAt(14.5, 19.5) - 0.005, 19.5); this._scene.add(ceilP2);
 
     // Ceiling light panels — across all rooms & corridors, just below the local
     // ceiling, so high (cathedral) ceilings are actually lit and read as volume.
@@ -211,7 +233,17 @@ export class Renderer {
       groups.get(texId).push({ x, z, rotY, dim, h, cy });
     };
     const cellVal = (mx, my) => (mx < 0 || mx >= MAP_WIDTH || my < 0 || my >= MAP_HEIGHT) ? 1 : MAP[my][mx];
-    const faceTexId = (mx, my, nv) => (nv >= 2 && nv <= 4) ? nv : 20 + ((mx * 7 + my * 13) % 14);
+    const faceTexId = (mx, my, nv) => {
+      if (nv >= 2 && nv <= 4) return nv;
+      // Secret area texture overrides (by world coordinates)
+      // Transition starts at Z=18 (threshold of the dark room)
+      if (my >= 18 && mx >= 9 && mx <= 16) {
+        if (my === 22) return (mx === 12 || mx === 13) ? 81 : 80; // Back wall: PIPEWAL mix
+        return 70 + ((mx + my) % 3); // Side and entry-facing walls: COMPSP mix
+      }
+      if (my >= 16 && my <= 17 && mx === 12) return 60; // Secret hallway: concrete with wires
+      return 20 + ((mx * 7 + my * 13) % 14);
+    };
     const fAt = (mx, my) => floorAt(mx + 0.5, my + 0.5);
     const cAt = (mx, my) => ceilAt(mx + 0.5, my + 0.5);
     const STEP_TEX = 26, EPS = 0.001;
@@ -269,9 +301,46 @@ export class Renderer {
   }
 
   _buildProps() {
+    // --- Level Design : Chaotic 3D Cable Loops (Hanging from ceiling) ---
+    const cableMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
+    const cablePositions = [
+      { x: 12.3, z: 17.1, r: 0.18, ry: 0.2 }, { x: 12.7, z: 17.5, r: 0.25, ry: -0.4 }, // Hallway
+      { x: 12.1, z: 17.9, r: 0.12, ry: 0.8 }, 
+      { x: 11.0, z: 20.2, r: 0.35, ry: 1.1 }, { x: 14.0, z: 19.5, r: 0.22, ry: -0.9 }, // Inside room (moved to avoid console)
+      { x: 13.5, z: 21.0, r: 0.40, ry: 0.3 }, 
+    ];
+    for (const cp of cablePositions) {
+      const arcGeo = new THREE.TorusGeometry(cp.r, 0.01, 6, 12, Math.PI * 0.98); // tighter arc to ceiling
+      const loop = new THREE.Mesh(arcGeo, cableMat);
+      // Anchor precisely to ceiling.
+      loop.position.set(cp.x, ceilAt(cp.x, cp.z), cp.z);
+      loop.rotation.z = Math.PI; // hang DOWN
+      loop.rotation.y = cp.ry;
+      // loop.rotation.x = 0; // Removed chaotic X tilt to ensure it stays flush with ceiling
+      loop.scale.set(1.0 + Math.random() * 0.4, 0.8 + Math.random() * 0.6, 1.0); // stretch to make them OVAL and hang at different depths
+      this._scene.add(loop);
+    }
+
+    // --- Level Design : Oblique Pipes (DOSPI1B) ---
+    // Darkened color (0x666666) and reduced width (0.9)
+    const pipeMat = new THREE.MeshLambertMaterial({ map: this._tex.get(86), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, color: 0x666666 });
+    const pipeGeo = new THREE.PlaneGeometry(0.9, 0.8); 
+    
+    const p1 = new THREE.Mesh(pipeGeo, pipeMat);
+    p1.position.set(9.15, ceilAt(9.1, 18.1) - 0.25, 18.1); // NW Corner (further from wall)
+    p1.rotation.set(Math.PI / 4, Math.PI / 4, 0); 
+    this._scene.add(p1);
+
+    const p2 = new THREE.Mesh(pipeGeo, pipeMat);
+    p2.position.set(15.85, ceilAt(15.9, 18.1) - 0.25, 18.1); // NE Corner (further from wall)
+    p2.rotation.set(Math.PI / 4, -Math.PI / 4, 0); 
+    this._scene.add(p2);
+
     for (const prop of PROPS3D) {
-      const sideMat = new THREE.MeshLambertMaterial({ map: this._tex.get(prop.texSide) });
-      const topMat  = new THREE.MeshLambertMaterial({ map: this._tex.get(prop.texTop ?? prop.texSide) });
+      const isSecret = prop.y >= 18 || (prop.x >= 9 && prop.x <= 16 && prop.y >= 18);
+      const tint = isSecret ? 0x444444 : 0xffffff; // Even darker tint for props in secret area
+      const sideMat = new THREE.MeshLambertMaterial({ map: this._tex.get(prop.texSide), color: tint });
+      const topMat  = new THREE.MeshLambertMaterial({ map: this._tex.get(prop.texTop ?? prop.texSide), color: tint });
       // BoxGeometry face order: +X,-X,+Y,-Y,+Z,-Z
       const mats = [sideMat, sideMat, topMat, sideMat, sideMat, sideMat];
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(prop.w, prop.h, prop.d), mats);

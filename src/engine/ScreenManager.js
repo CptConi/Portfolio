@@ -48,8 +48,9 @@ function buildMainframe(scene, tex, def, screenTex) {
   geo.rotateY(-Math.PI / 2);
   geo.translate(0.5, 0, 0);
   shadeByNormal(geo);
+  const bodyColor = def.id === 'arcade' ? 0x888b90 : 0xc2c8d0;
   group.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
-    map: tex.get(56), color: 0xc2c8d0, vertexColors: true })));
+    map: tex.get(56), color: bodyColor, vertexColors: true })));
 
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.38),
     new THREE.MeshBasicMaterial({ map: screenTex }));
@@ -58,12 +59,23 @@ function buildMainframe(scene, tex, def, screenTex) {
   group.add(screen);
 
   const lights = [];
-  for (let i = 0; i < 8; i++) {
-    const c = LIGHT_COLORS[(i * 3 + def.id.length) % LIGHT_COLORS.length];
-    const led = new THREE.Mesh(new THREE.PlaneGeometry(0.045, 0.045), new THREE.MeshBasicMaterial({ color: c }));
-    led.position.set(-0.36 + i * 0.103, 0.22, 0.285);
-    group.add(led);
-    lights.push({ mesh: led, period: 0.4 + (i % 4) * 0.25, phase: (i * 0.37) % 1 });
+  const LED_ROWS = 3, LED_COLS = 8;
+  const ledGeo = new THREE.PlaneGeometry(0.025, 0.025);
+  for (let r = 0; r < LED_ROWS; r++) {
+    for (let c = 0; c < LED_COLS; c++) {
+      const color = LIGHT_COLORS[(r * LED_COLS + c + def.id.length) % LIGHT_COLORS.length];
+      const lx = -0.38 + c * 0.108;
+      const ly = 0.22 + r * 0.045;
+      // Background / Off state
+      const off = new THREE.Mesh(ledGeo, new THREE.MeshBasicMaterial({ color: 0x1a1a1a }));
+      off.position.set(lx, ly, 0.284);
+      group.add(off);
+      // Light / On state
+      const led = new THREE.Mesh(ledGeo, new THREE.MeshBasicMaterial({ color }));
+      led.position.set(lx, ly, 0.285);
+      group.add(led);
+      lights.push({ mesh: led, period: 0.15 + Math.random() * 0.9, phase: Math.random(), chaos: Math.random() > 0.7 });
+    }
   }
   scene.add(group);
 
@@ -78,8 +90,11 @@ function buildMainframe(scene, tex, def, screenTex) {
 }
 
 function animateLeds(lights, t) {
-  for (const l of lights)
-    l.mesh.visible = Math.sin((t / l.period + l.phase) * Math.PI * 2) > -0.2;
+  for (const l of lights) {
+    let v = Math.sin((t / l.period + l.phase) * Math.PI * 2);
+    if (l.chaos && Math.random() > 0.98) v = 2.0; // erratic spike
+    l.mesh.visible = v > 0.35;
+  }
 }
 
 // ── Focusable: a mainframe console showing paged data on a tilted screen ────
