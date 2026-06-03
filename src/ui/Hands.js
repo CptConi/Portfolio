@@ -97,9 +97,11 @@ export class Hands {
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
     const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
     
-    // Final transform
+    // Final transform with 3D perspective tilt
+    // - rotateX(-tilt*1.2): tilts the bottom of the mug towards the camera
+    // - skewX(tilt*0.3): subtle horizontal distortion to "fake" 3D volume
     this._el.style.transform =
-      `translate(${bx + tx}px, ${by + ty}px) scale(${zoom}) rotate(${-tilt}deg)`;
+      `translate(${bx + tx}px, ${by + ty}px) scale(${zoom}) rotate(${-tilt}deg) rotateX(${-tilt * 1.5}deg) skewX(${tilt * 0.3}deg)`;
 
     this._step(dt, raise);
     this._draw();
