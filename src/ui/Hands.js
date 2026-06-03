@@ -90,16 +90,18 @@ export class Hands {
     // Centering logic: calculate translation to bring the rim towards screen center.
     const tx = -240 * raise; 
     const ty = -40 * raise; 
+    const tz = 450 * raise; // Bring mug forward in 3D space
 
     // Head-bob sway
     const amp = player._bobAmp ?? 0;
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
     const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
     
-    // Final transform with amplified 3D perspective tilt
-    // Now visible thanks to CSS perspective: 1000px
+    // Final transform with inverted and subtler 3D perspective
+    // - rotateX(tilt * 1.5): tilts the bottom of the mug AWAY from the camera (inverse)
+    // - translate3d: uses tz for real depth
     this._el.style.transform =
-      `translate3d(${bx + tx}px, ${by + ty}px, 0) scale(${zoom}) rotateZ(${-tilt}deg) rotateX(${-tilt * 3.5}deg) skewX(${tilt * 0.2}deg)`;
+      `translate3d(${bx + tx}px, ${by + ty}px, ${tz}px) scale(${zoom}) rotateZ(${-tilt}deg) rotateX(${tilt * 1.5}deg) skewX(${-tilt * 0.1}deg)`;
 
     this._step(dt, raise);
     this._draw();
