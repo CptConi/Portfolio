@@ -13,9 +13,9 @@ export class PushWall {
     this._opening = false;
     this._done = false;
 
-    // Affordance : au lieu de la texture 32 (mur standard), on utilise la 56 (métallique/tech)
-    // qui est plus cohérente avec l'idée d'une porte mécanique cachée.
-    const mat = new THREE.MeshLambertMaterial({ map: tex.get(56), color: 0xb0b0b0, vertexColors: true });
+    // Texture matches the GRAYT variant the static builder picks for this cell:
+    // 20 + ((mx*7 + my*13) % 14) = 20 + ((84+208)%14) = 32.
+    const mat = new THREE.MeshLambertMaterial({ map: tex.get(32), color: 0xb0b0b0, vertexColors: true });
     const geo = new THREE.BoxGeometry(0.94, 2, 0.94);
 
     // Apply per-face shading to match the corridor's orientation-based lighting.

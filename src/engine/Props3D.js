@@ -30,10 +30,11 @@ export const PROPS3D = [
   { x: 2.7, y: 10.5, w: 0.3,  d: 0.7,  h: 0.7,  texSide: 54 },
   
   // Rows of servers (Environmental Storytelling: the tech arsenal)
-  { x: 3.5, y: 9.3,  w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
-  { x: 5.5, y: 9.3,  w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
-  { x: 3.5, y: 15.7, w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
-  { x: 5.5, y: 15.7, w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
+  // Placed at the edges of the room to flank the slanted skill racks (which are between X 3 and 7)
+  { x: 2.5, y: 9.3,  w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
+  { x: 7.5, y: 9.3,  w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
+  { x: 2.5, y: 15.7, w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
+  { x: 7.5, y: 15.7, w: 0.8,  d: 0.35, h: 0.95, texSide: 58, texTop: 56 },
 
   // ── Quartiers (N) — domestic: low table, cabinets, crate ───────────────────
   { x: 9.6,  y: 3.2, w: 0.85, d: 0.5,  h: 0.32, texSide: 55, texTop: 56 },

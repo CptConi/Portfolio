@@ -125,17 +125,17 @@ export class Renderer {
 
     // --- Level Design : Wayfinding Lights (Spill into Atrium) ---
     // Armurerie (West) - Green
-    const L_West = new THREE.PointLight(0x00ff41, 10, 6, 2.5);
+    const L_West = new THREE.PointLight(0x00ff41, 2.5, 5, 2.0);
     L_West.position.set(8.5, 0.5, 12.5); // Inside West vestibule
     this._scene.add(L_West);
 
     // Trophées (East) - Orange
-    const L_East = new THREE.PointLight(0xff8c00, 10, 6, 2.5);
+    const L_East = new THREE.PointLight(0xff8c00, 2.5, 5, 2.0);
     L_East.position.set(16.5, 0.5, 12.5); // Inside East vestibule
     this._scene.add(L_East);
 
     // Quartiers (North) - Violet
-    const L_North = new THREE.PointLight(0xcc44ff, 10, 6, 2.5);
+    const L_North = new THREE.PointLight(0xcc44ff, 2.5, 5, 2.0);
     L_North.position.set(12.5, 0.5, 8.5); // Inside North vestibule
     this._scene.add(L_North);
 
