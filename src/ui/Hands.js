@@ -60,22 +60,22 @@ export class Hands {
         const u = p / T_RAISE;
         const curve = u * (2 - u); // ease-out
         raise = curve;
-        zoom = 1 + curve * 2.2;
+        zoom = 1 + curve * 1.2; // 1x to 2.2x zoom (reduced from 3.2x)
         tilt = curve * 5;
       } else if (p < T_RAISE + T_HOLD) {
         // Phase 2: Sip & Shake (Ultra-smooth subtle breathing)
         const u = (p - T_RAISE) / T_HOLD;
-        const sips = Math.sin(u * Math.PI * 2.0); // Slowed down frequency
-        raise = 1.0 + sips * 0.01; // Ultra subtle vertical breathing
-        zoom = 3.2 + sips * 0.02;  // Ultra subtle zoom breathing
-        tilt = 13 + sips * 1;      // Ultra subtle tilt breathing
+        const sips = Math.sin(u * Math.PI * 2.0); 
+        raise = 1.0 + sips * 0.01;
+        zoom = 2.2 + sips * 0.02; // max zoom 2.2x
+        tilt = 13 + sips * 1;
         shake = Math.sin(t * 70) * 2;
       } else if (p < TOTAL) {
         // Phase 3: Drop back
         const u = (p - (T_RAISE + T_HOLD)) / T_DROP;
-        const curve = 1.0 - (u * (2 - u)); // ease-out-back like return
+        const curve = 1.0 - (u * (2 - u)); 
         raise = curve;
-        zoom = 1 + curve * 2.2;
+        zoom = 1 + curve * 1.2;
         tilt = curve * 5;
       } else {
         this._drink = 0;
@@ -90,7 +90,7 @@ export class Hands {
     // Centering logic: calculate translation to bring the rim towards screen center.
     const tx = -240 * raise; 
     const ty = -40 * raise; 
-    const tz = 450 * raise; // Bring mug forward in 3D space
+    const tz = 300 * raise; // Reduced depth (300 instead of 450)
 
     // Head-bob sway
     const amp = player._bobAmp ?? 0;
