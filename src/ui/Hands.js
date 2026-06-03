@@ -44,22 +44,45 @@ export class Hands {
   _rnd() { this._seed = (this._seed * 1103515245 + 12345) & 0x7fffffff; return this._seed / 0x7fffffff; }
 
   update(player, dt, t) {
-    // Drink animation (≈1 s up-and-down)
-    let raise = 0, tilt = 0;
+    // Drink animation (Punchy 3-phase sequence)
+    let raise = 0, tilt = 0, shake = 0;
     if (this._drink > 0) {
       this._drink += dt;
-      const p = Math.min(1, this._drink / 0.9);
-      const s = Math.sin(p * Math.PI);   // 0→1→0
-      raise = s; tilt = s;
-      if (p >= 1) this._drink = 0;
+      const T_RAISE = 0.18; // Fast snap up
+      const T_HOLD  = 0.45; // Sip duration
+      const T_DROP  = 0.35; // Return time
+      const TOTAL   = T_RAISE + T_HOLD + T_DROP;
+      
+      const p = this._drink;
+
+      if (p < T_RAISE) {
+        // Phase 1: Snap up
+        const u = p / T_RAISE;
+        raise = u * u; // quadratic ease-in for snap
+        tilt = u * 0.5;
+      } else if (p < T_RAISE + T_HOLD) {
+        // Phase 2: Sip & Shake
+        const u = (p - T_RAISE) / T_HOLD;
+        raise = 1.0;
+        tilt = 0.5 + Math.sin(u * Math.PI) * 0.6; // tilt more during sip
+        shake = Math.sin(t * 65) * 2.5; // micro-tremble
+      } else if (p < TOTAL) {
+        // Phase 3: Drop with bounce
+        const u = (p - (T_RAISE + T_HOLD)) / T_DROP;
+        raise = 1.0 - Math.sin(u * Math.PI * 0.5); // smooth drop
+        if (u > 0.8) raise += Math.sin((u - 0.8) * 15) * 0.05; // tiny bounce at end
+        tilt = raise * 0.5;
+      } else {
+        this._drink = 0;
+      }
     }
 
     // Head-bob sway (reads the player's bob phase/amplitude)
     const amp = player._bobAmp ?? 0;
-    const bx = Math.sin(player._bob * 0.5) * 9 * amp;
+    const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
     const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
     this._el.style.transform =
-      `translate(${bx}px, ${by - raise * 90}px) rotate(${-tilt * 18}deg)`;
+      `translate(${bx}px, ${by - raise * 110}px) rotate(${-tilt * 24}deg)`;
 
     this._step(dt, raise);
     this._draw();
