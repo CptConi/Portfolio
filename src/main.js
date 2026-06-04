@@ -22,11 +22,33 @@ const startScreen = document.getElementById('start-screen');
   const renderer = new Renderer(canvas, textures);
   const player   = new Player();
   const input    = new Input(canvas);
-  const hud      = new HUD(container);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      container.requestFullscreen()?.catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  const hud      = new HUD(container, toggleFullscreen);
   const hands    = new Hands(container);
   const touch    = new TouchControls(container, input);
   const screens  = new ScreenManager(renderer.scene, textures);
   const pushwall = new PushWall(renderer.scene, textures);
+
+  document.addEventListener('fullscreenchange', () => {
+    const isFS = !!document.fullscreenElement;
+    document.body.classList.toggle('is-fullscreen', isFS);
+    hud.updateFsIcon(isFS);
+    // On desktop, we need to trigger a resize manually if not IS_MOBILE
+    // because the renderer normally only resizes on mobile.
+    if (!document.body.classList.contains('is-touch')) {
+      renderer._resize();
+    }
+  });
 
   // Pointer lock rejects on touch devices — swallow the promise so it's quiet.
   const lock = () => { try { canvas.requestPointerLock()?.catch?.(() => {}); } catch {} };
@@ -93,7 +115,7 @@ const startScreen = document.getElementById('start-screen');
     hud.update(player);
     hud.updatePrompt(prompt);
     hud.setSector(getCellType(player.x, player.y));
-    hands.update(player, dt, tSec);
+    hands.update(player, dt, tSec, focused);
     touch.update({ prompt, focused, kind: screens.activeKind });
     cursorHint.style.display = document.pointerLockElement === canvas ? 'block' : 'none';
 
@@ -108,6 +130,7 @@ const startScreen = document.getElementById('start-screen');
     started = true;
     startScreen.style.display = 'none';
     lock();
+    toggleFullscreen(); // Enter fullscreen automatically
     requestAnimationFrame(loop);
   };
   startScreen.addEventListener('click', start);

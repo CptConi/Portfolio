@@ -2,14 +2,14 @@ export const passions = [
   {
     name: 'GAMING',
     icon: '🎮',
-    description: 'Tombé dedans petit. Art au même titre que le cinéma ou la musique. Doom, évidemment.',
-    details: ['FPS old school', 'RPG', 'Party games', 'Game jams'],
+    description: 'Tombé dedans petit. Art au même titre que le cinéma ou la musique. Le level design et game design me fascinent particulièrement.',
+    details: ['FPS old school', 'MMORPG (Pour la Horde)', 'Party games', 'Game jams'],
   },
   {
     name: 'GUITARE',
     icon: '🎸',
-    description: 'Pratiqué depuis plus de 15 ans. Penchant affirmé pour le rock metal.',
-    details: ['Rock', 'Metal', 'Composition', 'Ancien musicien semi-pro'],
+    description: 'Pratique depuis près de 20 ans. Penchant affirmé pour le rock metal.',
+    details: ['Rock', 'Metal', 'Composition'],
   },
   {
     name: 'CUISINE',
@@ -22,5 +22,11 @@ export const passions = [
     icon: '🕹️',
     description: 'Origine de ma passion pour le code. Commencé en C# avec MonoGame.',
     details: ['C# / MonoGame', 'Game Jam', 'Interception Point', 'Unity'],
+  },
+  {
+    name: 'CHATS',
+    icon: '🐈',
+    description: 'Compagnons de vie essentiels. Experts en debugging par le regard.',
+    details: ['Miaulements à 4h', 'Siestes sur clavier', 'Ronronthérapie'],
   },
 ];

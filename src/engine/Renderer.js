@@ -42,18 +42,6 @@ export class Renderer {
     this._scene.background = new THREE.Color(0x000000);
     this._scene.fog = new THREE.Fog(0x000000, 2, 18);
 
-    // ── Minimap overlay canvas ────────────────────────────────────────────
-    const mm = document.createElement('canvas');
-    mm.width  = MAP_WIDTH  * 6;
-    mm.height = MAP_HEIGHT * 6;
-    Object.assign(mm.style, {
-      position: 'absolute', top: '4px', right: '4px',
-      imageRendering: 'pixelated', pointerEvents: 'none',
-    });
-    canvas.parentElement.appendChild(mm);
-    this._mm    = mm;
-    this._mmCtx = mm.getContext('2d');
-
     this._buildScene();
 
     // ── Post-processing (cheap at 640×360): bloom ───────────────────────────
@@ -349,39 +337,6 @@ export class Renderer {
     }
   }
 
-  // ── Minimap ────────────────────────────────────────────────────────────
-
-  _drawMinimap(player) {
-    const ctx   = this._mmCtx;
-    const scale = 6;
-    const COLORS = { 0: '#282828', 1: '#786450', 2: '#147814', 3: '#8C5014', 4: '#6414A0', 5: '#786450', 6: '#2a2a40' };
-
-    ctx.clearRect(0, 0, this._mm.width, this._mm.height);
-
-    for (let my = 0; my < MAP_HEIGHT; my++) {
-      for (let mx = 0; mx < MAP_WIDTH; mx++) {
-        ctx.fillStyle = COLORS[MAP[my][mx]] ?? '#000';
-        ctx.fillRect(mx * scale, my * scale, scale - 1, scale - 1);
-      }
-    }
-
-    // Player dot
-    const px = Math.floor(player.x * scale);
-    const py = Math.floor(player.y * scale);
-    ctx.fillStyle = '#FF0000';
-    ctx.fillRect(px - 1, py - 1, 3, 3);
-
-    // Direction arrow
-    ctx.fillStyle = '#FFFF00';
-    for (let i = 1; i < 5; i++) {
-      ctx.fillRect(
-        px + Math.round(Math.cos(player.angle) * i),
-        py + Math.round(Math.sin(player.angle) * i),
-        1, 1
-      );
-    }
-  }
-
   // ── Render loop ────────────────────────────────────────────────────────
 
   get scene() { return this._scene; }
@@ -426,6 +381,5 @@ export class Renderer {
     }
 
     this._composer.render();
-    this._drawMinimap(player);
   }
 }

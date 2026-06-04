@@ -114,11 +114,18 @@ class Console {
   onEnter() {}
   onPassive(t) { this.terminal.draw({ focused: false, t }); }
   onFocusedFrame(input, dt, t, esc) {
-    const next = input.backward || input.rotRight;
-    const prev = input.forward  || input.rotLeft;
+    // Page navigation: Left/Right arrows OR Q/D (strafe keys)
+    const next = input.rotRight || input.strafeRight;
+    const prev = input.rotLeft  || input.strafeLeft;
     if (next && !this._pn) this.terminal.next();
     if (prev && !this._pp) this.terminal.prev();
     this._pn = next; this._pp = prev;
+
+    // Scrolling: Up/Down arrows OR W/S (forward/backward keys)
+    const scrollUp = input.forward;
+    const scrollDown = input.backward;
+    if (scrollUp) this.terminal.scrollUp();
+    if (scrollDown) this.terminal.scrollDown();
 
     // Handle link opening for contact terminal
     if (this.def.type === 'contact' && input.interact && !this._pi) {

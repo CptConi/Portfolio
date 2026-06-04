@@ -27,6 +27,7 @@ export class Hands {
     this._parts = [];    // steam particles
     this._emit = 0;      // emitter accumulator
     this._seed = 1;      // deterministic-ish wobble
+    this._focusY = 0;    // vertical offset for focus (0 = visible, 1 = hidden)
   }
 
   _layout() {
@@ -43,7 +44,11 @@ export class Hands {
 
   _rnd() { this._seed = (this._seed * 1103515245 + 12345) & 0x7fffffff; return this._seed / 0x7fffffff; }
 
-  update(player, dt, t) {
+  update(player, dt, t, focused = false) {
+    // Smooth transition for focus hiding (lower the mug when focused)
+    const targetFocus = focused ? 1 : 0;
+    this._focusY += (targetFocus - this._focusY) * (1 - Math.pow(0.001, dt)); // dt-independent smoothing
+
     // Drink animation (Punchy 3-phase sequence with massive zoom)
     let raise = 0, tilt = 0, shake = 0, zoom = 1;
     if (this._drink > 0) {
@@ -95,7 +100,7 @@ export class Hands {
     // Head-bob sway
     const amp = player._bobAmp ?? 0;
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
-    const by = Math.abs(Math.sin(player._bob)) * -7 * amp;
+    const by = Math.abs(Math.sin(player._bob)) * -7 * amp + (this._focusY * 250); // Translate down when focused
     
     // Final transform with inverted and subtler 3D perspective
     // - rotateX(tilt * 1.5): tilts the bottom of the mug AWAY from the camera (inverse)

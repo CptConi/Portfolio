@@ -3,6 +3,7 @@ import { projects } from '../data/projects.js';
 import { skills } from '../data/skills.js';
 import { techOf } from '../data/tech.js';
 import { floorAt, ceilAt } from './Map.js';
+import { getDynamicPlinths } from './PlinthGenerator.js';
 
 // Level-design decor layer — additive geometry over the existing scene.
 // Static: per-room palette, lit thresholds, signage.
@@ -19,14 +20,9 @@ const ROOMS = [
     door: { axis: 'x', line: 8.5, span: [11, 14], facing: [1, 0] }, console: [2.6, 12.5] },
 ];
 
-// Trophées gallery plinths — MUST stay in sync with the plinth boxes in Props3D.js.
+// Trophées gallery plinths — generated dynamically from projects.js.
 const PLINTH_COLOR = 0xff8c00;
-const PLINTHS = [
-  { x: 17.7, z: 9.6,  face: [0, 1]  }, { x: 19.0, z: 9.6,  face: [0, 1]  },
-  { x: 20.3, z: 9.6,  face: [0, 1]  }, { x: 21.6, z: 9.6,  face: [0, 1]  },
-  { x: 17.7, z: 15.4, face: [0, -1] }, { x: 19.0, z: 15.4, face: [0, -1] },
-  { x: 20.3, z: 15.4, face: [0, -1] }, { x: 21.6, z: 15.4, face: [0, -1] },
-];
+const PLINTHS = getDynamicPlinths();
 
 // Load a logo SVG into a CanvasTexture (rasterised, contained with padding).
 // Async: the texture starts blank and refreshes once the image decodes.

@@ -14,6 +14,7 @@ export const TECH = {
   'CSS3':              { c: 0x2965f1, f: 'css3' },
   'GraphQL':           { c: 0xe535ab, f: 'graphql' },
   'YAML':              { c: 0xff6e6e, f: 'yaml' },
+  'Python':            { c: 0x3776ab, f: 'python' },
   // Frontend
   'React':             { c: 0x61dafb, f: 'react' },
   'Vue.js':            { c: 0x42b883, f: 'vuejs' },
@@ -27,12 +28,14 @@ export const TECH = {
   'Chart.js':          { c: 0xff6384, f: 'chartjs' },
   'GSAP':              { c: 0x88ce02, f: 'greensock' },
   'Vite':              { c: 0x9b6cf2, f: 'vitejs' },
+  'Next.js':           { c: 0xffffff, f: 'nextjs' },
   // Backend
   'Node.js':           { c: 0x68a063, f: 'nodejs' },
   'Express.js':        { c: 0xcccccc, f: 'express' },
   'NestJS':            { c: 0xe0234e, f: 'nestjs' },
   'Socket.io':         { c: 0xdddddd, f: 'socketio' },
   'WebSocket':         { c: 0x37c0ff, l: 'WS' },
+  'n8n':               { c: 0xea4b71, f: 'n8n' },
   'Strapi':            { c: 0x8e75ff, f: 'strapi' },
   'JWT':               { c: 0xd63aff, f: 'jwt' },
   'RxJS':              { c: 0xe6007e, f: 'rxjs' },
@@ -53,6 +56,7 @@ export const TECH = {
   'AWS':               { c: 0xff9900, f: 'aws' },
   'Azure':             { c: 0x2aa3ef, f: 'azure' },
   'Azure DevOps':      { c: 0x2aa3ef, f: 'azure' },
+  'GitLab':            { c: 0xfca326, f: 'gitlab' },
   'Docker':            { c: 0x2496ed, f: 'docker' },
   'GitHub Actions':    { c: 0x2088ff, f: 'githubactions' },
   'CI/CD':             { c: 0x33cc99, l: 'CI/CD' },
@@ -64,9 +68,13 @@ export const TECH = {
   'Swagger':           { c: 0x85ea2d, f: 'swagger' },
   'Stripe':            { c: 0x8c87ff, f: 'stripe' },
   'Power BI':          { c: 0xf2c811, f: 'powerbi' },
+  'Umami':             { c: 0x24a0ed, f: 'umami' },
   // Misc
   'Google Maps API':   { c: 0x4caf6a, f: 'googlemaps' },
-  'MonoGame':          { c: 0xe73c00, l: 'Mono' },
+  'YouTube API':      { c: 0xff0000, f: 'youtube' },
+  'TikTok API':        { c: 0x25f4ee, f: 'tiktok' },
+  'Instagram API':     { c: 0xe4405f, f: 'instagram' },
+  'MonoGame':          { c: 0xe73c00, f: 'monogame' },
 };
 
 export const techOf = name => TECH[name] || { c: 0xff8c00, l: name.slice(0, 6).toUpperCase() };

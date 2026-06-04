@@ -2,7 +2,7 @@ export const skills = [
   {
     category: 'LANGAGES',
     color: '#00ff41',
-    items: ['JavaScript', 'TypeScript', 'C#', 'C++', 'Dart', 'Lua', 'HTML5', 'CSS3', 'GraphQL', 'YAML'],
+    items: ['JavaScript', 'TypeScript', 'C#', 'C++', 'Python', 'Dart', 'Lua', 'HTML5', 'CSS3', 'GraphQL', 'YAML'],
   },
   {
     category: 'FRONTEND',
@@ -12,7 +12,7 @@ export const skills = [
   {
     category: 'BACKEND',
     color: '#e0234e',
-    items: ['Node.js', 'Express.js', 'NestJS', 'Socket.io', 'Strapi', 'JWT', 'RxJS'],
+    items: ['Node.js', 'Express.js', 'NestJS', 'Socket.io', 'n8n', 'Strapi', 'JWT', 'RxJS'],
   },
   {
     category: 'MOBILE',
@@ -27,11 +27,11 @@ export const skills = [
   {
     category: 'CLOUD / DEVOPS',
     color: '#ff9900',
-    items: ['AWS', 'Azure', 'Docker', 'GitHub Actions', 'Azure DevOps', 'CI/CD'],
+    items: ['AWS', 'Azure', 'Docker', 'GitHub Actions', 'Azure DevOps', 'GitLab', 'CI/CD'],
   },
   {
     category: 'OUTILS',
     color: '#f05033',
-    items: ['Git', 'Jest', 'Sentry', 'OpenTelemetry', 'Swagger', 'Stripe', 'Power BI'],
+    items: ['Git', 'Jest', 'Sentry', 'OpenTelemetry', 'Swagger', 'Stripe', 'Power BI', 'Umami', 'TikTok API', 'Instagram API', 'YouTube API'],
   },
 ];

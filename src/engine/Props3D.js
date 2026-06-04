@@ -1,3 +1,5 @@
+import { getDynamicPlinths } from './PlinthGenerator.js';
+
 // 3D box props — crates, lockers, servers, terminals, panels. Textured boxes
 // (not billboards). Collision is automatic (Player reads these). Heights are
 // floor-relative; Renderer offsets each by the local floor.
@@ -7,16 +9,13 @@
 //  50 COMPCT01  51 LOCKER01  52 SHAWNT02  53 DARKB01  54 SILVCOMP
 //  55 WOODB01   56 METALT1   57 BRNZGRN1  58 COMPSP01 59 BOX_MAT1   5 GRAYCMP1
 
+const PLINTH_PROPS = getDynamicPlinths().map(p => ({
+  x: p.x, y: p.z, w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56
+}));
+
 export const PROPS3D = [
-  // ── Trophées gallery plinths (cols 17–22) — north z9.6 / south z15.4 ───────
-  { x: 17.7, y: 9.6,  w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
-  { x: 19.0, y: 9.6,  w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
-  { x: 20.3, y: 9.6,  w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
-  { x: 21.6, y: 9.6,  w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
-  { x: 17.7, y: 15.4, w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
-  { x: 19.0, y: 15.4, w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
-  { x: 20.3, y: 15.4, w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
-  { x: 21.6, y: 15.4, w: 0.5, d: 0.5, h: 0.5, texSide: 5, texTop: 56 },
+  // ── Trophées gallery plinths — generated dynamically ──────────────────────
+  ...PLINTH_PROPS,
 
   // ── Atrium (kept airy) — server racks flanking the north vestibule + crates ─
   { x: 10.6, y: 9.6,  w: 0.5,  d: 0.4,  h: 0.85, texSide: 58, texTop: 56 },

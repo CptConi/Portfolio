@@ -9,7 +9,16 @@ import { techOf } from '../data/tech.js';
 const CW = 480, CH = 304;
 const FONT = '"Press Start 2P", monospace';
 
-const DATA = { skills, projects, passions, contact };
+const DATA = { 
+  skills, 
+  projects: [...projects].sort((a, b) => {
+    const yearA = parseInt(String(a.year).split('-').pop());
+    const yearB = parseInt(String(b.year).split('-').pop());
+    return yearB - yearA;
+  }), 
+  passions, 
+  contact 
+};
 
 // Shared logo <img> cache (devicon SVGs in public/logos). Returns an Image that
 // may still be decoding — callers draw it only once `complete && naturalWidth`.
@@ -30,6 +39,8 @@ export class TerminalScreen {
     this.color = def.color;
     this.page  = 0;
     this.count = DATA[def.type].length;
+    this.scroll = 0;
+    this._maxScroll = 0;
 
     const canvas = document.createElement('canvas');
     canvas.width = CW; canvas.height = CH;
@@ -51,19 +62,43 @@ export class TerminalScreen {
       for (const c of DATA.contact) logoImg(c.icon, '/ressources/');
     }
 
+    // Mouse wheel listener for scrolling
+    window.addEventListener('wheel', e => {
+      if (this._lastFocused && this._maxScroll > 0) {
+        this.scroll = Math.max(0, Math.min(this._maxScroll, this.scroll + (e.deltaY > 0 ? 20 : -20)));
+      }
+    }, { passive: true });
+
+    // Touch scroll handling
+    let touchY = 0;
+    window.addEventListener('touchstart', e => {
+      if (this._lastFocused) touchY = e.touches[0].clientY;
+    }, { passive: false });
+    window.addEventListener('touchmove', e => {
+      if (this._lastFocused && this._maxScroll > 0) {
+        const dy = e.touches[0].clientY - touchY;
+        touchY = e.touches[0].clientY;
+        this.scroll = Math.max(0, Math.min(this._maxScroll, this.scroll - dy));
+        e.preventDefault(); // Stop page scroll
+      }
+    }, { passive: false });
+
     this.draw({ focused: false, t: 0 });
   }
 
-  next() { this.page = (this.page + 1) % this.count; }
-  prev() { this.page = (this.page - 1 + this.count) % this.count; }
+  next() { this.page = (this.page + 1) % this.count; this.scroll = 0; }
+  prev() { this.page = (this.page - 1 + this.count) % this.count; this.scroll = 0; }
+  
+  scrollUp() { this.scroll = Math.max(0, this.scroll - 16); }
+  scrollDown() { this.scroll = Math.min(this._maxScroll, this.scroll + 16); }
 
   // ── Drawing ────────────────────────────────────────────────────────────
 
   draw({ focused, t }) {
-    // Skip redraw when nothing visible changed (blink phase / page / focus).
+    // Skip redraw when nothing visible changed (blink phase / page / focus / scroll).
     const phase = Math.floor(t * 2) % 2;
-    if (phase === this._phase && this.page === this._lastPage && focused === this._lastFocused) return;
-    this._phase = phase; this._lastPage = this.page; this._lastFocused = focused;
+    if (phase === this._phase && this.page === this._lastPage && focused === this._lastFocused && this.scroll === this._lastScroll) return;
+    this._phase = phase; this._lastPage = this.page; this._lastFocused = focused; this._lastScroll = this.scroll;
 
     const c = this._ctx, col = this.color;
 
@@ -80,38 +115,66 @@ export class TerminalScreen {
       c.fillRect(0, 0, CW, CH);
     }
 
-    // Header bar
-    c.fillStyle = col;
-    c.fillRect(10, 10, CW - 20, 22);
-    c.fillStyle = '#050805';
-    c.font = '10px ' + FONT;
-    c.textBaseline = 'middle';
-    c.fillText(this.def.title, 18, 22);
+    // Body clip area (between header and footer)
+    c.save();
+    c.beginPath();
+    c.rect(0, 32, CW, CH - 62);
+    c.clip();
 
-    // Body
+    c.translate(0, -this.scroll);
+
+    // Body content
     const body = { 
       skills: this._skills, 
       projects: this._projects, 
       passions: this._passions,
       contact: this._contact 
     }[this.def.type];
-    body.call(this, c, col, DATA[this.def.type][this.page]);
+    const contentH = body.call(this, c, col, DATA[this.def.type][this.page]);
+    this._maxScroll = Math.max(0, contentH - (CH - 82)); // 82 is total non-content height approx
+
+    c.restore();
+
+    // Header bar (drawn after body so it's on top of clipped content)
+    c.fillStyle = col;
+    c.fillRect(10, 10, CW - 20, 22);
+    c.fillStyle = '#050805';
+    c.font = '10px ' + FONT;
+    c.textBaseline = 'middle';
+    c.textAlign = 'left';
+    c.fillText(this.def.title, 18, 22);
 
     // Footer — pagination + nav hint + blinking cursor
+    c.fillStyle = '#050805';
+    c.fillRect(0, CH - 30, CW, 30); // Opaque footer bg
     c.fillStyle = col;
     c.fillRect(10, CH - 30, CW - 20, 2);
     c.font = '9px ' + FONT;
     c.fillStyle = col;
+    c.textAlign = 'left';
     const label = `[<]  ${this.page + 1}/${this.count}  [>]`;
     c.fillText(label, 18, CH - 14);
     const cursor = (Math.floor(t * 2) % 2) === 0 ? '_' : ' ';
-    c.fillStyle = '#888';
     
-    let hint = focused ? '▲▼ NAVIGUER   ESC SORTIR ' + cursor : 'E POUR ACCÉDER ' + cursor;
+    let hint = focused ? '▲▼ SCROLL  ◀▶ NAVIGUER  ESC SORTIR ' + cursor : 'E POUR ACCÉDER ' + cursor;
     if (focused && this.def.type === 'contact') {
-      hint = 'ENTRÉE OUVRIR   ▲▼ NAVIGUER   ESC SORTIR ' + cursor;
+      hint = 'ENTRÉE OUVRIR  ◀▶ NAVIGUER  ESC SORTIR ' + cursor;
     }
-    c.fillText(hint, 150, CH - 14);
+    c.fillStyle = '#888';
+    c.textAlign = 'right';
+    c.fillText(hint, CW - 18, CH - 14);
+    c.textAlign = 'left';
+
+    // Scrollbar if needed
+    if (this._maxScroll > 0) {
+      const h = CH - 62;
+      const barH = Math.max(10, h * (h / (this._maxScroll + h)));
+      const barY = 32 + (this.scroll / this._maxScroll) * (h - barH);
+      c.fillStyle = col + '44';
+      c.fillRect(CW - 8, 32, 4, h);
+      c.fillStyle = col;
+      c.fillRect(CW - 8, barY, 4, barH);
+    }
 
     // Scanlines
     c.fillStyle = 'rgba(0,0,0,0.28)';
@@ -189,7 +252,7 @@ export class TerminalScreen {
     c.font = '12px ' + FONT;
     c.fillText('> ' + cat.category, 18, 56);
     const cols = cat.items.length > 8 ? 5 : 4;
-    this._techGrid(c, cat.items, 18, 80, CW - 36, cat.color, { cols, logoSz: 30, cellH: 58, nameFont: 7 });
+    return this._techGrid(c, cat.items, 18, 80, CW - 36, cat.color, { cols, logoSz: 30, cellH: 58, nameFont: 7 });
   }
 
   _projects(c, col, p) {
@@ -200,17 +263,21 @@ export class TerminalScreen {
 
     c.fillStyle = '#777';
     c.font = '8px ' + FONT;
-    c.fillText(`${p.client} · ${p.year} · ${p.role}`, 18, 78);
+    const meta = `${p.client} · ${p.year} · ${p.role}`;
+    let my = 78;
+    for (const line of this._wrap(c, meta, CW - 40)) { c.fillText(line, 18, my); my += 14; }
 
     c.fillStyle = '#bbb';
     c.font = '9px ' + FONT;
-    let y = 100;
+    let y = my + 8;
     for (const line of this._wrap(c, p.description, CW - 40)) { c.fillText(line, 18, y); y += 16; }
 
-    y = this._techGrid(c, p.stack, 18, y + 12, CW - 36, col, { cols: 4, logoSz: 38, cellH: 64, nameFont: 8 });
+    y = this._techGrid(c, p.stack, 18, y + 16, CW - 36, col, { cols: 4, logoSz: 38, cellH: 64, nameFont: 8 });
     c.fillStyle = '#888'; c.font = '8px ' + FONT;
-    c.fillText('→ ' + p.tags.join(' / '), 18, y + 4);
-  }
+    c.fillText('→ ' + p.tags.join(' / '), 18, y + 20);
+    return y + 44;
+    }
+
 
   _passions(c, col, p) {
     c.textBaseline = 'middle';
@@ -227,6 +294,7 @@ export class TerminalScreen {
     y += 6;
     c.fillStyle = '#888';
     for (const d of p.details) { c.fillText('> ' + d, 18, y); y += 16; }
+    return y + 10;
   }
 
   _contact(c, col, p) {
@@ -234,6 +302,7 @@ export class TerminalScreen {
     
     // Icon
     const im = logoImg(p.icon, '/ressources/');
+    let logoH = 0;
     if (im && im.complete && im.naturalWidth) {
       c.imageSmoothingEnabled = true;
       const logoSz = 64;
@@ -241,6 +310,7 @@ export class TerminalScreen {
       const w = im.naturalWidth * s, h = im.naturalHeight * s;
       c.drawImage(im, 20, 50, w, h);
       c.imageSmoothingEnabled = false;
+      logoH = h;
     }
 
     c.fillStyle = col; c.font = '16px ' + FONT;
@@ -263,5 +333,6 @@ export class TerminalScreen {
     c.font = '10px ' + FONT;
     c.fillText('OUVRIR LE LIEN', CW/2, y + 20);
     c.textAlign = 'left';
+    return y + 60;
   }
 }

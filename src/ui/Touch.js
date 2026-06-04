@@ -137,16 +137,18 @@ export class TouchControls {
   update({ prompt, focused, kind }) {
     if (!this.enabled) return;
     const inConsole = focused && kind === 'console';
-    // Show action button if: arcade is active, or we have an interaction prompt, or we are in a console (to trigger links).
-    const showAction = (focused && kind === 'arcade') || (!focused && !!prompt) || inConsole;
+    const inArcade = focused && kind === 'arcade';
+    // Show action button if: arcade is active, or we have an interaction prompt.
+    // Hide it on data consoles as requested.
+    const showAction = inArcade || (!focused && !!prompt);
+    
     this._exit.style.display   = focused ? 'flex' : 'none';
     this._action.style.display = showAction ? 'flex' : 'none';
     this._prev.style.display   = inConsole ? 'flex' : 'none';
     this._next.style.display   = inConsole ? 'flex' : 'none';
     
     if (showAction) {
-      if (focused && kind === 'arcade') this._action.textContent = 'TIR';
-      else if (inConsole) this._action.textContent = '🖐️';
+      if (inArcade) this._action.textContent = 'TIR';
       else this._action.textContent = '🖐️';
     }
   }
