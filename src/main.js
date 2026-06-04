@@ -130,7 +130,6 @@ const startScreen = document.getElementById('start-screen');
     started = true;
     startScreen.style.display = 'none';
     lock();
-    toggleFullscreen(); // Enter fullscreen automatically
     requestAnimationFrame(loop);
   };
   startScreen.addEventListener('click', start);
