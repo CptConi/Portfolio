@@ -36,7 +36,7 @@ const startScreen = document.getElementById('start-screen');
   const hud      = new HUD(container, toggleFullscreen);
   const hands    = new Hands(container);
   const touch    = new TouchControls(container, input);
-  const screens  = new ScreenManager(renderer.scene, textures);
+  const screens  = new ScreenManager(renderer.scene, textures, canvas);
   const pushwall = new PushWall(renderer.scene, textures);
 
   document.addEventListener('fullscreenchange', () => {

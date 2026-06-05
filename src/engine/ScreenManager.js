@@ -160,7 +160,7 @@ class Arcade {
 }
 
 export class ScreenManager {
-  constructor(scene, tex) {
+  constructor(scene, tex, canvas) {
     this._items = [
       ...SCREENS.map(def => new Console(def, scene, tex)),
       new Arcade(scene, tex),
@@ -177,13 +177,14 @@ export class ScreenManager {
     // Click/Touch handling on focused terminal
     const handleHit = (clientX, clientY, isClick = true) => {
       if (this._state !== 'focused' || !this._active || this._active.kind !== 'console') return;
-      
-      const rect = scene.userData.canvas.getBoundingClientRect();
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
       const x = (clientX - rect.left) / rect.width;
       const y = (clientY - rect.top) / rect.height;
       
       const cx = (x - 0.5) / 0.65 + 0.5;
-      const cy = (y - 0.5) / 0.72 + 0.55; // Adjusted scale and added offset to lower the hit area
+      const cy = (y - 0.5) / 0.72 + 0.55; 
       
       if (cx >= 0 && cx <= 1 && cy >= 0 && cy <= 1) {
         this._active.terminal.handleInput(cx * 480, cy * 304, isClick);
@@ -192,9 +193,9 @@ export class ScreenManager {
       }
     };
 
-    scene.userData.canvas.addEventListener('mousedown', e => handleHit(e.clientX, e.clientY, true));
-    scene.userData.canvas.addEventListener('mousemove', e => handleHit(e.clientX, e.clientY, false));
-    scene.userData.canvas.addEventListener('touchstart', e => {
+    canvas.addEventListener('mousedown', e => handleHit(e.clientX, e.clientY, true));
+    canvas.addEventListener('mousemove', e => handleHit(e.clientX, e.clientY, false));
+    canvas.addEventListener('touchstart', e => {
       if (e.touches.length > 0) handleHit(e.touches[0].clientX, e.touches[0].clientY, true);
     });
   }
