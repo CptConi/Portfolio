@@ -39,6 +39,7 @@ export class Renderer {
 
     // ── Scene ────────────────────────────────────────────────────────────
     this._scene = new THREE.Scene();
+    this._scene.userData.canvas = canvas;
     this._scene.background = new THREE.Color(0x000000);
     this._scene.fog = new THREE.Fog(0x000000, 2, 18);
 

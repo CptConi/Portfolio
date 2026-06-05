@@ -41,6 +41,7 @@ export class TerminalScreen {
     this.count = DATA[def.type].length;
     this.scroll = 0;
     this._maxScroll = 0;
+    this._clickables = []; // { x, y, w, h, action }
 
     const canvas = document.createElement('canvas');
     canvas.width = CW; canvas.height = CH;
@@ -89,6 +90,18 @@ export class TerminalScreen {
   next() { this.page = (this.page + 1) % this.count; this.scroll = 0; }
   prev() { this.page = (this.page - 1 + this.count) % this.count; this.scroll = 0; }
   
+  handleInput(cx, cy) {
+    // cx, cy are in terminal canvas space (0-CW, 0-CH)
+    const scrolledY = cy + this.scroll;
+    for (const btn of this._clickables) {
+      if (cx >= btn.x && cx <= btn.x + btn.w && scrolledY >= btn.y && scrolledY <= btn.y + btn.h) {
+        btn.action();
+        return true;
+      }
+    }
+    return false;
+  }
+
   scrollUp() { this.scroll = Math.max(0, this.scroll - 16); }
   scrollDown() { this.scroll = Math.min(this._maxScroll, this.scroll + 16); }
 
@@ -124,6 +137,7 @@ export class TerminalScreen {
     c.translate(0, -this.scroll);
 
     // Body content
+    this._clickables = []; // Clear old clickables before redraw
     const body = { 
       skills: this._skills, 
       projects: this._projects, 
@@ -261,6 +275,18 @@ export class TerminalScreen {
     c.font = '13px ' + FONT;
     c.fillText(p.name, 18, 56);
 
+    // Add clickable URL if exists
+    if (p.url) {
+      const urlText = '[ OUVRIR ]';
+      c.font = '8px ' + FONT;
+      const tw = c.measureText(urlText).width;
+      const ux = CW - 40 - tw;
+      const uy = 56;
+      c.fillStyle = col;
+      c.fillText(urlText, ux, uy);
+      this._clickables.push({ x: ux - 4, y: uy - 8, w: tw + 8, h: 16, action: () => window.open(p.url, '_blank') });
+    }
+
     c.fillStyle = '#777';
     c.font = '8px ' + FONT;
     const meta = `${p.client} · ${p.year} · ${p.role}`;
@@ -276,8 +302,7 @@ export class TerminalScreen {
     c.fillStyle = '#888'; c.font = '8px ' + FONT;
     c.fillText('→ ' + p.tags.join(' / '), 18, y + 20);
     return y + 44;
-    }
-
+  }
 
   _passions(c, col, p) {
     c.textBaseline = 'middle';
@@ -333,6 +358,12 @@ export class TerminalScreen {
     c.font = '10px ' + FONT;
     c.fillText('OUVRIR LE LIEN', CW/2, y + 20);
     c.textAlign = 'left';
+
+    this._clickables.push({ 
+      x: CW/2 - 100, y: y, w: 200, h: 40, 
+      action: () => p.url && window.open(p.url, '_blank') 
+    });
+
     return y + 60;
   }
 }
