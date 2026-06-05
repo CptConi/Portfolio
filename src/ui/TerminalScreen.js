@@ -296,7 +296,7 @@ export class TerminalScreen {
       if (isHovered) {
         c.fillStyle = col;
         c.fillRect(ux - 4, uy - 10, tw + 8, 20);
-        c.fillStyle = '#050805';
+        c.fillStyle = '#050805'; // Force black text on hover
       } else {
         c.fillStyle = col;
       }
@@ -376,7 +376,7 @@ export class TerminalScreen {
     if (isHovered) {
       c.fillStyle = p.color;
       c.fillRect(CW/2 - 100, y, 200, 40);
-      c.fillStyle = '#050805';
+      c.fillStyle = '#050805'; // Contrast fix for GitHub white button
     } else {
       c.strokeRect(CW/2 - 100, y, 200, 40);
       c.fillStyle = p.color;

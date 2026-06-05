@@ -183,7 +183,7 @@ export class ScreenManager {
       const y = (clientY - rect.top) / rect.height;
       
       const cx = (x - 0.5) / 0.65 + 0.5;
-      const cy = (y - 0.5) / 0.65 + 0.5;
+      const cy = (y - 0.5) / 0.72 + 0.55; // Adjusted scale and added offset to lower the hit area
       
       if (cx >= 0 && cx <= 1 && cy >= 0 && cy <= 1) {
         this._active.terminal.handleInput(cx * 480, cy * 304, isClick);
