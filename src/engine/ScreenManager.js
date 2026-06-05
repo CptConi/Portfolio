@@ -184,7 +184,7 @@ export class ScreenManager {
       const y = (clientY - rect.top) / rect.height;
       
       const cx = (x - 0.5) / 0.65 + 0.5;
-      const cy = (y - 0.5) / 0.72 + 0.65; // Shifted down from 0.55 to 0.65 to fix the 50% upward offset
+      const cy = (y - 0.5) / 0.72 + 0.45; // Decreased from 0.65/0.55 to 0.45 to move the hit area DOWN
       
       if (cx >= 0 && cx <= 1 && cy >= 0 && cy <= 1) {
         this._active.terminal.handleInput(cx * 480, cy * 304, isClick);
