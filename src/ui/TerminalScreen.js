@@ -41,7 +41,8 @@ export class TerminalScreen {
     this.count = DATA[def.type].length;
     this.scroll = 0;
     this._maxScroll = 0;
-    this._clickables = []; // { x, y, w, h, action }
+    this._clickables = []; // { id, x, y, w, h, action }
+    this._hoveredId = null;
 
     const canvas = document.createElement('canvas');
     canvas.width = CW; canvas.height = CH;
@@ -87,17 +88,24 @@ export class TerminalScreen {
     this.draw({ focused: false, t: 0 });
   }
 
-  next() { this.page = (this.page + 1) % this.count; this.scroll = 0; }
-  prev() { this.page = (this.page - 1 + this.count) % this.count; this.scroll = 0; }
+  next() { this.page = (this.page + 1) % this.count; this.scroll = 0; this._hoveredId = null; }
+  prev() { this.page = (this.page - 1 + this.count) % this.count; this.scroll = 0; this._hoveredId = null; }
   
-  handleInput(cx, cy) {
+  handleInput(cx, cy, isClick = true) {
     // cx, cy are in terminal canvas space (0-CW, 0-CH)
     const scrolledY = cy + this.scroll;
+    let found = null;
     for (const btn of this._clickables) {
       if (cx >= btn.x && cx <= btn.x + btn.w && scrolledY >= btn.y && scrolledY <= btn.y + btn.h) {
-        btn.action();
-        return true;
+        found = btn.id;
+        if (isClick) btn.action();
+        break;
       }
+    }
+    
+    if (this._hoveredId !== found) {
+      this._hoveredId = found;
+      return true; // Needs redraw
     }
     return false;
   }
@@ -108,10 +116,10 @@ export class TerminalScreen {
   // ── Drawing ────────────────────────────────────────────────────────────
 
   draw({ focused, t }) {
-    // Skip redraw when nothing visible changed (blink phase / page / focus / scroll).
+    // Skip redraw when nothing visible changed.
     const phase = Math.floor(t * 2) % 2;
-    if (phase === this._phase && this.page === this._lastPage && focused === this._lastFocused && this.scroll === this._lastScroll) return;
-    this._phase = phase; this._lastPage = this.page; this._lastFocused = focused; this._lastScroll = this.scroll;
+    if (phase === this._phase && this.page === this._lastPage && focused === this._lastFocused && this.scroll === this._lastScroll && this._hoveredId === this._lastHoveredId) return;
+    this._phase = phase; this._lastPage = this.page; this._lastFocused = focused; this._lastScroll = this.scroll; this._lastHoveredId = this._hoveredId;
 
     const c = this._ctx, col = this.color;
 
@@ -274,17 +282,26 @@ export class TerminalScreen {
     c.fillStyle = col;
     c.font = '13px ' + FONT;
     c.fillText(p.name, 18, 56);
-
+    
     // Add clickable URL if exists
     if (p.url) {
+      const urlId = 'url_' + this.page;
+      const isHovered = this._hoveredId === urlId;
       const urlText = '[ OUVRIR ]';
       c.font = '8px ' + FONT;
       const tw = c.measureText(urlText).width;
       const ux = CW - 40 - tw;
       const uy = 56;
-      c.fillStyle = col;
+      
+      if (isHovered) {
+        c.fillStyle = col;
+        c.fillRect(ux - 4, uy - 10, tw + 8, 20);
+        c.fillStyle = '#050805';
+      } else {
+        c.fillStyle = col;
+      }
       c.fillText(urlText, ux, uy);
-      this._clickables.push({ x: ux - 4, y: uy - 8, w: tw + 8, h: 16, action: () => window.open(p.url, '_blank') });
+      this._clickables.push({ id: urlId, x: ux - 4, y: uy - 10, w: tw + 8, h: 20, action: () => window.open(p.url, '_blank') });
     }
 
     c.fillStyle = '#777';
@@ -349,18 +366,29 @@ export class TerminalScreen {
     for (const line of this._wrap(c, p.description, CW - 40)) { c.fillText(line, 20, y); y += 18; }
 
     // CTA
+    const btnId = 'contact_btn_' + this.page;
+    const isHovered = this._hoveredId === btnId;
+    
     y += 40;
     c.strokeStyle = p.color;
     c.lineWidth = 2;
-    c.strokeRect(CW/2 - 100, y, 200, 40);
-    c.fillStyle = p.color;
+    
+    if (isHovered) {
+      c.fillStyle = p.color;
+      c.fillRect(CW/2 - 100, y, 200, 40);
+      c.fillStyle = '#050805';
+    } else {
+      c.strokeRect(CW/2 - 100, y, 200, 40);
+      c.fillStyle = p.color;
+    }
+    
     c.textAlign = 'center';
     c.font = '10px ' + FONT;
     c.fillText('OUVRIR LE LIEN', CW/2, y + 20);
     c.textAlign = 'left';
 
     this._clickables.push({ 
-      x: CW/2 - 100, y: y, w: 200, h: 40, 
+      id: btnId, x: CW/2 - 100, y: y, w: 200, h: 40, 
       action: () => p.url && window.open(p.url, '_blank') 
     });
 

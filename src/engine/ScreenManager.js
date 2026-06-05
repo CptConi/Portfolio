@@ -175,40 +175,27 @@ export class ScreenManager {
     document.addEventListener('keydown', e => { if (e.code === 'Escape') this._escape = true; });
 
     // Click/Touch handling on focused terminal
-    const handleHit = (clientX, clientY) => {
+    const handleHit = (clientX, clientY, isClick = true) => {
       if (this._state !== 'focused' || !this._active || this._active.kind !== 'console') return;
       
-      // Rect of the canvas
       const rect = scene.userData.canvas.getBoundingClientRect();
       const x = (clientX - rect.left) / rect.width;
       const y = (clientY - rect.top) / rect.height;
       
-      // The screen is a 0.6x0.38 plane centered at (0, SCREEN_CY, SCREEN_LZ) 
-      // in the mainframe group. But easier: the renderer fills the viewport 
-      // when focused (if we consider the camera alignment).
-      // However, since we are perfectly aligned in 'focused' mode:
-      // x: 0.5 is center, y: 0.5 is center of the viewport.
-      // Terminal is CWxCH (480x304). 
-      // We need to map [0.5 - screenW/2, 0.5 + screenW/2] to [0, CW]
-      // In focused mode, the screen geometry fills a specific portion of the viewport.
-      // Based on FOCUS_DIST and plane size:
-      const sw = 0.6, sh = 0.38;
-      const viewH = 2 * Math.tan(this._active.pose.fovRad / 2 || 0.25) * 0.4; // approx
-      // For simplicity, since the camera is perfectly centered and fixed:
-      const screenAreaX = 0.75; // The screen covers about 75% of width
-      const screenAreaY = 0.75; 
-      
-      const cx = (x - 0.5) / 0.65 + 0.5; // Rescale centered
+      const cx = (x - 0.5) / 0.65 + 0.5;
       const cy = (y - 0.5) / 0.65 + 0.5;
       
       if (cx >= 0 && cx <= 1 && cy >= 0 && cy <= 1) {
-        this._active.terminal.handleInput(cx * 480, cy * 304);
+        this._active.terminal.handleInput(cx * 480, cy * 304, isClick);
+      } else if (!isClick) {
+        this._active.terminal.handleInput(-1, -1, false); // Clear hover
       }
     };
 
-    scene.userData.canvas.addEventListener('mousedown', e => handleHit(e.clientX, e.clientY));
+    scene.userData.canvas.addEventListener('mousedown', e => handleHit(e.clientX, e.clientY, true));
+    scene.userData.canvas.addEventListener('mousemove', e => handleHit(e.clientX, e.clientY, false));
     scene.userData.canvas.addEventListener('touchstart', e => {
-      if (e.touches.length > 0) handleHit(e.touches[0].clientX, e.touches[0].clientY);
+      if (e.touches.length > 0) handleHit(e.touches[0].clientX, e.touches[0].clientY, true);
     });
   }
 
