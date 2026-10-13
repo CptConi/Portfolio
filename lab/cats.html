@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Chats — banc d'essai</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
+    <style>
+      :root {
+        --bg: #07070c;
+        --panel: #101018;
+        --line: #26263a;
+        --text: #c9cbe0;
+        --dim: #7b7e99;
+        --accent: #ff8c00;
+        --gutter: 16px;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--text); }
+      body {
+        font-family: 'Press Start 2P', ui-monospace, monospace;
+        font-size: 9px;
+        line-height: 1.7;
+        padding: 12px var(--gutter) 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        min-height: 100vh;
+      }
+      header, footer, section { width: 100%; max-width: 1280px; }
+
+      header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+      h1 { margin: 0; font-size: 12px; font-weight: normal; color: var(--accent); letter-spacing: 1px; }
+      h2 { margin: 0 0 6px; font-size: 9px; font-weight: normal; color: var(--dim); letter-spacing: 1px; }
+      .opts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--dim); width: 100%; max-width: 1280px; }
+      .opts a {
+        color: var(--dim);
+        text-decoration: none;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        padding: 4px 7px;
+      }
+      .opts a:hover { color: var(--text); border-color: var(--dim); }
+      .opts a[aria-current] { color: #0a0a10; background: var(--accent); border-color: var(--accent); }
+
+      /* Canvases keep the game's pixel grid; the browser scales them with hard pixels. */
+      canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; background: #000; }
+      .frame { position: relative; border: 1px solid var(--line); overflow: hidden; }
+      #tags { position: absolute; inset: 0; pointer-events: none; }
+      .tag {
+        position: absolute;
+        transform: translate(-50%, 0);
+        text-align: center;
+        color: var(--text);
+        font-size: clamp(5px, 0.72vw, 9px);
+        line-height: 1.5;
+        text-shadow: 0 1px 0 #000;
+        white-space: nowrap;
+      }
+      .tag b { display: block; font-weight: normal; color: var(--accent); }
+      .tag i { display: block; font-style: normal; color: var(--dim); }
+
+      #bigs canvas { image-rendering: auto; }
+      #bigs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+      #bigs figure { margin: 0; }
+      #bigs figcaption { margin-top: 4px; color: var(--dim); font-size: 7px; }
+
+      #sheet { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; border: 1px solid var(--line); padding: 10px; background: #12121c; }
+      #sheet figure { margin: 0; }
+      #sheet canvas { width: auto; height: auto; }
+      #sheet figcaption { margin-top: 4px; color: var(--dim); font-size: 7px; }
+
+      footer { color: var(--dim); font-size: 7px; line-height: 2; }
+      footer code { color: var(--text); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>CHATS · BANC D'ESSAI</h1>
+    </header>
+    <div class="opts" id="opts" aria-label="Options"></div>
+
+    <section>
+      <h2 id="game-title">DANS LE JEU</h2>
+      <div class="frame">
+        <canvas id="game" width="640" height="360"></canvas>
+        <div id="tags"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>EN GRAND</h2>
+      <div id="bigs"></div>
+    </section>
+
+    <section>
+      <h2>PLANCHE DES IMAGES</h2>
+      <div id="sheet"></div>
+    </section>
+
+    <footer>
+      Page de développement : absente du build de production.<br />
+      Paramètres d'URL : <code>?cam=eye</code> la caméra du jeu (horizontale, 36° de champ vertical, tampon 640×360, filtrage au plus proche) ·
+      <code>&amp;dist=2</code> distance aux chats (m) ·
+      <code>&amp;at=loaf</code> centre la vue du jeu sur un chat (en dessous de 1,9 m les trois ne tiennent plus côte à côte) ·
+      <code>&amp;t=3.3</code> fige l'horloge (3,3 s = clignement lent du chat sur le clavier, 5,9 s = bout de queue, 9,1 s = oreille) ·
+      <code>&amp;reduced=1</code> (ou <code>0</code>) force le mouvement réduit ·
+      <code>&amp;react=1</code> déclenche la réaction « content » du chat sur le clavier ·
+      <code>&amp;only=loaf|sleeping|eyes</code> un seul chat en grand
+    </footer>
+
+    <script type="module" src="/lab/cats.js"></script>
+  </body>
+</html>

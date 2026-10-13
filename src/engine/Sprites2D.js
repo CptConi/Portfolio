@@ -24,9 +24,10 @@ const SPRITES = [
   // Armurerie
   { x: 3.5, z: 10.3, d: 'barrel' }, { x: 3.5, z: 14.7, d: 'barrel' },
   { x: 6.8, z: 10.3, d: 'col1' },   { x: 6.8, z: 14.7, d: 'lamp' },
-  // Quartiers — warm candelabra + candles on the sides (entry centre kept clear)
-  { x: 9.5, z: 6.0, d: 'cbra' }, { x: 15.5, z: 6.0, d: 'cbra' },
-  { x: 10.7, z: 6.4, d: 'candle' }, { x: 14.3, z: 6.4, d: 'candle' },
+  // Quartiers — warm candelabra + candles, off the vestibule mouth: one beside the sofa, one
+  // in the south-east corner by the amp, a candle on the coffee table and one by the door.
+  { x: 10.6, z: 6.55, d: 'cbra' }, { x: 16.2, z: 6.45, d: 'cbra' },
+  { x: 9.05, z: 5.62, d: 'candle', yoff: 0.32 }, { x: 14.3, z: 6.4, d: 'candle' },
   // Secret Place — tech lamps
   { x: 10.0, z: 19.0, d: 'tlamp' }, { x: 15.0, z: 19.0, d: 'tlamp' },
   // Candle on the Armurerie central table (yoff = table height)

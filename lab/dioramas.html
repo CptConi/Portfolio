@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Dioramas — banc d'essai</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
+    <style>
+      :root {
+        --bg: #07070c;
+        --panel: #101018;
+        --line: #26263a;
+        --text: #c9cbe0;
+        --dim: #7b7e99;
+        --accent: #ff8c00;
+        --gutter: 16px;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--text); }
+      body {
+        font-family: 'Press Start 2P', ui-monospace, monospace;
+        font-size: 9px;
+        line-height: 1.7;
+        padding: 12px var(--gutter) 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        min-height: 100vh;
+      }
+      header, footer, #stage { width: 100%; max-width: 1280px; }
+
+      header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+      h1 { margin: 0; font-size: 12px; font-weight: normal; color: var(--accent); letter-spacing: 1px; }
+      nav { display: flex; flex-wrap: wrap; gap: 6px; }
+      nav a, .opts a {
+        color: var(--dim);
+        text-decoration: none;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        padding: 4px 7px;
+      }
+      nav a:hover, .opts a:hover { color: var(--text); border-color: var(--dim); }
+      nav a[aria-current], .opts a[aria-current] { color: #0a0a10; background: var(--accent); border-color: var(--accent); }
+      .opts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--dim); }
+
+      /* The canvas keeps the game's 640×360 buffer; the browser upscales it with hard pixels. */
+      #stage { position: relative; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); touch-action: pan-y; cursor: grab; }
+      #stage.drag { cursor: grabbing; }
+      canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; }
+      #tags { position: absolute; inset: 0; pointer-events: none; }
+      .tag {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: var(--text);
+        font-size: clamp(5px, 0.72vw, 9px);
+        line-height: 1.5;
+        text-shadow: 0 1px 0 #000;
+        white-space: nowrap;
+      }
+      .tag b { display: block; font-weight: normal; color: var(--accent); }
+      .tag i { display: block; font-style: normal; color: var(--dim); }
+
+      #story { margin: 0; color: var(--text); max-width: 1280px; width: 100%; }
+      #story[hidden] { display: none; }
+      footer { color: var(--dim); font-size: 7px; line-height: 2; }
+      footer code { color: var(--text); }
+      #error { color: #ff5c7a; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>DIORAMAS · BANC D'ESSAI</h1>
+      <nav id="nav" aria-label="Choisir un diorama"></nav>
+    </header>
+
+    <div class="opts" id="opts" aria-label="Options"></div>
+
+    <div id="stage">
+      <canvas id="c" width="640" height="360"></canvas>
+      <div id="tags"></div>
+    </div>
+
+    <p id="story" hidden></p>
+    <p id="error" role="alert"></p>
+
+    <footer>
+      Page de développement : absente du build de production. Glisser pour tourner.<br />
+      Paramètres d'URL : <code>?kind=neemba</code> un seul diorama en grand ·
+      <code>&amp;cam=eye</code> vue du joueur : yeux à hauteur du socle (0,5 m), caméra horizontale, optique du jeu ·
+      <code>&amp;dist=1.5</code> distance au socle en vue des yeux (m) ·
+      <code>&amp;spin=sway|0</code> ·
+      <code>&amp;t=4.2</code> fige le temps (captures) ·
+      <code>&amp;reduced=1</code> (ou <code>0</code>) force le mouvement réduit ·
+      <code>&amp;yaw=30</code> angle de départ (°)
+    </footer>
+
+    <script type="module" src="/lab/dioramas.js"></script>
+  </body>
+</html>

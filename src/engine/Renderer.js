@@ -3,11 +3,13 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { PostFX } from './PostFX.js';
 import { MAP, MAP_WIDTH, MAP_HEIGHT, PUSH_WALL, floorAt, ceilAt, isSecretOpen } from './Map.js';
 import { PROPS3D } from './Props3D.js';
 import { SCREENS, ARCADE } from './Screens.js';
 import { buildSprites } from './Sprites2D.js';
 import { buildDecor } from './Decor.js';
+import { moodOf } from '../features/mood.js';
 
 const INTERNAL_W = 640;
 const INTERNAL_H = 360;
@@ -56,6 +58,10 @@ export class Renderer {
       0.72,  // threshold — only bright pixels (screens, holos, spots, neon) bloom
     );
     this._composer.addPass(this._bloom);
+    // Feel pass (vignette, chromatic aberration, flash) + camera shake; public as `renderer.fx`.
+    this._postfx = new PostFX();
+    this.fx = this._postfx.api;
+    this._composer.addPass(this._postfx.pass);
     this._composer.addPass(new OutputPass());
 
     // Mobile: render at the real device resolution with a viewport-matched
@@ -81,9 +87,18 @@ export class Renderer {
     this._camera.updateProjectionMatrix();
   }
 
-  // Quality level: 1 = bloom, 0 = none.
+  // Quality level: 1 = bloom + feel pass, 0 = neither (the camera shake stays).
   setQuality(level) {
     this._bloom.enabled = level >= 1;
+    this._postfx.setQuality(level);
+  }
+
+  // Compiles every shader of the scene as built so far and pushes one throw-away frame through the
+  // composer (render targets, passes), so the first visible frame does not hitch. Call it once, before
+  // the first render, behind the title screen.
+  warmUp() {
+    this._renderer.compile(this._scene, this._camera);
+    this._composer.render();
   }
 
   // ── Scene construction ─────────────────────────────────────────────────
@@ -100,9 +115,11 @@ export class Renderer {
   // Low ambient + a coloured point light at each ceiling spot (consoles, atrium,
   // arcade) → real pools of light on the Lambert surfaces.
   _buildLights() {
-    this._scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    this._ambient = new THREE.AmbientLight(0xffffff, 0.6);   // eased per room by features/mood.js
+    this._scene.add(this._ambient);
     const spots = [
-      ...SCREENS.map(s => ({ x: s.x, z: s.z, c: new THREE.Color(s.color) })),
+      // A console can opt out of its ceiling spot with `light: false` (keeps the light budget).
+      ...SCREENS.filter(s => s.light !== false).map(s => ({ x: s.x, z: s.z, c: new THREE.Color(s.color) })),
       { x: ARCADE.x, z: ARCADE.z, c: new THREE.Color(0xff2a9d) },
       { x: 12.5, z: 12, c: new THREE.Color(0x37c0ff) },   // atrium hub
     ];
@@ -146,6 +163,7 @@ export class Renderer {
   _buildFloorCeiling() {
     const tex = this._tex;
     const dummy = new THREE.Object3D();
+    const tint = new THREE.Color();
 
     // Every walkable cell (incl. the push-wall slot) gets its own floor + ceiling.
     const cells = [];
@@ -153,19 +171,33 @@ export class Renderer {
       for (let mx = 0; mx < MAP_WIDTH; mx++)
         if (this._isOpen(mx, my)) cells.push([mx, my]);
 
-    const place = (mesh, yFn) => {
-      cells.forEach(([mx, my], i) => {
+    // One InstancedMesh per material. A room's mood (features/mood.js) rides on the per-instance
+    // colour, so only a different floor texture costs another draw call.
+    const place = (geo, material, list, yFn, tintOf) => {
+      const mesh = new THREE.InstancedMesh(geo, material, list.length);
+      list.forEach(([mx, my], i) => {
         dummy.position.set(mx + 0.5, yFn(mx, my), my + 0.5);
         dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1);
         dummy.updateMatrix(); mesh.setMatrixAt(i, dummy.matrix);
+        const [r, g, b] = tintOf(moodOf(MAP[my][mx]));
+        mesh.setColorAt(i, tint.setRGB(r, g, b));
       });
       mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.needsUpdate = true;
       this._scene.add(mesh);
     };
 
+    // Floors: the atrium, the vestibules and the secret room share FLOOR78; each room brings its own.
     const floorGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
-    place(new THREE.InstancedMesh(floorGeo, new THREE.MeshLambertMaterial({ map: tex.get(40), color: 0x9a9a9a }), cells.length),
-      (mx, my) => floorAt(mx + 0.5, my + 0.5));
+    const floorsByTex = new Map();
+    for (const cell of cells) {
+      const id = moodOf(MAP[cell[1]][cell[0]]).floorTex;
+      if (!floorsByTex.has(id)) floorsByTex.set(id, []);
+      floorsByTex.get(id).push(cell);
+    }
+    for (const [id, list] of floorsByTex)
+      place(floorGeo, new THREE.MeshLambertMaterial({ map: tex.get(id), color: 0x9a9a9a }), list,
+        (mx, my) => floorAt(mx + 0.5, my + 0.5), m => m.floor);
 
     // Secret room floor override with METLT02 (id 61)
     // Starts at my=18 to cover the room threshold
@@ -190,8 +222,8 @@ export class Renderer {
     this._scene.add(grateMesh);
 
     const ceilGeo = new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2);
-    place(new THREE.InstancedMesh(ceilGeo, new THREE.MeshLambertMaterial({ map: tex.get(41), color: 0x707070 }), cells.length),
-      (mx, my) => ceilAt(mx + 0.5, my + 0.5));
+    place(ceilGeo, new THREE.MeshLambertMaterial({ map: tex.get(41), color: 0x707070 }), cells,
+      (mx, my) => ceilAt(mx + 0.5, my + 0.5), m => m.ceil);
 
     // Secret room ceiling panels (MIDBRN09 id 85)
     const ceilP1 = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2), new THREE.MeshLambertMaterial({ map: tex.get(85) }));
@@ -204,24 +236,20 @@ export class Renderer {
     const lit = cells.filter(([mx, my]) => mx % 3 === 1 && my % 3 === 1);
     if (lit.length) {
       const lightGeo = new THREE.PlaneGeometry(1, 1).rotateX(Math.PI / 2);
-      const lightMesh = new THREE.InstancedMesh(lightGeo, new THREE.MeshBasicMaterial({ map: tex.get(42) }), lit.length);
-      lit.forEach(([mx, my], i) => {
-        dummy.position.set(mx + 0.5, ceilAt(mx + 0.5, my + 0.5) - 0.004, my + 0.5);
-        dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix(); lightMesh.setMatrixAt(i, dummy.matrix);
-      });
-      lightMesh.instanceMatrix.needsUpdate = true;
-      this._scene.add(lightMesh);
+      place(lightGeo, new THREE.MeshBasicMaterial({ map: tex.get(42) }), lit,
+        (mx, my) => ceilAt(mx + 0.5, my + 0.5) - 0.004, m => m.lamp);
     }
   }
 
   _buildWalls() {
-    const groups = new Map(); // texId → [{x, z, rotY, dim, h, cy}]
-    const addFace = (texId, x, z, rotY, dim, h, cy) => {
+    const groups = new Map(); // texId → [{x, z, rotY, dim, h, cy, tint}]
+    const addFace = (texId, x, z, rotY, dim, h, cy, tint) => {
       if (!groups.has(texId)) groups.set(texId, []);
-      groups.get(texId).push({ x, z, rotY, dim, h, cy });
+      groups.get(texId).push({ x, z, rotY, dim, h, cy, tint });
     };
     const cellVal = (mx, my) => (mx < 0 || mx >= MAP_WIDTH || my < 0 || my >= MAP_HEIGHT) ? 1 : MAP[my][mx];
+    // Every face looks into an open neighbour: it takes that room's mood (features/mood.js).
+    const tintAt = (nx, ny) => moodOf(cellVal(nx, ny)).wall;
     const faceTexId = (mx, my, nv) => {
       if (nv >= 2 && nv <= 4) return nv;
       // Secret area texture overrides (by world coordinates)
@@ -253,7 +281,7 @@ export class Renderer {
             const nx = mx + dx, ny = my + dy;
             if (!this._isOpen(nx, ny)) continue;
             const nf = fAt(nx, ny), nc = cAt(nx, ny);
-            addFace(faceTexId(mx, my, cellVal(nx, ny)), mx + ox, my + oz, rotY, dim, nc - nf, (nf + nc) / 2);
+            addFace(faceTexId(mx, my, cellVal(nx, ny)), mx + ox, my + oz, rotY, dim, nc - nf, (nf + nc) / 2, tintAt(nx, ny));
           }
         } else if (this._isOpen(mx, my)) {
           // Risers (floor steps) + soffits (ceiling drops) toward LOWER neighbours.
@@ -262,8 +290,8 @@ export class Renderer {
             const nx = mx + dx, ny = my + dy;
             if (!this._isOpen(nx, ny)) continue;
             const nf = fAt(nx, ny), nc = cAt(nx, ny);
-            if (nf < f - EPS) addFace(STEP_TEX, mx + ox, my + oz, rotY, 0.8, f - nf, (f + nf) / 2);
-            if (nc > c + EPS) addFace(STEP_TEX, mx + ox, my + oz, rotY, 0.6, nc - c, (c + nc) / 2);
+            if (nf < f - EPS) addFace(STEP_TEX, mx + ox, my + oz, rotY, 0.8, f - nf, (f + nf) / 2, tintAt(nx, ny));
+            if (nc > c + EPS) addFace(STEP_TEX, mx + ox, my + oz, rotY, 0.6, nc - c, (c + nc) / 2, tintAt(nx, ny));
           }
         }
       }
@@ -274,14 +302,13 @@ export class Renderer {
     const col = new THREE.Color();
     for (const [texId, faces] of groups) {
       const mesh = new THREE.InstancedMesh(wallGeo, new THREE.MeshLambertMaterial({ map: this._tex.get(texId), color: 0xb0b0b0 }), faces.length);
-      faces.forEach(({ x, z, rotY, dim, h, cy }, i) => {
+      faces.forEach(({ x, z, rotY, dim, h, cy, tint }, i) => {
         dummy.position.set(x, cy, z);
         dummy.rotation.set(0, rotY, 0);
         dummy.scale.set(1, h, 1);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        col.setScalar(dim);
-        mesh.setColorAt(i, col);
+        mesh.setColorAt(i, col.setRGB(dim * tint[0], dim * tint[1], dim * tint[2]));
       });
       mesh.instanceMatrix.needsUpdate = true;
       mesh.instanceColor.needsUpdate = true;
@@ -341,6 +368,7 @@ export class Renderer {
   // ── Render loop ────────────────────────────────────────────────────────
 
   get scene() { return this._scene; }
+  get ambient() { return this._ambient; }
 
   render(player, camOverride = null, tSec = 0) {
     this._decor?.update(tSec);
@@ -380,6 +408,10 @@ export class Renderer {
         player.y + Math.sin(player.angle)
       );
     }
+
+    // After lookAt so the shake also rides on a console's camera override.
+    this._postfx.update(tSec);
+    this._postfx.applyToCamera(this._camera);
 
     this._composer.render();
   }
