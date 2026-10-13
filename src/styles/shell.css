@@ -1,0 +1,272 @@
+/* Shell UI — contact chip + sheet, plan menu, warp fade, "copy link" button.
+   Everything lives inside #game-container (so it survives fullscreen); z-index:
+   HUD 15, toast 16, copy button 20, dialogs 40, warp fade 45. */
+
+/* ── Chips (top-right, under the sector label) ──
+   Other features join this row (the RECETTE chip): on a narrow screen it wraps instead of
+   running off the left edge, and stays flush right. */
+#shell-chips {
+  position: absolute;
+  z-index: 15;
+  right: max(16px, env(safe-area-inset-right));
+  top: calc(max(12px, env(safe-area-inset-top)) + 24px);
+  max-width: calc(100% - 32px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  transition: opacity 0.15s;
+}
+/* The carried-key badge (#hud-key, secret.css) takes the slot right under the sector
+   label: the chips step down below it while it is shown. */
+#hud-key:not([hidden]) ~ #shell-chips { top: calc(max(12px, env(safe-area-inset-top)) + 24px + 36px); }
+/* Hidden (not just dimmed) while a console is focused: it owns the screen. */
+#shell-chips[data-off] { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.shell-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 28px;
+  padding: 7px 10px;
+  font: 9px/1 var(--font);
+  letter-spacing: 1px;
+  color: #cfefff;
+  background: #000000b0;
+  border: 1px solid #37c0ff77;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.shell-chip:hover { color: #fff; border-color: #fff; background: #000000dd; }
+#shell-chips > button:active { transform: translateY(1px); }   /* every chip of the row, the RECETTE one included */
+.shell-chip kbd {
+  padding: 2px 4px;
+  font: inherit;
+  color: #05080c;
+  background: #37c0ff;
+}
+body.is-touch .shell-chip { min-height: 40px; padding: 0 12px; font-size: 10px; }
+body.is-touch .shell-chip kbd { display: none; }
+
+/* ── Dialogs ── */
+.shell-overlay {
+  position: absolute; inset: 0;
+  z-index: 40;
+  display: flex;                     /* the card centres itself with margin:auto, so a tall one scrolls instead of clipping */
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+           max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(2, 5, 10, 0.78);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.shell-overlay[hidden] { display: none; }
+/* A short fade-in; the global reduced-motion rule cuts it to a single frame. */
+.shell-overlay:not([hidden]) { animation: shell-fade .16s ease-out; }
+.shell-overlay:not([hidden]) .shell-card { animation: shell-rise .2s ease-out; }
+@keyframes shell-fade { from { opacity: 0; } }
+@keyframes shell-rise { from { opacity: 0; transform: translateY(8px); } }
+
+.shell-card {
+  position: relative;
+  width: min(100%, 520px);
+  margin: auto;
+  padding: 22px 20px 18px;
+  color: #e8f4ff;
+  background: #060a10;
+  border: 2px solid #37c0ff;
+  box-shadow: 0 0 0 1px #000, 0 0 26px #37c0ff33;
+  font-family: 'Orbitron', sans-serif;
+}
+.shell-card:focus { outline: none; }
+
+.shell-close {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  font: 14px var(--font);
+  color: #fff;
+  background: transparent;
+  border: 1px solid #ffffff44;
+  cursor: pointer;
+}
+.shell-close:hover { background: #ffffff1a; border-color: #fff; }
+
+.shell-title {
+  padding-right: 48px;
+  font: normal 14px/1.4 var(--font);
+  letter-spacing: 3px;
+  color: #37c0ff;
+}
+.shell-lead {
+  margin-top: 10px;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Contact rows */
+.shell-rows {
+  list-style: none;
+  margin-top: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.shell-row {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  background: #ffffff0a;
+  border-left: 3px solid #37c0ff;
+}
+.shell-row-main { flex: 1 1 220px; min-width: 0; }
+.shell-row-name {
+  display: block;
+  font: 8px var(--font);
+  letter-spacing: 2px;
+  color: #8fb3c9;
+}
+.shell-val {
+  display: block;
+  margin-top: 7px;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #fff;
+  overflow-wrap: anywhere;
+  cursor: text;
+  -webkit-user-select: all; user-select: all;     /* one click selects the whole value */
+}
+.shell-row-actions { display: flex; gap: 8px; }
+
+.shell-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  font: 9px var(--font);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  text-decoration: none;
+  color: #37c0ff;
+  background: transparent;
+  border: 2px solid #37c0ff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.shell-btn:hover { color: #05080c; background: #37c0ff; }
+.shell-btn:active { transform: translateY(1px); }
+
+.shell-status {
+  min-height: 1.5em;
+  margin-top: 12px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #37c0ff;
+}
+
+/* Plan entries */
+.shell-list {
+  list-style: none;
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+.shell-list li:last-child { grid-column: 1 / -1; }   /* Digital Factory: a wide entry of its own */
+
+.shell-dest {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  text-align: left;
+  color: #fff;
+  background: #ffffff0a;
+  border: 2px solid transparent;
+  border-left: 4px solid var(--c);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.shell-dest:hover,
+.shell-dest:focus-visible { background: #ffffff18; border-color: var(--c); }
+.shell-dest:active { transform: translateY(1px); }
+.shell-dest-key {
+  flex: none;
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  font: 10px var(--font);
+  color: #05080c;
+  background: var(--c);
+}
+body.is-touch .shell-dest-key { display: none; }
+.shell-dest-text { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.shell-dest-name { font: 11px/1.3 var(--font); letter-spacing: 2px; color: var(--c); }
+.shell-dest-sub { font-weight: 500; font-size: 12px; line-height: 1.3; color: #b8c6d4; }
+.shell-dest[aria-current="location"] .shell-dest-sub::after { content: ' · vous êtes ici'; color: var(--c); }
+
+.shell-foot {
+  margin-top: 14px;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #8fb3c9;
+}
+body.is-touch .shell-foot { display: none; }
+
+/* Short screens (phones in landscape): tighter, so a dialog fits without scrolling. */
+@media (max-height: 520px) {
+  .shell-card { padding: 16px 18px 14px; }
+  .shell-lead { margin-top: 6px; font-size: 14px; }
+  .shell-rows, .shell-list { margin-top: 10px; }
+  .shell-rows { gap: 8px; }
+  .shell-row { padding: 8px 12px; }
+  .shell-val { margin-top: 4px; }
+  .shell-status { margin-top: 8px; }
+  .shell-dest { min-height: 48px; }
+  .shell-foot { margin-top: 10px; }
+}
+
+/* ── Warp fade ── */
+#shell-fade {
+  position: absolute; inset: 0;
+  z-index: 45;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms linear;
+}
+#shell-fade.on { opacity: 1; }
+
+/* ── "COPIER LE LIEN" — shown while a mission is on the projects console ── */
+.shell-copylink {
+  position: absolute;
+  z-index: 20;
+  left: max(16px, env(safe-area-inset-left));
+  top: 16px;
+  display: inline-flex; align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  font: 9px var(--font);
+  letter-spacing: 1px;
+  color: #ffdd00;
+  background: #000000c0;
+  border: 2px solid #ffdd00;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.shell-copylink[hidden] { display: none; }
+.shell-copylink:hover { color: #05080c; background: #ffdd00; }
+/* On touch the red exit button owns the top-left corner: sit next to it, same height. */
+body.is-touch .shell-copylink {
+  left: calc(max(16px, env(safe-area-inset-left)) + 62px);
+  min-height: 52px;
+  font-size: 10px;
+}
+
+/* Off-screen field for the clipboard fallback (16px so iOS does not zoom on focus). */
+.shell-clip {
+  position: fixed; top: 0; left: 0;
+  width: 1px; height: 1px;
+  padding: 0; border: 0;
+  font-size: 16px;
+  opacity: 0;
+  pointer-events: none;
+}
