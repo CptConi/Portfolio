@@ -1,0 +1,202 @@
+/* ── Notes: the card (features/notes.js) ─────────────────────────────────────────
+   Pressing [E] on a note in the level (a post-it, an engraved plaque, a label, a paper tag) opens its
+   card at the bottom of the screen. The card looks like the object it was read from: paper, metal, a
+   white label with a red border, a kraft tag (never rotated: pixel type has to stay crisp). It is a
+   polite live region that never takes pointer events (a note must not get in the way of the stick, the
+   look-drag or a click), except for the ✕ on touch screens. Ink colours follow the speaker: Nicolas dark
+   blue, SYSTÈME slate, the cat's line plum. The drop shadow is on the card and the shape (a curled
+   corner, a chamfered tag) on its face, so the shadow follows the shape. */
+
+#note-card {
+  --ink: #232b66;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(56px, 9vh, 96px);
+  width: max-content;
+  max-width: min(calc(100vw - 32px), 520px);
+  font-family: var(--font, 'Press Start 2P', monospace);
+  font-size: clamp(9px, 1.05vw, 12px);
+  line-height: 1.9;
+  color: var(--ink);
+  text-align: left;
+  opacity: 0;
+  transform: translate(-50%, 10px);
+  transition: opacity .2s ease, transform .2s ease, bottom .2s ease;
+  filter: drop-shadow(0 7px 12px #000000b3);
+  pointer-events: none;
+  -webkit-user-select: none; user-select: none;
+  z-index: 16;
+}
+#note-card.on { opacity: 1; transform: translate(-50%, 0); }
+
+.note-face {
+  position: relative;
+  padding: 14px 18px 15px;
+}
+
+.note-tag {
+  display: block;
+  margin-bottom: 6px;
+  font-size: max(9px, .85em);       /* it names the speaker: never under the 9px the pixel font stays legible at (main.css) */
+  letter-spacing: 2px;
+  opacity: .8;
+}
+.note-lead { margin: 0; }
+.note-lead:empty { display: none; }
+.note-text { margin: 0; text-wrap: pretty; }
+
+/* ── Post-it: yellow paper, tape on top, the bottom-right corner curled up ── */
+#note-card[data-carrier="postit"] { --ink: #232b66; }
+#note-card[data-carrier="postit"] .note-face {
+  padding-top: 22px;
+  background: linear-gradient(180deg, #fff08a 0, #ffe45e 16px, #ffe45e calc(100% - 38px), #f3cd3a 100%);
+  border-right: 2px solid #d3a519;
+  clip-path: polygon(0 -24px, 100% -24px, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%);
+}
+#note-card[data-carrier="postit"] .note-face::before {       /* tape */
+  content: '';
+  position: absolute;
+  top: -10px; left: 50%;
+  width: 84px; height: 21px;
+  transform: translateX(-50%) rotate(1.5deg);
+  background: #ece3c4;
+  border: 1px solid #b5aa82;
+  opacity: .92;
+}
+#note-card[data-carrier="postit"] .note-face::after {        /* the flap of the curled corner */
+  content: '';
+  position: absolute;
+  right: 0; bottom: 0;
+  width: 17px; height: 17px;
+  background: linear-gradient(135deg, #fff6bd, #ffeb86);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  border-top: 1px solid #b38a14;
+}
+
+/* ── Plaque: brushed steel (or brass on a plinth), four rivets, engraved letters ── */
+#note-card[data-carrier="plaque"] { --ink: #2a3238; }
+#note-card[data-carrier="plaque"] .note-face {
+  --rivet: radial-gradient(circle at 9px 9px, #f4f7f9 0 1.4px, #7e878e 2.4px 4px, transparent 4.6px) no-repeat;
+  padding: 16px 26px 17px;
+  background:
+    var(--rivet) 0 0 / 18px 18px,
+    var(--rivet) 100% 0 / 18px 18px,
+    var(--rivet) 0 100% / 18px 18px,
+    var(--rivet) 100% 100% / 18px 18px,
+    repeating-linear-gradient(0deg, #00000000 0 1px, #ffffff1f 1px 2px),
+    linear-gradient(180deg, #d6dce0, #a6afb6 45%, #8f989f);
+  border: 2px solid;
+  border-color: #eef2f5 #6a737a #5a636a #dfe5e9;
+  text-shadow: 0 1px 0 #ffffffb3, 0 -1px 0 #0000002e;
+}
+#note-card[data-carrier="plaque"][data-finish="brass"] .note-face {
+  background:
+    var(--rivet) 0 0 / 18px 18px,
+    var(--rivet) 100% 0 / 18px 18px,
+    var(--rivet) 0 100% / 18px 18px,
+    var(--rivet) 100% 100% / 18px 18px,
+    repeating-linear-gradient(0deg, #00000000 0 1px, #ffffff24 1px 2px),
+    linear-gradient(180deg, #e3c777, #c9a24b 45%, #a98332);
+  border-color: #f4de93 #86661f #7a5c18 #ecd283;
+  --ink: #3f2c0d;
+  text-shadow: 0 1px 0 #fff0b8a6, 0 -1px 0 #3a280a33;
+}
+#note-card[data-carrier="plaque"] .note-text { letter-spacing: 1px; }
+
+/* ── Sticker: a white label with a red border and a barcode ── */
+#note-card[data-carrier="sticker"] { --ink: #34343c; }
+#note-card[data-carrier="sticker"] .note-face {
+  padding-bottom: 36px;
+  background: #f4f1e9;
+  border: 3px solid #cf2a2a;
+  box-shadow: inset 0 0 0 2px #f4f1e9, inset 0 0 0 3px #cf2a2a;
+}
+#note-card[data-carrier="sticker"] .note-tag { color: #cf2a2a; opacity: 1; }
+#note-card[data-carrier="sticker"] .note-face::after {       /* barcode */
+  content: '';
+  position: absolute;
+  left: 18px; right: 18px; bottom: 11px;
+  height: 15px;
+  background: repeating-linear-gradient(90deg, #1c1c21 0 2px, transparent 2px 4px, #1c1c21 4px 5px, transparent 5px 8px, #1c1c21 8px 11px, transparent 11px 13px);
+}
+
+/* ── Tag: kraft paper with an eyelet and a string, chamfered on the string side ── */
+#note-card[data-carrier="tag"] { --ink: #3a2810; }
+#note-card[data-carrier="tag"] .note-face {
+  padding-left: 54px;
+  background:
+    radial-gradient(circle at 24px 50%, #2b1d0c 0 4.5px, #efe0b8 5px 9px, transparent 9.5px),
+    linear-gradient(180deg, #d4ae74, #cba267 40%, #bd9356);
+  border: 1px solid #8d6934;
+  border-left: 0;
+  clip-path: polygon(22px 0, 100% 0, 100% 100%, 22px 100%, 0 50%);
+}
+#note-card[data-carrier="tag"] .note-face::before {          /* the string, going off to the left */
+  content: '';
+  position: absolute;
+  left: 4px; top: calc(50% - 1px);
+  width: 20px; height: 3px;
+  background: repeating-linear-gradient(90deg, #e9dfc2 0 3px, #b4a680 3px 5px);
+}
+#note-card[data-carrier="tag"][data-voice="nicolas"] { --ink: #3a2810; }
+#note-card[data-carrier="tag"][data-voice="chat"] { --ink: #1d4560; }
+#note-card[data-voice="chat"] .note-lead { font-size: 1.6em; letter-spacing: 3px; line-height: 1.5; color: #6e1c47; }
+#note-card[data-voice="chat"] .note-text { letter-spacing: 1px; }
+
+/* SYSTÈME speaks in capitals, with a little air between them (not on the cat's translation tag, which keeps its ink). */
+#note-card[data-voice="systeme"] .note-text { letter-spacing: 1px; }
+
+/* ── Close (touch only: on a keyboard it is E or ESC) ── */
+.note-close {
+  display: none;
+  position: absolute;
+  top: -14px; right: -10px;
+  width: 36px; height: 36px;
+  padding: 0;
+  font: 14px/34px var(--font, 'Press Start 2P', monospace);
+  color: #fff;
+  background: #000000cc;
+  border: 1px solid #ffffff55;
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body.is-touch .note-close { display: block; }
+body.is-touch #note-card.on .note-close { pointer-events: auto; }
+
+/* Touch: sit above the action button and the thumb zone. A phone is read at arm's length but from a
+   narrow screen: one size up from the desktop minimum. */
+body.is-touch #note-card {
+  bottom: clamp(100px, 13vh, 150px);
+  max-width: min(92vw, 520px);
+  font-size: 10px;
+}
+/* Landscape phones are short: tuck the card at the bottom, centred in the gap between the HUD identity
+   bar (about 250 px of text plus its safe-area inset) and the action button, and shrink the type, down
+   to the 9px the pixel font stays legible at (main.css, "Readable minimums"), so it stays a few lines. */
+@media (orientation: landscape) and (max-height: 500px) {
+  body.is-touch #note-card {
+    --edge-l: calc(max(16px, env(safe-area-inset-left)) + 258px);
+    --edge-r: calc(max(28px, calc(env(safe-area-inset-right) + 16px)) + 126px);
+    left: var(--edge-l);
+    right: var(--edge-r);
+    margin-inline: auto;
+    width: auto;
+    transform: translateY(10px);
+    max-width: calc(100% - var(--edge-l) - var(--edge-r));
+    overflow-wrap: anywhere;
+    bottom: 10px;
+    font-size: 9px;
+  }
+  body.is-touch #note-card.on { transform: translateY(0); }
+  body.is-touch #note-card .note-face { padding: 10px 12px 11px; }
+  body.is-touch #note-card[data-carrier="postit"] .note-face { padding-top: 16px; }
+  body.is-touch #note-card[data-carrier="plaque"] .note-face { padding: 12px 20px 13px; }
+  body.is-touch #note-card[data-carrier="sticker"] .note-face { padding-bottom: 30px; }
+  body.is-touch #note-card[data-carrier="tag"] .note-face { padding-left: 46px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #note-card { transition: none; }
+}
