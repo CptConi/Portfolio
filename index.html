@@ -2,18 +2,22 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="title" content="Portfolio de Nicolas Renard — Lead Dev Full Stack" />
-    <meta name="description" content="Portfolio interactif FPS de Nicolas Renard, Lead Developer Full Stack à Bordeaux." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Pas un CV : un niveau à explorer. Portfolio interactif en vue subjective de Nicolas Renard, Lead Developer Full Stack à Bordeaux." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://portfolio.cptconi.vercel.app/" />
     <meta property="og:title" content="Portfolio de Nicolas Renard — Lead Dev Full Stack" />
-    <meta property="og:description" content="Portfolio interactif FPS de Nicolas Renard, Lead Developer Full Stack à Bordeaux." />
-    <meta property="og:image" content="/thumbnail-meta.jpg" />
+    <meta property="og:description" content="Pas un CV : un niveau à explorer. Portfolio interactif en vue subjective de Nicolas Renard, Lead Developer Full Stack à Bordeaux." />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230a0a0a'/%3E%3Cpath d='M3 12V4h6a3 3 0 0 1 0 6H6' stroke='%2300ff41' stroke-width='2' fill='none'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@500;700;900&display=swap" />
     <link rel="stylesheet" href="/src/styles/main.css" />
     <title>Nicolas Renard — Lead Dev Full Stack</title>
   </head>
-  <body>
+  <body data-boot="loading">
+    <!-- data-boot: loading → ready (set by features/shell.js once the level is built);
+         nogl / slow / failed show #boot-fallback (see the inline script below). -->
 
     <!-- Start screen -->
     <div id="start-screen">
@@ -23,6 +27,11 @@
       <div class="start-vignette"></div>
 
       <div class="start-stage">
+        <div class="start-ticket">
+          <div class="ticket-id">TICKET #1337 · RECETTE DU PORTFOLIO</div>
+          <div class="ticket-meta">Testeur&nbsp;: vous · Arme&nbsp;: une tasse · 4 cas de test à valider · Durée estimée&nbsp;: 90 secondes</div>
+        </div>
+
         <div class="start-kicker">PORTFOLIO INTERACTIF</div>
 
         <h1 class="start-title" data-text="NICOLAS RENARD">NICOLAS RENARD</h1>
@@ -35,19 +44,61 @@
           <span class="role-bracket">]</span>
         </div>
 
-        <div class="start-sub">▶&nbsp;&nbsp;INSÉRER UN JETON&nbsp;&nbsp;◀</div>
+        <div class="start-sub" aria-live="polite">
+          <span class="sub-loading">CHARGEMENT…</span>
+          <span class="sub-ready">▶&nbsp;&nbsp;INSÉRER UN JETON&nbsp;&nbsp;◀</span>
+        </div>
+
+        <div class="start-alts">
+          <a class="start-alt" href="/dossier.html" data-no-start data-umami-event="dossier-click" data-umami-event-label="start">DOSSIER <span>(lecture rapide, sans jeu)</span></a>
+          <button class="start-alt start-tour" type="button" id="start-tour" data-no-start data-umami-event="tour-click" data-umami-event-label="start">VISITE GUIDÉE <span>(<span class="tour-secs">40</span>&nbsp;s, sans les mains)</span></button>
+        </div>
+        <noscript><a class="start-alt" href="/dossier.html">JavaScript est désactivé&nbsp;: ouvrir le dossier (lecture rapide, sans jeu)</a></noscript>
 
         <div class="start-controls start-kb-only">
-          <span class="kc"><b>WASD</b><i>DÉPLACER</i></span>
+          <span class="kc"><b>WASD&nbsp;/&nbsp;ZQSD</b><i>DÉPLACER</i></span>
           <span class="kc"><b>SOURIS</b><i>REGARDER</i></span>
           <span class="kc"><b>E&nbsp;/&nbsp;ESPACE</b><i>INTERAGIR</i></span>
           <span class="kc"><b>ESC</b><i>FERMER</i></span>
+        </div>
+
+        <div class="start-controls start-kb-only start-keys">
+          <span class="kc"><b>C</b><i>CONTACT</i></span>
+          <span class="kc"><b>M</b><i>PLAN</i></span>
+          <span class="kc"><b>V</b><i>VISITE</i></span>
         </div>
 
         <div class="start-controls start-touch-only">
           <span class="kc"><b>STICK&nbsp;G.</b><i>DÉPLACER</i></span>
           <span class="kc"><b>GLISSER&nbsp;D.</b><i>REGARDER</i></span>
           <span class="kc"><b>BOUTON</b><i>INTERAGIR</i></span>
+          <span class="kc"><b>PLAN&nbsp;/&nbsp;CONTACT</b><i>EN HAUT À DROITE</i></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boot fallback: no 3D, slow load or failed load. Same content stays reachable in the dossier. -->
+    <div id="boot-fallback" role="alert">
+      <div class="bf-card">
+        <div class="bf-kicker">SYSTÈME</div>
+
+        <div class="bf-msg" data-for="nogl">
+          <h2 class="bf-title">3D INDISPONIBLE</h2>
+          <p class="bf-text">Ce navigateur ne parvient pas à afficher le niveau (accélération graphique désactivée ou absente). Le contenu reste accessible&nbsp;: lecture rapide, sans jeu.</p>
+        </div>
+        <div class="bf-msg" data-for="slow">
+          <h2 class="bf-title">CHARGEMENT LONG</h2>
+          <p class="bf-text">Le niveau met plus de temps que prévu à arriver. Votre connexion est peut-être lente&nbsp;: vous pouvez patienter, ou lire le dossier en attendant.</p>
+        </div>
+        <div class="bf-msg" data-for="failed">
+          <h2 class="bf-title">NIVEAU NON CHARGÉ</h2>
+          <p class="bf-text">Le niveau n'a pas pu démarrer. Rechargez la page, ou parcourez le dossier&nbsp;: même contenu, sans jeu.</p>
+        </div>
+
+        <div class="bf-actions">
+          <a class="bf-btn bf-primary" href="/dossier.html" data-no-start data-umami-event="dossier-click" data-umami-event-label="fallback">OUVRIR LE DOSSIER</a>
+          <button class="bf-btn bf-secondary" type="button" id="bf-wait" data-for="slow">CONTINUER D'ATTENDRE</button>
+          <button class="bf-btn bf-secondary" type="button" id="bf-reload" data-for="failed">RECHARGER</button>
         </div>
       </div>
     </div>
@@ -57,6 +108,72 @@
       <canvas id="game-canvas"></canvas>
     </div>
 
+    <!-- Boot guard — plain ES5 on purpose: it must still run where the game cannot. -->
+    <script>
+      (function () {
+        var body = document.body;
+
+        // Same test as ui/Touch.js: the start screen must show the touch control rows
+        // from the first paint, not only once the assets have loaded.
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) body.classList.add('is-touch');
+
+        var setBoot = function (state) {
+          body.dataset.boot = state;
+          if (state === 'ready' || state === 'loading') return;
+          var primary = document.querySelector('.bf-primary');
+          if (primary) primary.focus();
+        };
+
+        // Three.js needs WebGL 2 (WebGL 1 support was dropped upstream).
+        try {
+          var probe = document.createElement('canvas');
+          var gl = probe.getContext('webgl2');
+          if (gl) {
+            var lose = gl.getExtension('WEBGL_lose_context');
+            if (lose) lose.loseContext();
+          } else {
+            setBoot('nogl');
+          }
+        } catch (e) {
+          setBoot('nogl');
+        }
+
+        // Assets still loading after 20 s, or the boot promise rejected: offer the dossier.
+        setTimeout(function () {
+          if (body.dataset.boot === 'loading') setBoot('slow');
+        }, 20000);
+        window.addEventListener('unhandledrejection', function () {
+          var state = body.dataset.boot;
+          if (state === 'loading' || state === 'slow') setBoot('failed');
+        });
+
+        document.getElementById('bf-wait').addEventListener('click', function () { setBoot('loading'); });
+        document.getElementById('bf-reload').addEventListener('click', function () { location.reload(); });
+
+        // Links on the start screen must not start the game: main.js starts it on any
+        // click or key. Only the keys that activate a link are held back, so any other
+        // key still enters the level.
+        var links = document.querySelectorAll('[data-no-start]');
+        var stop = function (e) { e.stopPropagation(); };
+        var stopActivation = function (e) { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); };
+        for (var i = 0; i < links.length; i++) {
+          links[i].addEventListener('click', stop);
+          links[i].addEventListener('keydown', stopActivation);
+        }
+
+        // VISITE GUIDÉE: start the level, and the tour (features/tour.js) on game:start. The flag is
+        // only raised once the level can start (main.js has not wired the click before that), so a
+        // click while loading cannot leave a stale tour behind for the next click.
+        var tour = document.getElementById('start-tour');
+        if (tour) {
+          tour.addEventListener('click', function () {
+            if (body.dataset.boot !== 'ready') return;
+            body.dataset.tour = 'start';
+            document.getElementById('start-screen').click();
+          });
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

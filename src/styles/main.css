@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@500;700;900&display=swap');
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -161,6 +159,52 @@ html, body {
   animation: coin-pulse 1.1s ease-in-out infinite;
 }
 
+/* Ticket line — the QA framing of the visit, above the title block */
+.start-ticket {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', sans-serif;
+}
+.ticket-id {
+  padding: 4px 12px;
+  border: 1px dashed #ff2a6d77;
+  font-weight: 700;
+  font-size: clamp(9px, 1.15vw, 12px);
+  letter-spacing: 3px;
+  color: #ff8fb4;
+  text-shadow: 0 0 10px #ff2a6d66;
+}
+.ticket-meta {
+  font-weight: 500;
+  font-size: clamp(9px, 1vw, 12px);
+  letter-spacing: 1.5px;
+  color: #a79fc0;
+  text-wrap: balance;
+}
+
+/* "CHARGEMENT…" until features/shell.js flips body[data-boot] to "ready" */
+.sub-ready { display: none; }
+body[data-boot="ready"] .sub-ready { display: inline; }
+body[data-boot="ready"] .sub-loading { display: none; }
+body:not([data-boot="ready"]) #start-screen { cursor: progress; }
+
+/* Secondary way in: the dossier (reading without the game). Discreet on purpose. */
+.start-alt {
+  display: inline-block;
+  margin-top: -8px;
+  padding: 8px 12px;           /* comfortable touch target */
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 500;
+  font-size: clamp(9px, 1.05vw, 12px);
+  letter-spacing: 2px;
+  color: #7fd9e8;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+  opacity: 0.85;
+}
+.start-alt span { color: #a79fc0; letter-spacing: 1px; }
+.start-alt:hover { opacity: 1; color: #fff; }
+
 .start-controls {
   display: flex;
   flex-wrap: wrap;
@@ -178,21 +222,109 @@ html, body {
 }
 .kc b {
   font-family: 'Press Start 2P', monospace;
-  font-size: clamp(6px, 1vw, 9px);
+  font-size: clamp(8px, 1vw, 10px);
   color: #fff;
   font-weight: normal;
 }
 .kc i {
   font-family: 'Orbitron', sans-serif;
   font-style: normal;
-  font-size: clamp(5px, 0.75vw, 7px);
+  font-size: clamp(7px, 0.8vw, 9px);
   letter-spacing: 2px;
   color: #7fd9e8;
 }
 
+/* Second keyboard row (C / M / N), tucked under the first */
+.start-keys { margin-top: -12px; }
+
 .start-touch-only { display: none; }
 body.is-touch .start-kb-only { display: none; }
 body.is-touch .start-touch-only { display: flex; }
+
+/* Short or narrow screens (phones in landscape, small windows): keep the whole
+   stage on screen. */
+@media (max-height: 520px) {
+  .start-stage { gap: 10px; padding: 8px 16px; }
+  .start-controls { margin-top: 2px; gap: 6px; }
+  .start-keys { margin-top: -4px; }
+  .kc { padding: 5px 9px; gap: 3px; }
+  .start-alt { margin-top: -4px; padding: 4px 12px; }
+}
+@media (max-width: 480px) {
+  .ticket-id { letter-spacing: 1.5px; }
+}
+
+/* ── Boot fallback — no 3D, slow load or failed load (index.html inline script) ── */
+#boot-fallback {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 200;
+  align-items: center; justify-content: center;
+  padding: 16px;
+  background: #060109f2;
+  overflow-y: auto;
+}
+body[data-boot="nogl"] #boot-fallback,
+body[data-boot="slow"] #boot-fallback,
+body[data-boot="failed"] #boot-fallback { display: flex; }
+body[data-boot="nogl"] #start-screen { display: none; }
+
+.bf-card {
+  width: 100%; max-width: 520px;
+  margin: auto;
+  padding: 24px 22px;
+  text-align: center;
+  background: #0c0613;
+  border: 2px solid #ff2a6d;
+  box-shadow: 0 0 28px #ff2a6d33;
+  font-family: 'Orbitron', sans-serif;
+}
+.bf-kicker {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #ff2a6d;
+}
+.bf-msg { display: none; }
+body[data-boot="nogl"] .bf-msg[data-for="nogl"],
+body[data-boot="slow"] .bf-msg[data-for="slow"],
+body[data-boot="failed"] .bf-msg[data-for="failed"] { display: block; }
+.bf-title {
+  margin-top: 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-weight: normal;
+  font-size: clamp(12px, 3.4vw, 18px);
+  line-height: 1.5;
+  color: #ffe24d;
+}
+.bf-text {
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #d9d2ea;
+}
+.bf-actions {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.bf-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px;
+  padding: 12px 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  border: 2px solid;
+  cursor: pointer;
+}
+.bf-primary { color: #14071f; background: #ffe24d; border-color: #ffe24d; }
+.bf-primary:hover { background: #fff; border-color: #fff; }
+.bf-secondary { display: none; color: #7fd9e8; background: transparent; border-color: #05d9e8aa; }
+.bf-secondary:hover { color: #fff; border-color: #fff; }
+body[data-boot="slow"] .bf-secondary[data-for="slow"],
+body[data-boot="failed"] .bf-secondary[data-for="failed"] { display: inline-flex; }
 
 @keyframes grid-scroll { to { background-position: 0 44px; } }
 @keyframes coin-pulse {
@@ -276,7 +408,7 @@ body.is-touch #viewmodel {
   left: 0; bottom: 0;
   display: flex;
   align-items: flex-end;
-  padding: 12px 16px;
+  padding: 12px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   background: linear-gradient(to top, #000000ee 20%, #00000000);
   pointer-events: none;
   z-index: 12;
@@ -286,21 +418,22 @@ body.is-touch #viewmodel {
 
 .hud-id { display: flex; flex-direction: column; gap: 5px; }
 
+/* Readable minimums (the pixel font gets illegible below ~9px). */
 .hud-name {
-  font-size: clamp(7px, 0.85vw, 11px);
+  font-size: clamp(10px, 0.9vw, 13px);
   color: #fff;
   letter-spacing: 2px;
 }
 
 .hud-role {
-  font-size: clamp(5px, 0.65vw, 8px);
+  font-size: clamp(9px, 0.7vw, 10px);
   color: var(--doom-green);
   letter-spacing: 2px;
 }
 
 #hud-fs-btn {
   position: absolute;
-  right: 16px; bottom: 12px;
+  right: max(16px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));
   pointer-events: auto;
   background: none;
   border: 1px solid #ffffff44;
@@ -313,6 +446,7 @@ body.is-touch #viewmodel {
   background: rgba(255,255,255,0.05);
   z-index: 15;
 }
+#hud-fs-btn[hidden] { display: none; }
 #hud-fs-btn svg {
   width: 20px; height: 20px;
 }
@@ -320,8 +454,8 @@ body.is-touch #viewmodel {
 
 #hud-sector {
   position: absolute;
-  right: 16px; top: 12px;
-  font-size: clamp(6px, 0.8vw, 10px);
+  right: max(16px, env(safe-area-inset-right)); top: max(12px, env(safe-area-inset-top));
+  font-size: clamp(10px, 0.85vw, 12px);
   color: #aaa;
   letter-spacing: 3px;
   z-index: 15;
@@ -349,6 +483,7 @@ body.is-touch #viewmodel {
   z-index: 14;
   touch-action: none;
   -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -392,7 +527,7 @@ body.is-touch #viewmodel {
 .tc-btn.on { background: #05d9e844; box-shadow: inset 0 0 18px #05d9e8aa, 0 0 16px #05d9e8aa; }
 
 .tc-action {
-  right: 28px; 
+  right: max(28px, calc(env(safe-area-inset-right) + 16px));
   bottom: 30%; /* 30% from bottom as requested */
   width: 110px; height: 110px;
   border-radius: 50%;
@@ -407,6 +542,18 @@ body.is-touch #viewmodel {
 .tc-action.on { background: #ffdd0055; box-shadow: inset 0 0 18px #ffdd00aa, 0 0 16px #ffdd00aa; }
 
 /* Console paging — bottom-centre pair */
+.tc-open {
+  right: max(28px, calc(env(safe-area-inset-right) + 16px));
+  bottom: calc(30% + 126px);
+  min-width: 130px; height: 52px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  border-color: #ffdd00;
+  color: #ffdd00;
+  background: linear-gradient(180deg, #ffffff0c, #ffdd0018);
+}
 .tc-page {
   bottom: 120px; /* Lifted from 40px (at ~600px height, 40+120=160px is ~20% more) */
   width: 84px; height: 64px;
@@ -419,7 +566,7 @@ body.is-touch #viewmodel {
 .tc-next { left: calc(50% + 12px); }
 
 .tc-exit {
-  left: 16px; top: 16px;
+  left: max(16px, env(safe-area-inset-left)); top: 16px;
   width: 52px; height: 52px;
   border-radius: 6px;
   font-size: 18px;
@@ -434,7 +581,7 @@ body.is-touch #viewmodel {
 #cursor-hint {
   position: absolute;
   top: 8px; left: 8px;
-  font-size: clamp(5px, 0.65vw, 8px);
+  font-size: clamp(8px, 0.7vw, 9px);
   color: #aaa;
   background: #00000099;
   padding: 5px 9px;
@@ -628,4 +775,55 @@ body.is-touch #cursor-hint { display: none !important; }
   );
   pointer-events: none;
   z-index: 5;
+}
+
+
+/* ── Message bar (narration / pickups) ── */
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(64px, 11vh, 110px);
+  transform: translateX(-50%) translateY(6px);
+  width: max-content;
+  max-width: min(92vw, 760px);
+  padding: 12px 18px;
+  font-family: var(--font);
+  font-size: clamp(8px, 1.15vw, 12px);
+  line-height: 1.9;
+  text-align: center;
+  color: #e8e8e8;
+  background: #000000d0;
+  border: 1px solid #ffffff33;
+  opacity: 0;
+  transition: opacity .3s ease, transform .3s ease;
+  pointer-events: none;
+  z-index: 16;
+}
+#toast[hidden] { display: none; }
+#toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.item   { color: #ffdd00; border-color: #ffdd0066; }
+#toast.secret { color: #ff2a9d; border-color: #ff2a9d66; }
+#toast.system { color: #37c0ff; border-color: #37c0ff66; }
+body.is-touch #toast { bottom: clamp(96px, 20vh, 160px); }
+@media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+
+/* ── Comfort ── */
+
+/* Keyboard focus is always visible (zero specificity: any component may restyle it). */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid #ffe24d;
+  outline-offset: 3px;
+}
+#game-canvas:focus { outline: none; }
+
+/* Reduced motion: no start-screen flicker / glitch / grid scroll, no blinking prompts,
+   no UI transitions. Animations are cut to a single instant frame (rather than removed)
+   so that `animationend` handlers elsewhere still fire. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

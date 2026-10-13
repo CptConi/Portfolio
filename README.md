@@ -15,41 +15,48 @@
 
 # Portfolio — DOOM Edition 🔫
 
-> Pas un site. Un **niveau**. Charge ton plasma gun et explore mon CV à la première personne.
+> Pas un CV : un **niveau**. Chargez votre plasma gun (enfin, votre tasse de café) et explorez mon travail à la première personne.
 
-Portfolio personnel de **Nicolas Renard**, repensé comme un **FPS Doom-style** rendu en temps réel.
-Au lieu de scroller une page, tu **marches dans un atrium 3D**, tu lis les bornes terminal, tu joues à l'arcade, et tu découvres projets, compétences et passions comme des secrets dans une map.
+Portfolio de **Nicolas Renard**, Lead Developer Full Stack à la Digital Factory de Guaraní (Bordeaux), repensé comme un **FPS Doom-style** rendu en temps réel.
+Au lieu de scroller une page, on marche dans un atrium, on lit les bornes, on croise les missions sur leurs socles, on valide quatre cas de test, et on découvre quelques secrets.
 
 ```
-   ╔══════════════════════════════════════════════════════╗
-   ║  WASD / FLÈCHES  ·  bouger        SOURIS  ·  viser     ║
-   ║  E / CLIC        ·  interagir     TACTILE ·  joystick  ║
-   ╚══════════════════════════════════════════════════════╝
+   ╔════════════════════════════════════════════════════════════╗
+   ║  WASD / ZQSD / FLÈCHES · bouger     SOURIS · viser         ║
+   ║  E / ESPACE · interagir             TACTILE · joystick     ║
+   ║  C contact · M plan · R rapport · V visite                 ║
+   ╚════════════════════════════════════════════════════════════╝
 ```
+
+La version texte, lisible sans WebGL et imprimable, est sur [`/dossier.html`](dossier.html).
 
 ---
 
 ## ⚙️ Stack
 
-| Brique        | Tech                                     |
-|---------------|------------------------------------------|
-| Moteur 3D     | [Three.js](https://threejs.org) `0.184`  |
-| Build / Dev   | [Vite](https://vitejs.dev) `5`           |
-| Assets        | textures + sprites style WAD Freedoom    |
-| Deploy        | Vercel                                   |
+| Brique        | Tech                                                 |
+|---------------|------------------------------------------------------|
+| Moteur 3D     | [Three.js](https://threejs.org) `0.184`              |
+| Build / Dev   | [Vite](https://vitejs.dev) `5`                       |
+| Assets        | textures + sprites Freedoom ; tout le reste est procédural |
+| Mesure        | [Umami](https://umami.is) auto-hébergé, sans cookie  |
+| Deploy        | Vercel                                               |
 
-Vanilla JS, ES modules, zéro framework UI. Moteur maison : maps, sprites 2D, props 3D, pushwalls, écrans terminal.
+Vanilla JS, modules ES, zéro framework UI. Moteur maison : map, sprites, props 3D, consoles-canvas, fonctionnalités branchables.
 
 ---
 
-## 🗺️ Ce qu'il y a dans la map
+## 🗺️ Ce qu'il y a dans le niveau
 
-- 🏛️ **Atrium central** — hall lit avec verticalité, table centrale, signalétique
-- 🕹️ **Borne arcade** — minigame jouable dans le niveau
-- 💻 **Bornes terminal** — projets, expériences, compétences techniques
-- 👋 **Hands & HUD** — vue FPS complète, mains animées, HUD style Doom
-- 📱 **Contrôles tactiles** — joystick analogique + boutons, mobile-ready
-- 🧱 **Décor level-design** — palette, seuils éclairés, lignes de guidage Black-Mesa
+- 🏛️ **Atrium** — hall cathédrale, trois portiques signalés (CAPACITÉS, SUCCÈS, IDENTITÉ et CONTACT), tableau de bord de la Digital Factory, hologramme-jauge de recette
+- 🛠️ **Armurerie** (CAPACITÉS) — les compétences, une rangée de racks par famille
+- 🏆 **Trophées** (SUCCÈS) — les missions phares sur leurs socles, avec une maquette 3D par mission, et toutes les missions dans la borne
+- 🛋️ **Quartiers** (IDENTITÉ, CONTACT) — profil, passions et contact, dans un salon qui a l'air habité
+- 📋 **Rapport de recette** — vous êtes le testeur : quatre cas de test à valider, un rapport (touche R) qui tient le compte, des secrets facultatifs
+- 🗒️ **Notes** — des post-its, plaques, étiquettes et autres mots laissés dans le niveau, à lire sur demande (E) : rien ne s'affiche tout seul
+- 🎬 **Arrivée** — une courte séquence pose le décor de la recette, passable à tout moment
+- 🎥 **Visite guidée** de 40 secondes, annulable à tout moment
+- 📱 **Mobile** — joystick analogique, boutons contextuels, rendu à la résolution de l'appareil
 
 ---
 
@@ -57,10 +64,22 @@ Vanilla JS, ES modules, zéro framework UI. Moteur maison : maps, sprites 2D, pr
 
 ```bash
 npm install         # install deps
-npm run dev          # vite dev server → http://localhost:5173
+npm run dev          # vite dev server → http://localhost:3000
 npm run build        # build prod → dist/
 npm run preview      # preview build prod
 ```
+
+En développement uniquement, `http://localhost:3000/?autostart&at=12.5,15.4,270` saute l'écran-titre (ajoutez `&intro` pour garder la séquence d'arrivée), et la console du navigateur expose `__game` :
+
+```js
+__game.tp(x, z, degrés)        // téléporte le joueur (270 = nord)
+__game.open('projects', 3)     // ouvre une borne sur une page
+__game.tour.start()            // lance la visite guidée
+__game.intro.play()            // rejoue la séquence d'arrivée
+__game.recette.validate(4)     // valide les quatre cas de test
+```
+
+`lab/dioramas.html` (dev seulement) affiche les maquettes de missions côte à côte.
 
 ---
 
@@ -68,26 +87,29 @@ npm run preview      # preview build prod
 
 ```
 src/
-├── main.js              # entrypoint — boot moteur + boucle
+├── main.js              # boot du moteur + boucle
 ├── engine/              # moteur maison
-│   ├── Renderer.js      # rendu Three.js
-│   ├── Map.js           # géométrie du niveau
-│   ├── Player.js        # déplacement + collisions
-│   ├── Input.js         # clavier / souris
-│   ├── Sprites2D.js     # sprites style Doom
-│   ├── Props3D.js       # props 3D
-│   ├── PushWall.js      # murs secrets
-│   ├── Decor.js         # couche déco / level-design
-│   ├── TextureManager.js
-│   └── ScreenManager.js · Screens.js
-├── ui/                  # interface joueur
-│   ├── HUD.js · Hands.js · Touch.js
-│   ├── TerminalScreen.js
-│   └── ArcadeGame.js    # minigame arcade
-├── data/                # contenu portfolio
-│   └── projects.js · skills.js · tech.js · passions.js
-└── styles/main.css
+│   ├── Renderer.js · PostFX.js · Map.js · Player.js · Input.js
+│   ├── ScreenManager.js · Screens.js      # consoles interactives
+│   ├── Decor.js + decor/                  # décor par zone (atrium, galerie, armurerie…)
+│   ├── dioramas/ · props/                 # maquettes de missions, mobilier procédural
+│   ├── layout.js                          # positions partagées entre modules
+│   └── Events.js · Analytics.js · prefs.js
+├── features/            # fonctionnalités branchables (create(ctx) → update(frame))
+│   └── shell · intro · notes · recette · tour · gallery · mood · fx · …
+├── ui/                  # HUD, mains, tactile, consoles-canvas, arcade
+├── data/                # contenu : missions, compétences, passions, contact, notes
+├── dossier/             # page texte pré-rendue au build
+└── styles/
 ```
+
+Les missions vivent dans `src/data/projects.js` (dates, accroche, statut, projet phare, image optionnelle : 16:9, WebP, ≤ 40 Ko dans `public/missions/`).
+
+---
+
+## 🙏 Crédits
+
+Textures et sprites : [Freedoom](https://freedoom.github.io) (BSD). Police : [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) (OFL). Logos : [devicon](https://devicon.dev) (MIT) et [Simple Icons](https://simpleicons.org) (CC0).
 
 ---
 
