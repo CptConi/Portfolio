@@ -14,7 +14,14 @@ export class Input {
     this._pointerLocked = false;
     this.lockOnClick = true;   // disabled while a screen is focused (mouse stays free)
 
-    window.addEventListener('keydown', e => this._onKey(e, true));
+    // Layout-aware one-shot keys (e.key, lower-cased): 'c', 'm', 'r', 'enter'…
+    // Movement stays positional (e.code) so WASD and ZQSD share the same keys.
+    this._edges = new Set();
+
+    window.addEventListener('keydown', e => {
+      if (!e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) this._edges.add(e.key.toLowerCase());
+      this._onKey(e, true);
+    });
     window.addEventListener('keyup',   e => this._onKey(e, false));
 
     canvas.addEventListener('click', () => {
@@ -52,4 +59,9 @@ export class Input {
     this.interact = false;
     return v;
   }
+
+  // True once per physical press of `key` (e.key, lower-case); touch buttons call press().
+  consumeKey(key) { return this._edges.delete(key); }
+  press(key) { this._edges.add(key); }
+  clearKeys() { this._edges.clear(); }
 }

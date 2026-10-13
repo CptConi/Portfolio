@@ -32,14 +32,17 @@ export class TouchControls {
     this._base.style.display = 'none';
 
     // Lower-right action (tap = interact / hold = fire) and top-right exit.
-    this._action = this._mkButton('tc-action', () => this._setInteract(true), () => this._setInteract(false));
-    this._exit   = this._mkButton('tc-exit', () => this._sendEscape(), null, '✕');
+    this._action = this._mkButton('tc-action', () => this._setInteract(true), () => this._setInteract(false), null, 'Interagir');
+    this._exit   = this._mkButton('tc-exit', () => this._sendEscape(), null, '✕', 'Quitter');
     // Console paging — rotLeft/rotRight are unused by the stick and edge-detected
     // by the console, so each tap flips exactly one page.
-    this._prev = this._mkButton('tc-page tc-prev', () => this._setPage('prev', true), () => this._setPage('prev', false), '◂');
-    this._next = this._mkButton('tc-page tc-next', () => this._setPage('next', true), () => this._setPage('next', false), '▸');
-    for (const b of [this._action, this._exit, this._prev, this._next]) b.style.display = 'none';
+    this._prev = this._mkButton('tc-page tc-prev', () => this._setPage('prev', true), () => this._setPage('prev', false), '◂', 'Page précédente');
+    this._next = this._mkButton('tc-page tc-next', () => this._setPage('next', true), () => this._setPage('next', false), '▸', 'Page suivante');
+    // Opens the outbound link of the console page on screen (store, site, mail…).
+    this._open = this._mkButton('tc-open', () => this.input.press('enter'), null, 'OUVRIR ↗', 'Ouvrir le lien');
+    for (const b of [this._action, this._exit, this._prev, this._next, this._open]) b.style.display = 'none';
 
+    this._state  = -1;     // last state applied by update() (it runs every frame)
     this._moveId = null;   // touch identifier driving the joystick
     this._lookId = null;   // touch identifier driving look
     this._lookX  = 0;
@@ -48,11 +51,18 @@ export class TouchControls {
     root.addEventListener('touchmove',   e => this._onMove(e),  { passive: false });
     root.addEventListener('touchend',    e => this._onEnd(e),   { passive: false });
     root.addEventListener('touchcancel', e => this._onEnd(e),   { passive: false });
+    root.addEventListener('contextmenu', e => e.preventDefault());   // long-press on the stick
+
+    // The OS does not always deliver touchend when the page is backgrounded or a
+    // system dialog takes over mid-drag: without this the stick would stay pulled.
+    window.addEventListener('blur', () => this._release());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this._release(); });
   }
 
-  _mkButton(cls, onDown, onUp, label) {
+  _mkButton(cls, onDown, onUp, label, aria) {
     const b = document.createElement('button');
     b.className = 'tc-btn ' + cls;
+    b.setAttribute('aria-label', aria);
     if (label) b.textContent = label;
     b.addEventListener('touchstart', e => {
       e.preventDefault(); e.stopPropagation(); b.classList.add('on'); onDown && onDown();
@@ -62,6 +72,18 @@ export class TouchControls {
     b.addEventListener('touchcancel', up, { passive: false });
     this._root.appendChild(b);
     return b;
+  }
+
+  // Drop every held control (stick, look, buttons) as if all fingers were lifted.
+  _release() {
+    this._moveId = null;
+    this._lookId = null;
+    this._base.style.display = 'none';
+    this._applyMove(0, 0);
+    this._setInteract(false);
+    this._setPage('prev', false);
+    this._setPage('next', false);
+    for (const b of this._root.querySelectorAll('.tc-btn.on')) b.classList.remove('on');
   }
 
   _setInteract(v) { this.input.interact = v; }
@@ -133,23 +155,29 @@ export class TouchControls {
     i.backward    = ny >  d;
   }
 
-  // Called each frame with the current interaction context.
-  update({ prompt, focused, kind }) {
+  // Called each frame with the current interaction context; touches the DOM only when
+  // that context changed.
+  update({ prompt, focused, kind, hasLink = false }) {
     if (!this.enabled) return;
     const inConsole = focused && kind === 'console';
     const inArcade = focused && kind === 'arcade';
     // Show action button if: arcade is active, or we have an interaction prompt.
     // Hide it on data consoles as requested.
     const showAction = inArcade || (!focused && !!prompt);
-    
+
+    const state = (focused ? 1 : 0) | (inConsole ? 2 : 0) | (inArcade ? 4 : 0) | (showAction ? 8 : 0) | (hasLink ? 16 : 0);
+    if (state === this._state) return;
+    this._state = state;
+
     this._exit.style.display   = focused ? 'flex' : 'none';
     this._action.style.display = showAction ? 'flex' : 'none';
     this._prev.style.display   = inConsole ? 'flex' : 'none';
     this._next.style.display   = inConsole ? 'flex' : 'none';
-    
+    this._open.style.display   = inConsole && hasLink ? 'flex' : 'none';
+
     if (showAction) {
-      if (inArcade) this._action.textContent = 'TIR';
-      else this._action.textContent = '🖐️';
+      this._action.textContent = inArcade ? 'TIR' : '🖐️';
+      this._action.setAttribute('aria-label', inArcade ? 'Tirer' : 'Interagir');
     }
   }
 }

@@ -2,11 +2,26 @@
 // The mug+hand is a sprite (white background already stripped to alpha).
 // Steam is procedural — chunky square particles in the same style as the
 // arcade-game explosions. A click "drinks" (raise + tilt, steam pauses).
+// Turning gives the mug a little inertia: it lags behind (slight slide + roll about the
+// wrist) and settles back, like a heavy object held at arm's length.
+
+import { prefs } from '../engine/prefs.js';
+import { events } from '../engine/Events.js';
 
 const CW = 300, CH = 264;           // canvas backing size
 const MUG_W = 258;                   // mug sprite drawn width (px in canvas)
 const RIM_FX = 0.17, RIM_FY = 0.055; // rim centre as a fraction of the sprite
 const SMOKE_COLS = ['#e6e6e6', '#c2c2c2', '#9a9a9a', '#787878'];
+
+// Turn inertia. The sway is a damped spring (normalised -1..1) chasing the turn rate;
+// slide and roll are tiny on purpose, and the roll pivots on the wrist (bottom right of
+// the canvas) so the arm stays anchored off-screen and no gap can show on small screens.
+const TURN_REF   = 2.6;            // rad/s that gives full lag (keyboard turn is 2.4)
+const SWAY_K     = 150;            // spring stiffness (ω ≈ 12 rad/s)
+const SWAY_C     = 13;             // damping (ζ ≈ 0.55: one gentle overshoot, then settled)
+const LAG_X      = 0.8;            // slide at full lag, % of the viewmodel width
+const LAG_ROLL   = 0.9;            // roll at full lag, degrees
+const WRIST_X    = 91, WRIST_Y = 100;   // roll pivot, % of the canvas
 
 export class Hands {
   constructor(container) {
@@ -28,6 +43,13 @@ export class Hands {
     this._emit = 0;      // emitter accumulator
     this._seed = 1;      // deterministic-ish wobble
     this._focusY = 0;    // vertical offset for focus (0 = visible, 1 = hidden)
+
+    this._lastAngle = null;
+    this._turn = 0;      // smoothed turn rate (rad/s, + = turning right)
+    this._sway = 0;      // spring position (- = mug trails to the left)
+    this._swayV = 0;
+    this._wristX = 0;    // roll pivot relative to the transform origin (% of canvas)
+    this._wristY = 0;
   }
 
   _layout() {
@@ -38,9 +60,33 @@ export class Hands {
     this._dy = CH - this._mh;
     this._rimX = this._dx + RIM_FX * this._mw;
     this._rimY = this._dy + RIM_FY * this._mh;
+    this._wristX = WRIST_X - (this._rimX / CW) * 100;
+    this._wristY = WRIST_Y - (this._rimY / CH) * 100;
   }
 
-  drink() { if (this._drink === 0) this._drink = 0.0001; }
+  // Emits 'sip' (no payload) each time a drink actually starts: a click during the animation does not count.
+  drink() {
+    if (this._drink !== 0) return;
+    this._drink = 0.0001;
+    events.emit('sip');
+  }
+
+  // Spring chasing the (smoothed) turn rate; reduced motion keeps the mug rigid.
+  _inertia(player, dt) {
+    const a = player.angle;
+    let da = this._lastAngle === null ? 0 : a - this._lastAngle;
+    this._lastAngle = a;
+    if (da > Math.PI) da -= Math.PI * 2; else if (da < -Math.PI) da += Math.PI * 2;
+    if (prefs.reducedMotion) { this._turn = this._sway = this._swayV = 0; return; }
+
+    if (dt <= 0) return;
+    const rate = Math.max(-2 * TURN_REF, Math.min(2 * TURN_REF, da / dt));   // a teleport must not kick the spring
+    const h = Math.min(dt, 0.05);                      // keeps the explicit spring stable
+    this._turn += (rate - this._turn) * (1 - Math.exp(-h * 18));
+    const target = -Math.max(-1, Math.min(1, this._turn / TURN_REF));
+    this._swayV += (SWAY_K * (target - this._sway) - SWAY_C * this._swayV) * h;
+    this._sway += this._swayV * h;
+  }
 
   _rnd() { this._seed = (this._seed * 1103515245 + 12345) & 0x7fffffff; return this._seed / 0x7fffffff; }
 
@@ -97,6 +143,11 @@ export class Hands {
     const ty = -40 * raise; 
     const tz = 300 * raise; // Reduced depth (300 instead of 450)
 
+    // Turn inertia, faded out while the mug is raised or lowered for a console.
+    this._inertia(player, dt);
+    const calm = Math.max(0, 1 - raise) * (1 - this._focusY);
+    const lag  = this._sway * calm;
+
     // Head-bob sway
     const amp = player._bobAmp ?? 0;
     const bx = Math.sin(player._bob * 0.5) * 9 * amp + shake;
@@ -105,8 +156,10 @@ export class Hands {
     // Final transform with inverted and subtler 3D perspective
     // - rotateX(tilt * 1.5): tilts the bottom of the mug AWAY from the camera (inverse)
     // - translate3d: uses tz for real depth
+    // - translateX / the wrist-pivoted rotateZ at both ends carry the turn inertia
     this._el.style.transform =
-      `translate3d(${bx + tx}px, ${by + ty}px, ${tz}px) scale(${zoom}) rotateZ(${-tilt}deg) rotateX(${tilt * 1.5}deg) skewX(${-tilt * 0.1}deg)`;
+      `translateX(${lag * LAG_X}%) translate3d(${bx + tx}px, ${by + ty}px, ${tz}px) scale(${zoom}) rotateZ(${-tilt}deg) rotateX(${tilt * 1.5}deg) skewX(${-tilt * 0.1}deg) ` +
+      `translate(${this._wristX}%, ${this._wristY}%) rotateZ(${lag * LAG_ROLL}deg) translate(${-this._wristX}%, ${-this._wristY}%)`;
 
     this._step(dt, raise);
     this._draw();

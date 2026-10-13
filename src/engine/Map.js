@@ -63,7 +63,10 @@ export function getCellType(x, y) {
 // Atrium (6) is the cathedral; rooms step DOWN a little; vestibules are low and
 // tight so the atrium "opens up" dramatically on entry.
 const FLOOR_H = { 0: 0, 2: -0.2, 3: -0.2, 4: -0.2, 5: -0.25, 6: 0 };
-const CEIL_H  = { 0: 0.85, 2: 1.05, 3: 1.3, 4: 0.95, 5: 0.9, 6: 2.0 };
+// Rooms were raised (armurerie 1.05→1.45, trophées 1.3→1.7, quartiers 0.95→1.35) to
+// make space for taller racks, gallery frames and dioramas; vestibules stay low so the
+// atrium still opens up dramatically.
+const CEIL_H  = { 0: 0.85, 2: 1.45, 3: 1.7, 4: 1.35, 5: 0.9, 6: 2.0 };
 export const STEP_MAX = 0.3;
 
 // Threshold cells get an intermediate floor for 2-step ramps into the rooms.

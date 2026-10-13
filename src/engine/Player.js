@@ -6,9 +6,27 @@ import { ARMORY_RACK_AABBS } from './Decor.js';
 
 const EYE_OFFSET = 0.5;   // camera height above the local floor
 
-const MOVE_SPEED = 0.05;
-const ROT_SPEED  = 0.04;
+// Frame-rate independent: values are per second (the original per-frame constants
+// were tuned at 60 fps: 0.05 / 0.04 / 0.165 per frame).
+const MOVE_SPEED = 3.0;    // m/s
+const ROT_SPEED  = 2.4;    // rad/s (keyboard turn)
+const BOB_RATE   = 9.9;    // rad/s (head-bob phase)
+const MAX_STEP   = 0.04;   // m per collision sub-step (keeps thin props from being skipped)
 const COLLISION_MARGIN = 0.2;
+
+// Exponential smoothing that behaves the same at any frame rate: `k60` is the
+// per-frame blend factor at 60 fps.
+const blend = (k60, dt) => 1 - Math.pow(1 - k60, dt * 60);
+
+// Extra solid boxes registered by features (e.g. the DF dashboard console, the
+// gallery dioramas). Same shape as PROP_AABBS entries; margins already applied.
+const EXTRA_AABBS = [];
+export function addSolidBox(box, margin = COLLISION_MARGIN) {
+  EXTRA_AABBS.push({
+    minX: box.minX - margin, maxX: box.maxX + margin,
+    minZ: box.minZ - margin, maxZ: box.maxZ + margin,
+  });
+}
 
 // Expanded AABBs for prop + console collision — computed once at load
 const PROP_AABBS = [
@@ -29,8 +47,13 @@ const PROP_AABBS = [
 function hitsProp(x, z) {
   for (const b of PROP_AABBS)
     if (x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ) return true;
+  for (const b of EXTRA_AABBS)
+    if (x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ) return true;
   return false;
 }
+
+// True when a player standing at (x, z) is inside neither a wall nor a solid prop.
+export function isFree(x, z) { return !isWall(x, z) && !hitsProp(x, z); }
 
 export class Player {
   constructor() {
@@ -46,7 +69,16 @@ export class Player {
     this.hitWall  = false; // consumed by HUD.update()
   }
 
-  update(input) {
+  // Place the player instantly (warp menu, deep links, guided tour, debug harness).
+  teleport(x, y, angle = this.angle) {
+    this.x = x; this.y = y; this.angle = angle;
+    this._eyeBase = floorAt(x, y) + EYE_OFFSET;
+    this.eyeY = this._eyeBase;
+  }
+
+  update(input, dt = 1 / 60) {
+    dt = Math.min(Math.max(dt, 0), 0.1);
+
     const dx = Math.cos(this.angle);
     const dy = Math.sin(this.angle);
     const rx = Math.cos(this.angle + Math.PI / 2);
@@ -55,11 +87,15 @@ export class Player {
     // Analog locomotion — magnitude from the axes (keyboard = ±1, touch stick =
     // fractional pull), so a half-pushed stick walks at half speed.
     const mvY = input.moveY, mvX = input.moveX;
-    if (mvY) this._move(dx * MOVE_SPEED * mvY, dy * MOVE_SPEED * mvY);
-    if (mvX) this._move(rx * MOVE_SPEED * mvX, ry * MOVE_SPEED * mvX);
+    const steps = Math.max(1, Math.ceil(MOVE_SPEED * dt / MAX_STEP));
+    const h = (MOVE_SPEED * dt) / steps;
+    for (let i = 0; i < steps; i++) {
+      if (mvY) this._move(dx * h * mvY, dy * h * mvY);
+      if (mvX) this._move(rx * h * mvX, ry * h * mvX);
+    }
 
-    if (input.rotLeft)  this.angle -= ROT_SPEED;
-    if (input.rotRight) this.angle += ROT_SPEED;
+    if (input.rotLeft)  this.angle -= ROT_SPEED * dt;
+    if (input.rotRight) this.angle += ROT_SPEED * dt;
 
     if (input.mouseDX !== 0) {
       this.angle   += input.mouseDX * 0.002;
@@ -70,12 +106,12 @@ export class Player {
 
     // Head bob — advance phase while moving, ease the amplitude in/out.
     const moving = mvX !== 0 || mvY !== 0;
-    if (moving) this._bob += 0.165;
-    this._bobAmp += ((moving ? 1 : 0) - this._bobAmp) * 0.12;
+    if (moving) this._bob += BOB_RATE * dt;
+    this._bobAmp += ((moving ? 1 : 0) - this._bobAmp) * blend(0.12, dt);
 
     // Camera eye smoothly follows the floor, plus the bob offset.
     const targetEye = floorAt(this.x, this.y) + EYE_OFFSET;
-    this._eyeBase += (targetEye - this._eyeBase) * 0.25;
+    this._eyeBase += (targetEye - this._eyeBase) * blend(0.25, dt);
     this.eyeY = this._eyeBase + Math.sin(this._bob) * 0.022 * this._bobAmp;
   }
 

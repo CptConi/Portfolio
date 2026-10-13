@@ -5,9 +5,12 @@
 //
 //  x, z    : console centre on the floor, in map coords (world X / world Z)
 //  facing  : unit normal the console front points toward (into the room), [fx, fz]
-//  type    : content renderer key — 'skills' | 'projects' | 'passions'
+//  type    : content renderer key — 'skills' | 'projects' | 'passions' | 'contact' | 'dashboard'
 //  title   : header label
 //  color   : screen accent colour (matches ROOMS)
+//  light   : false → no ceiling PointLight for this console (Renderer keeps the light budget)
+
+import { DASHBOARD } from './layout.js';
 
 export const SCREENS = [
   // ── Armurerie (W room, cols 2–7 rows 9–15) — west wall, faces +X ─────────
@@ -18,13 +21,18 @@ export const SCREENS = [
   { id: 'projects', type: 'projects', x: 22.4, z: 12.5, facing: [-1, 0],
     title: 'TROPHÉES // MISSIONS.LOG', color: '#ff8c00' },
 
-  // ── Contact (N room) — north wall, faces +Z, centered left ───────────
-  { id: 'contact', type: 'contact', x: 11.85, z: 2.6, facing: [0, 1],
+  // ── Quartiers (N room, cols 8–16 rows 2–6) ───────────────────────────────
+  // Contact: centred on the north wall, the first thing seen when leaving the vestibule.
+  { id: 'contact', type: 'contact', x: 12.5, z: 2.6, facing: [0, 1],
     title: 'CONTACT // COMMS.LINK', color: '#37c0ff' },
 
-  // ── Quartiers (N room, cols 8–16 rows 2–6) — north wall, faces +Z ───────
-  { id: 'passions', type: 'passions', x: 13.15, z: 2.6, facing: [0, 1],
+  // Passions: west wall, faces +X (the footprint swaps along/deep in aabbOf).
+  { id: 'passions', type: 'passions', x: 8.6, z: 4.4, facing: [1, 0],
     title: 'QUARTIERS // PROFILE.SYS', color: '#cc44ff' },
+
+  // ── Atrium — north wall, left of the vestibule, faces +Z (position: layout.js) ─
+  { id: 'dashboard', type: 'dashboard', ...DASHBOARD,
+    title: 'DIGITAL FACTORY // STATUS.LOG', color: '#37c0ff', light: false },
 ];
 
 // Screen-centre height and how far in front the camera parks when focused.
