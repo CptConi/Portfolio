@@ -7,12 +7,12 @@ export const skills = [
   {
     category: 'FRONTEND',
     color: '#61dafb',
-    items: ['React', 'Vue.js', 'Angular', 'Svelte', 'Ionic', 'Bootstrap', 'SASS', 'Styled Components', 'Chart.js', 'GSAP', 'Vite'],
+    items: ['React', 'Vue.js', 'Angular', 'Svelte', 'Ionic', 'Bootstrap', 'SASS', 'Styled Components', 'Chart.js', 'GSAP', 'Vite', 'Electron'],
   },
   {
     category: 'BACKEND',
     color: '#e0234e',
-    items: ['Node.js', 'Express.js', 'NestJS', 'Socket.io', 'n8n', 'Strapi', 'JWT', 'RxJS'],
+    items: ['Node.js', 'Express.js', 'NestJS', 'Socket.io', 'n8n', 'Strapi', 'JWT', 'RxJS', 'Apache Pulsar'],
   },
   {
     category: 'MOBILE',
@@ -27,7 +27,7 @@ export const skills = [
   {
     category: 'CLOUD / DEVOPS',
     color: '#ff9900',
-    items: ['AWS', 'Azure', 'Docker', 'GitHub Actions', 'Azure DevOps', 'GitLab', 'CI/CD'],
+    items: ['AWS', 'Azure', 'Docker', 'GitHub Actions', 'Azure DevOps', 'GitLab', 'CleverCloud', 'CI/CD'],
   },
   {
     category: 'OUTILS',

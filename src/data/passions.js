@@ -21,7 +21,7 @@ export const passions = [
     name: 'DÉVELOPPEMENT JEUX VIDÉO',
     icon: '🕹️',
     description: 'Origine de ma passion pour le code. Commencé en C# avec MonoGame.',
-    details: ['C# / MonoGame', 'Game Jam', 'Interception Point', 'Unity'],
+    details: ['C# / MonoGame', 'Game Jams', 'Unity'],
   },
   {
     name: 'CHATS',
