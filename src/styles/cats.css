@@ -1,0 +1,29 @@
+/* Gaze ring (features/cats.js): a thin ring around the crosshair that fills while the visitor
+   keeps it on a hidden cat. Centred on the same point as the crosshair (main.css), above it, and
+   never in the way of a click or a tap. --p runs from 0 to 1. Under prefers-reduced-motion the
+   fade and the closing flash are cut by the global rule in main.css; the ring itself is a progress
+   indicator and keeps working. */
+#cat-gaze {
+  --p: 0;
+  position: absolute;
+  top: calc(50% - var(--hud-height) / 2);
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;          /* centred without a transform, which the closing flash uses */
+  border-radius: 50%;
+  background: conic-gradient(#ffd98a calc(var(--p) * 360deg), #00000059 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s linear;
+  z-index: 11;
+}
+#cat-gaze.on { opacity: 1; }
+#cat-gaze.done { animation: cat-gaze-done 0.5s ease-out forwards; }
+
+@keyframes cat-gaze-done {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.7); }
+}
