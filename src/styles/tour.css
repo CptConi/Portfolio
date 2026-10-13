@@ -1,0 +1,168 @@
+/* Guided tour — the title-screen link, the subtitle bar, the PASSER pill, the progress line, the fades.
+   Everything lives inside #game-container (so it survives fullscreen). z-index: HUD 12–15, toast 16,
+   subtitle and pill 17–18, dialogs 40, tour fade 44, warp fade 45. */
+
+/* ── Title screen: VISITE GUIDÉE next to DOSSIER ── */
+.start-alts {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; align-items: baseline;
+  column-gap: 6px;
+}
+button.start-tour {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* The coin is not in the machine yet: the button waits for the level, like the rest of the screen. */
+body:not([data-boot="ready"]) .start-tour { opacity: 0.4; cursor: progress; }
+
+/* ── While the tour runs ── */
+/* The tour owns the view: nothing that asks the visitor to act (or explains how) stays up, and a
+   toast that does show (a validated cas de test…) rides above the subtitle. */
+body.tour-on #hud-interact-prompt,
+body.tour-on #note-card,
+body.tour-on #cursor-hint,
+body.tour-on .shell-copylink,
+body.tour-on #touch-controls .tc-btn,
+body.tour-on #game-container::after { display: none !important; }   /* ::after = the crosshair */
+body.tour-on #game-container #toast { bottom: clamp(150px, 24vh, 220px); }
+body.tour-on.is-touch #game-container #toast { bottom: clamp(160px, 30vh, 240px); }
+
+#tour-ui[hidden] { display: none; }
+/* The tour is over and its last line is fading out: nothing else of it stays up. */
+#tour-ui.ending .tour-progress, #tour-ui.ending .tour-pill { display: none; }
+
+/* Thin progress line along the top edge. No number: this is not a timer. */
+.tour-progress {
+  position: absolute; left: 0; top: 0; right: 0;
+  height: 3px;
+  background: #37c0ff22;
+  pointer-events: none;
+  z-index: 18;
+}
+.tour-progress i {
+  display: block;
+  height: 100%;
+  background: #37c0ff;
+  box-shadow: 0 0 8px #37c0ff;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+/* Top-left: free of the chips and the sector label (top-right). */
+.tour-pill {
+  position: absolute;
+  z-index: 18;
+  left: max(16px, env(safe-area-inset-left));
+  top: calc(max(12px, env(safe-area-inset-top)) + 4px);
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
+}
+.tour-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 5px 5px 5px 12px;
+  background: #000000b8;
+  border: 1px solid #37c0ff66;
+}
+.tour-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 8px/1 var(--font);
+  letter-spacing: 2px;
+  color: #bfe9ff;
+}
+.tour-tag::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #37c0ff;
+  box-shadow: 0 0 8px #37c0ff;
+  animation: tour-dot 1.2s steps(2) infinite;
+}
+.tour-skip {
+  pointer-events: auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  font: 9px var(--font);
+  letter-spacing: 1px;
+  color: #37c0ff;
+  background: transparent;
+  border: 2px solid #37c0ff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tour-skip:hover { color: #05080c; background: #37c0ff; }
+body.is-touch .tour-skip { min-height: 40px; padding: 0 16px; font-size: 10px; }
+.tour-hint {
+  padding: 3px 8px;
+  font: 500 11px/1.3 'Orbitron', system-ui, sans-serif;
+  letter-spacing: 0.4px;
+  color: #b9d3e4;
+  background: #000000a6;
+}
+/* Narrow screens: the chips (top-right) need the room. Only the button stays. */
+@media (max-width: 640px) {
+  .tour-tag, .tour-hint { display: none; }
+  .tour-row { padding: 4px; }
+}
+
+/* ── Subtitles ── */
+#subtitle {
+  position: absolute;
+  z-index: 17;
+  left: 50%;
+  bottom: clamp(64px, 10vh, 108px);
+  transform: translate(-50%, 8px);
+  width: max-content;
+  max-width: min(92vw, 700px);
+  padding: 11px 18px 12px;
+  font: 500 clamp(14px, 1.5vw, 19px)/1.5 'Orbitron', system-ui, sans-serif;
+  letter-spacing: 0.4px;
+  text-align: center;
+  text-wrap: balance;
+  color: #f4f8fc;
+  background: linear-gradient(180deg, #070b12ea, #000000f2);
+  border: 1px solid #ffffff22;
+  border-bottom: 3px solid var(--sub, #ffb347);
+  box-shadow: 0 8px 26px #000000b0;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  -webkit-user-select: none; user-select: none;
+}
+#subtitle.on { opacity: 1; transform: translate(-50%, 0); }
+#subtitle[data-voice="systeme"] { --sub: #37c0ff; color: #c9ecff; letter-spacing: 1.2px; }
+#subtitle[data-voice="nicolas"] { --sub: #ffb347; }
+.sub-mark { margin-right: 0.55em; font-weight: 700; color: var(--sub); }
+.sub-mark[hidden] { display: none; }
+/* The speaker is announced to screen readers, not drawn. */
+.sub-who {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+body.is-touch #subtitle { bottom: clamp(64px, 12vh, 120px); }
+
+/* ── Fades (to black before a replay, out of black when the tour starts) ── */
+.tour-fade {
+  position: absolute; inset: 0;
+  z-index: 44;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s linear;
+}
+.tour-fade.on { opacity: 1; }
+.tour-fade.cut { transition: none; }
+.tour-fade.slow { transition-duration: 0.8s; }
+
+@keyframes tour-dot { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) {
+  .tour-tag::before { animation: none; }
+  #subtitle, .tour-fade { transition: none; }
+}

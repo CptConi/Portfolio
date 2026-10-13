@@ -1,0 +1,361 @@
+/* Recette UI — the "RECETTE n/4" chip, the RAPPORT DE RECETTE dialog, the gold mug at 4/4.
+   Everything lives inside #game-container (so it survives fullscreen). Layers: chip 15 (same as the
+   shell chips), report 40, warp fade 45. Accent: gold #ffc233; each cas de test (CAPACITÉS, SUCCÈS,
+   IDENTITÉ, CONTACT) wears its room colour. */
+
+/* ── Chip (joins the shell's CONTACT / PLAN row, top-right; shell.css wraps and right-aligns that row) ── */
+/* Without the shell's row the chip gets one of its own, in the same corner. */
+#recette-chips {
+  position: absolute;
+  z-index: 15;
+  right: max(16px, env(safe-area-inset-right));
+  top: calc(max(12px, env(safe-area-inset-top)) + 24px);
+  display: flex;
+}
+#hud-key:not([hidden]) ~ #recette-chips { top: calc(max(12px, env(safe-area-inset-top)) + 24px + 36px); }
+
+.rc-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 28px;
+  padding: 7px 10px;
+  font: 9px/1 var(--font);
+  letter-spacing: 1px;
+  color: #fff1c2;
+  background: #000000b0;
+  border: 1px solid #ffc23388;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rc-chip:hover { color: #fff; border-color: #fff; background: #000000dd; }
+.rc-chip-count { color: #ffc233; }
+.rc-chip kbd {
+  padding: 2px 4px;
+  font: inherit;
+  color: #1a1200;
+  background: #ffc233;
+}
+/* 4/4: the whole chip turns gold. */
+.rc-chip[data-done] { color: #1a1200; background: #ffc233; border-color: #ffe08a; }
+.rc-chip[data-done] .rc-chip-count { color: inherit; }
+.rc-chip[data-done] kbd { color: #ffc233; background: #1a1200; }
+.rc-chip[data-done]:hover { background: #ffd666; }
+/* Hidden (not just dimmed) while a console is focused: it owns the screen. */
+.rc-chip[data-off] { visibility: hidden; pointer-events: none; }
+body.is-touch .rc-chip { min-height: 40px; padding: 0 12px; font-size: 10px; }
+body.is-touch .rc-chip kbd { display: none; }
+
+/* The arrival sequence points at the chip (2 s): a gold ring that blinks. With reduced motion the ring
+   simply stays lit for those 2 s (see the media query at the end). */
+.rc-chip.rc-hint {
+  color: #fff;
+  background: #000000dd;
+  border-color: #ffc233;
+  box-shadow: 0 0 0 2px #ffc233, 0 0 16px #ffc233aa;
+  animation: rc-hint 0.5s steps(1) 4;
+}
+@keyframes rc-hint { 50% { box-shadow: 0 0 0 2px #ffc23300, 0 0 0 #ffc23300; } }
+
+.rc-chip.rc-bump { animation: rc-bump 0.6s steps(6); }
+@keyframes rc-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.14); box-shadow: 0 0 14px #ffc233aa; }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+/* ── Report ── */
+.rc-overlay {
+  position: absolute; inset: 0;
+  z-index: 40;
+  display: flex;                     /* the card centres itself with margin:auto, so a tall one scrolls instead of clipping */
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+           max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(2, 5, 10, 0.78);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.rc-overlay[hidden] { display: none; }
+
+.rc-card {
+  position: relative;
+  width: min(100%, 560px);
+  margin: auto;
+  padding: 22px 20px 18px;
+  color: #f4eee0;
+  background: #08090c;
+  border: 2px solid #ffc233;
+  box-shadow: 0 0 0 1px #000, 0 0 26px #ffc23333;
+  font-family: 'Orbitron', sans-serif;
+}
+.rc-card:focus { outline: none; }
+
+.rc-close {
+  position: absolute; top: 8px; right: 8px;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  font: 14px var(--font);
+  color: #fff;
+  background: transparent;
+  border: 1px solid #ffffff44;
+  cursor: pointer;
+}
+.rc-close:hover { background: #ffffff1a; border-color: #fff; }
+
+.rc-kicker {
+  padding-right: 48px;
+  font: 8px/1.6 var(--font);
+  letter-spacing: 2px;
+  color: #a99a6e;
+}
+.rc-title {
+  margin-top: 8px;
+  padding-right: 48px;
+  font: normal 14px/1.4 var(--font);
+  letter-spacing: 3px;
+  color: #ffc233;
+}
+/* The two lines that explain the game: system voice, so capitals (the markup keeps normal case for
+   screen readers). A thin gold rule on the left marks it as the notice of the form. */
+.rc-intro {
+  margin-top: 12px;
+  padding: 2px 0 2px 12px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #d8d0b8;
+  border-left: 3px solid #ffc23388;
+}
+.rc-body { margin-top: 16px; }
+.rc-contact { margin-top: 20px; }
+.rc-sub {
+  font: normal 9px/1.4 var(--font);
+  letter-spacing: 2px;
+  color: #a99a6e;
+}
+
+/* The four cas de test */
+.rc-cases {
+  list-style: none;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.rc-case {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px 12px;
+  padding: 9px 12px;
+  background: #ffffff0a;
+  border-left: 4px solid var(--c);
+}
+.rc-case-text { flex: 1 1 170px; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.rc-case-name { font: 10px/1.3 var(--font); letter-spacing: 1px; color: var(--c); }
+.rc-case-sub { font-weight: 500; font-size: 13px; line-height: 1.4; color: #e8e2d2; }
+
+/* Rubber-stamp status: the word carries the meaning, the colour only backs it up. */
+.rc-stamp {
+  flex: none;
+  padding: 5px 7px;
+  font: 8px/1.2 var(--font);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  color: #c9b57a;
+  border: 2px dashed #c9b57a66;
+}
+.rc-case.is-done .rc-stamp {
+  color: #39ff6e;
+  border: 2px solid #39ff6e;
+  background: #39ff6e14;
+  transform: rotate(-2deg);
+}
+
+.rc-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  font: 9px var(--font);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  text-decoration: none;
+  color: #ffc233;
+  background: transparent;
+  border: 2px solid #ffc233;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rc-btn[hidden] { display: none; }
+.rc-btn:hover { color: #08090c; background: #ffc233; }
+.rc-btn-gold { color: #08090c; background: #ffc233; }
+.rc-btn-gold:hover { background: #ffd666; border-color: #ffd666; }
+
+/* Counters, intermission style */
+.rc-stats {
+  list-style: none;
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+.rc-stat {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 9px;   /* values line up when a label wraps */
+  padding: 9px 10px;
+  background: #ffffff0a;
+  border-top: 2px solid #ffc23355;
+}
+.rc-stat-label { font: 8px/1.5 var(--font); color: #b4a57c; }
+.rc-stat-value { font: 14px/1 var(--font); color: #fff; }
+body.is-touch .rc-desktop { display: none; }
+
+/* Verdict */
+.rc-verdict {
+  margin-top: 14px;
+  padding: 12px;
+  text-align: center;
+  border: 2px dashed #ffc23366;
+}
+.rc-verdict-line { font: 12px/1.5 var(--font); letter-spacing: 2px; color: #ffc233; }
+.rc-verdict-sub { margin-top: 6px; font-weight: 500; font-size: 13px; line-height: 1.5; color: #d8d0b8; }
+.rc-verdict.is-done { border: 3px double #ffc233; background: #ffc2331a; }
+.rc-verdict.is-done .rc-verdict-line {
+  display: inline-block;
+  font-size: 15px;
+  color: #ffe08a;
+  text-shadow: 0 0 12px #ffc23399;
+  transform: rotate(-2deg);
+  animation: rc-stamp 0.35s steps(5) both;
+}
+.rc-verdict .rc-btn { margin-top: 12px; }
+@keyframes rc-stamp {
+  from { opacity: 0; transform: rotate(-2deg) scale(1.7); }
+  to   { opacity: 1; transform: rotate(-2deg) scale(1); }
+}
+
+.rc-copybox {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 10px;
+  font: 500 12px/1.5 'Orbitron', sans-serif;
+  color: #fff;
+  background: #000;
+  border: 1px solid #ffc23399;
+  resize: none;
+}
+.rc-copybox[hidden] { display: none; }
+.rc-note {
+  min-height: 1.5em;
+  margin-top: 8px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #ffc233;
+}
+
+/* Contact */
+.rc-lead { margin-top: 8px; font-weight: 500; font-size: 15px; line-height: 1.5; }
+.rc-rows {
+  list-style: none;
+  margin-top: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.rc-row {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px 12px;
+  padding: 9px 12px;
+  background: #ffffff0a;
+  border-left: 3px solid #ffc233;
+}
+.rc-row-main { flex: 1 1 200px; min-width: 0; }
+.rc-row-name { display: block; font: 8px var(--font); letter-spacing: 2px; color: #b4a57c; }
+.rc-val {
+  display: block;
+  margin-top: 7px;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #fff;
+  overflow-wrap: anywhere;
+  cursor: text;
+  -webkit-user-select: all; user-select: all;     /* one click selects the whole value */
+}
+.rc-row-actions { display: flex; gap: 8px; }
+
+.rc-foot {
+  margin-top: 14px;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #a99a6e;
+}
+body.is-touch .rc-foot { display: none; }
+
+/* Wide screens: the report on the left, the contact on the right. */
+@media (min-width: 880px) {
+  .rc-card { width: min(100%, 860px); }
+  .rc-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .rc-contact { margin-top: 0; }
+}
+
+/* Short screens (phones in landscape): tighter, so the report scrolls as little as possible. */
+@media (max-height: 520px) {
+  .rc-card { padding: 16px 18px 14px; }
+  .rc-intro { margin-top: 8px; }
+  .rc-body { margin-top: 10px; }
+  .rc-case { padding: 6px 10px; }
+  .rc-stats, .rc-verdict { margin-top: 10px; }
+  .rc-stat { padding: 8px 10px; gap: 7px; }
+  .rc-verdict { padding: 8px; }
+  .rc-row { padding: 6px 10px; }
+  .rc-val { margin-top: 4px; }
+  .rc-lead { margin-top: 6px; font-size: 14px; }
+  .rc-foot { margin-top: 10px; }
+}
+
+/* Off-screen field for the clipboard fallback (16px so iOS does not zoom on focus). */
+.rc-clip {
+  position: fixed; top: 0; left: 0;
+  width: 1px; height: 1px;
+  padding: 0; border: 0;
+  font-size: 16px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Warp fade ── */
+#recette-fade {
+  position: absolute; inset: 0;
+  z-index: 45;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms linear;
+}
+#recette-fade.on { opacity: 1; }
+
+/* ── 4/4: the mug turns gold ──
+   grayscale → sepia → saturate gives one tone per pixel, so the tankard and the hand read as
+   gilded metal rather than as a tinted photo; the entry plays a brief gleam of the same filter. */
+body.rc-gold #viewmodel {
+  filter: grayscale(1) sepia(1) saturate(3.2) hue-rotate(-8deg) brightness(1.5) contrast(1.35)
+          drop-shadow(0 0 8px #ffc23380);
+  animation: rc-gleam 1.4s ease-out;
+}
+@keyframes rc-gleam {
+  from {
+    filter: grayscale(1) sepia(1) saturate(3.2) hue-rotate(-8deg) brightness(3) contrast(1.35)
+            drop-shadow(0 0 22px #fff0a8);
+  }
+}
+/* Phones redraw this canvas every frame: no blur pass, no gleam. */
+body.is-touch.rc-gold #viewmodel {
+  filter: grayscale(1) sepia(1) saturate(3.2) hue-rotate(-8deg) brightness(1.5) contrast(1.35);
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-chip.rc-bump, .rc-chip.rc-hint, .rc-verdict.is-done .rc-verdict-line, body.rc-gold #viewmodel { animation: none; }
+}

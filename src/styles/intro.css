@@ -1,0 +1,168 @@
+/* Arrival sequence — the fade up from black, the ticket card typed like a terminal, the PASSER button.
+   Everything lives inside #game-container (so it survives fullscreen). z-index: HUD 12–15, toast 16,
+   this layer 17, dialogs 40, tour fade 44, warp fade 45. Voices: SYSTÈME cyan, NICOLAS amber (the
+   same two colours as the toasts and the tour subtitles). */
+
+#intro-ui {
+  position: absolute; inset: 0;
+  z-index: 17;
+  pointer-events: none;
+}
+#intro-ui[hidden] { display: none; }
+
+/* ── While it runs ── */
+/* The view is not the visitor's yet: nothing that asks them to act (or explains how) stays up, and a
+   toast that does show (nothing should) rides above the card. */
+body.intro-on #hud-interact-prompt,
+body.intro-on #cursor-hint,
+body.intro-on #touch-controls .tc-btn,
+body.intro-on #game-container::after { display: none !important; }   /* ::after = the crosshair */
+body.intro-on #game-container #toast { bottom: clamp(190px, 31vh, 270px); }
+body.intro-on.is-touch #game-container #toast { bottom: clamp(200px, 38vh, 290px); }
+
+/* ── From black into the level ── */
+.intro-fade {
+  position: absolute; inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.9s ease-out;
+}
+.intro-fade.on { opacity: 1; transition: none; }
+
+/* ── The ticket card ── */
+.intro-card {
+  --c: #37c0ff;
+  --glow: #37c0ff38;
+  --ink: #c9ecff;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(64px, 10vh, 108px);
+  width: min(92vw, 700px);
+  color: var(--ink);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 2px, #ffffff06 2px 4px),
+    linear-gradient(180deg, #070b12f4, #020407f8);
+  border: 2px solid var(--c);
+  box-shadow: 0 0 0 1px #000, 0 10px 28px #000000b0, 0 0 22px var(--glow);
+  opacity: 0;
+  transform: translate(-50%, 10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  -webkit-user-select: none; user-select: none;
+}
+.intro-card.on { opacity: 1; transform: translate(-50%, 0); }
+.intro-card[data-voice="nicolas"] { --c: #ffb347; --glow: #ffb34738; --ink: #f6efe3; }
+body.is-touch .intro-card { bottom: clamp(96px, 20vh, 160px); }
+
+/* A short flash of the border when a new line comes in. */
+.intro-card.blip { animation: intro-blip 0.24s steps(3); }
+@keyframes intro-blip {
+  0% { border-color: #fff; box-shadow: 0 0 0 1px #000, 0 10px 28px #000000b0, 0 0 26px var(--c); }
+}
+
+/* The ticket's stub: who speaks, how far along, how to get out. A dashed rule is the perforation. */
+.intro-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 6px 6px 12px;
+  border-bottom: 1px dashed #ffffff3d;
+}
+.intro-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 9px/1 var(--font);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  color: var(--c);
+}
+.intro-tag::before {
+  content: '';
+  width: 7px; height: 7px;
+  background: var(--c);
+  box-shadow: 0 0 8px var(--c);
+  animation: intro-led 1.2s steps(2) infinite;
+}
+.intro-pips { display: flex; gap: 3px; margin-left: auto; }
+.intro-pips i { width: 7px; height: 7px; background: #ffffff24; }
+.intro-pips i.done { background: var(--c); opacity: 0.5; }
+.intro-pips i.now { background: var(--c); }
+.intro-hint {
+  font: 500 11px/1.3 'Orbitron', system-ui, sans-serif;
+  letter-spacing: 0.4px;
+  color: #a9c2d4;
+}
+.intro-skip {
+  pointer-events: auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  font: 9px var(--font);
+  letter-spacing: 1px;
+  color: var(--c);
+  background: transparent;
+  border: 2px solid var(--c);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.intro-skip:hover { color: #05080c; background: var(--c); }
+body.is-touch .intro-skip { min-height: 40px; padding: 0 16px; font-size: 10px; }
+/* The card is on its way out: nothing of it can be pressed any more. */
+.intro-card:not(.on) .intro-skip { pointer-events: none; }
+
+/* The line. It is typed over its own invisible full version: the breaks are final from the first
+   character. The cursor takes no room: a positioned block on an inline box that is only a word joiner. */
+.intro-text {
+  min-height: calc(1.9em * 2 + 24px);
+  padding: 11px 14px 13px;
+  font: clamp(10px, calc(0.7vw + 5px), 14px)/1.9 var(--font);
+  letter-spacing: 0.5px;
+  text-wrap: balance;
+}
+body.is-touch .intro-text { font-size: clamp(10px, 2.6vw, 12px); }
+.intro-rest { color: transparent; }
+.intro-cursor { position: relative; }
+.intro-cursor::after {
+  content: '';
+  position: absolute;
+  left: 1px; bottom: -0.12em;
+  width: 0.6em; height: 1.1em;
+  background: var(--c);
+  animation: intro-led 0.9s steps(2) infinite;
+}
+.intro-card.calm .intro-cursor,
+.intro-card.calm .intro-tag::before { display: none; }
+
+/* The line is read aloud once, whole, instead of one character at a time. */
+.intro-sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes intro-led { 50% { opacity: 0.2; } }
+
+/* Narrow screens: the pips and the hint make room for the button. */
+@media (max-width: 560px) {
+  .intro-hint { display: none; }
+}
+@media (max-width: 380px) {
+  .intro-pips { display: none; }
+  .intro-skip { margin-left: auto; }
+}
+/* Short screens (phones in landscape): the card keeps out of the way of the signs. */
+@media (max-height: 420px) {
+  .intro-head { padding-top: 4px; padding-bottom: 4px; }
+  .intro-text { min-height: 0; padding: 8px 12px 10px; }
+}
+
+/* ── "Votre arme : ma tasse." — the mug lights up once, as it is named ──
+   Not on phones: the mug is a canvas they redraw every frame, a blur pass on it costs too much. */
+body.intro-mug:not(.is-touch) #viewmodel { animation: intro-mug 1.6s ease-in-out 1; }
+@keyframes intro-mug {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 0 #ffb34700); }
+  35%, 65% { filter: brightness(1.3) drop-shadow(0 0 12px #ffb347); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-fade, .intro-card { transition: none; }
+  .intro-card.blip, .intro-tag::before, .intro-cursor::after, body.intro-mug #viewmodel { animation: none; }
+}
