@@ -4,6 +4,7 @@ import { buildGallery } from './decor/gallery.js';
 import { buildArmory } from './decor/armory.js';
 import { buildQuartiers } from './decor/quartiers.js';
 import { buildSecretRoom } from './decor/secret.js';
+import { buildWindows } from './decor/windows.js';
 
 // Level-design decor layer — additive geometry over the existing scene.
 // Each zone lives in its own module under ./decor/ (shared helpers in helpers.js):
@@ -13,6 +14,7 @@ import { buildSecretRoom } from './decor/secret.js';
 //   armory      Armurerie tech racks
 //   quartiers   lounge warmth
 //   secret      the dark arcade room
+//   windows     portal windows onto the lunar surface (+ the atrium skylight)
 // buildDecor() returns { update(t) } so Renderer can spin the holograms.
 
 // Player.js derives collision boxes from the racks.
@@ -28,6 +30,7 @@ export function buildDecor(scene, tex = null) {
   buildQuartiers(scene);
   buildSecretRoom(scene);
   buildGuidanceLines(scene);
+  const windows = buildWindows(scene, tex);
 
   return {
     update(t) {
@@ -37,6 +40,7 @@ export function buildDecor(scene, tex = null) {
         a.node.position.y = a.y0 + Math.sin(t * a.spd) * a.amp;
       }
       gallery.update(t);
+      windows.update(t);
     },
   };
 }

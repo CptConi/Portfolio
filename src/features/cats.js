@@ -6,7 +6,7 @@
 //                   in the scene by its userData.catKind, nothing else is assumed about it)
 //   cat-prod        two glowing eyes peeking from behind the east-side crates of the PROD room
 //
-// Aiming is by heading only (the camera never pitches): within 3.5 m, inside a 10° cone, with a clear
+// Aiming is by heading and by the height of the crosshair (Player.pitch): within 3.5 m, inside a 10° cone, with a clear
 // line of sight (walls and the Props3D boxes block it, so the PROD cat can only be seen from where it
 // can really be seen). The ring drains twice as fast as it fills if the eyes wander. Nothing needs a
 // key: it works the same with a touch screen. On completion: a system toast in the cat's voice
@@ -102,13 +102,13 @@ export function lineClear(ax, ay, az, bx, by, bz) {
 }
 
 // Can a visitor at (px, pz) looking along `angle`, eyes at `eye`, see `cat` dead ahead?
-export function gazeAt(px, pz, angle, eye, cat) {
+export function gazeAt(px, pz, angle, eye, cat, pitch = 0) {
   const dx = cat.x - px, dz = cat.z - pz;
   const d = Math.hypot(dx, dz);
   if (d > GAZE.range || d < GAZE.near) return false;
   if ((Math.cos(angle) * dx + Math.sin(angle) * dz) / d < GAZE.cos) return false;
   const y = cat.base + cat.aim;
-  if (Math.abs(y - eye) > d * GAZE.elevation) return false;
+  if (Math.abs((y - eye) / d - Math.tan(pitch)) > GAZE.elevation) return false;   // the crosshair looks `pitch` up
   return lineClear(px, eye, pz, cat.x, y, cat.z);
 }
 
@@ -300,7 +300,7 @@ export function create({ scene, events, toast, track, screens }) {
         for (const c of cats) {
           if (found.has(c.id)) continue;
           const d = Math.hypot(c.x - player.x, c.z - player.y);
-          if (d < best && gazeAt(player.x, player.y, player.angle, player.eyeY, c)) { best = d; aimed = c; }
+          if (d < best && gazeAt(player.x, player.y, player.angle, player.eyeY, c, player.pitch)) { best = d; aimed = c; }
         }
       }
 

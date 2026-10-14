@@ -14,6 +14,10 @@ export class Input {
     this.interact = false;
     this.escape = false;       // set by touch exit button; consumed by ScreenManager
     this.mouseDX = 0;
+    this.mouseDY = 0;          // vertical look: down is +, like movementY (touch drags feed it too)
+    this.lookUp = false;       // PageUp / PageDown look keys
+    this.lookDown = false;
+    this.autoLevel = false;    // touch screens: the view levels itself again when the finger rests (Touch.js)
     this._pointerLocked = false;
     this.lockOnClick = true;   // disabled while a screen is focused (mouse stays free)
 
@@ -44,13 +48,14 @@ export class Input {
     window.addEventListener('focus', settle);
     document.addEventListener('mousemove', e => {
       if (!this._pointerLocked) return;
-      const dx = e.movementX, now = performance.now();
-      const dropped = now < this._settleUntil || Math.abs(dx) > LOOK_SPIKE || this._dropNext;
-      if (import.meta.env?.DEV && Math.abs(dx) > 120) {
-        console.warn(`[input] mouse step ${dx}px ${dropped ? 'dropped' : 'kept'}, ${Math.round(now - (this._settleUntil - LOOK_SETTLE_MS))} ms after the last lock/focus`);
+      const dx = e.movementX, dy = e.movementY || 0, now = performance.now();
+      const big = Math.max(Math.abs(dx), Math.abs(dy));
+      const dropped = now < this._settleUntil || big > LOOK_SPIKE || this._dropNext;
+      if (import.meta.env?.DEV && big > 120) {
+        console.warn(`[input] mouse step ${dx},${dy}px ${dropped ? 'dropped' : 'kept'}, ${Math.round(now - (this._settleUntil - LOOK_SETTLE_MS))} ms after the last lock/focus`);
       }
       if (now >= this._settleUntil) this._dropNext = false;   // only the first event after the settle window goes
-      if (!dropped) this.mouseDX += dx;
+      if (!dropped) { this.mouseDX += dx; this.mouseDY += dy; }
     });
   }
 
@@ -62,6 +67,8 @@ export class Input {
       case 'ArrowRight':             this.rotRight    = down; break;
       case 'KeyA':                   this.strafeLeft  = down; break;
       case 'KeyD':                   this.strafeRight = down; break;
+      case 'PageUp':                 this.lookUp      = down; break;
+      case 'PageDown':               this.lookDown    = down; break;
       case 'KeyE': case 'Space':
         // A held key stays "down" without re-arming: its auto-repeat must not fire a second action
         // (a console would open and close in a loop for as long as E is held).

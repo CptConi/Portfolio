@@ -13,6 +13,10 @@ const ROT_SPEED  = 2.4;    // rad/s (keyboard turn)
 const BOB_RATE   = 9.9;    // rad/s (head-bob phase)
 const MAX_STEP   = 0.04;   // m per collision sub-step (keeps thin props from being skipped)
 const COLLISION_MARGIN = 0.2;
+const MAX_PITCH  = (35 * Math.PI) / 180;   // freelook limit, up and down (a shear of the projection: see Renderer.render)
+const PITCH_SENS = 0.002;                   // rad per mouse pixel, same as the turn
+const PITCH_KEYS = 1.4;                     // rad/s with PageUp / PageDown
+const AUTO_LEVEL_DELAY = 0.8;               // s without vertical input before a touch screen levels the view again
 
 // Exponential smoothing that behaves the same at any frame rate: `k60` is the
 // per-frame blend factor at 60 fps.
@@ -61,6 +65,8 @@ export class Player {
     this.y     = 15.4;
     this.angle = -Math.PI / 2;   // facing north → landmark + quartiers hall
     this.fov   = Math.PI / 3;
+    this.pitch = 0;      // freelook, radians, + = up. The camera itself never tilts: the view is sheared.
+    this._pitchIdle = 0; // s since the last vertical input
 
     this._eyeBase = floorAt(this.x, this.y) + EYE_OFFSET; // smoothed floor follow
     this._bob     = 0;   // head-bob phase
@@ -103,6 +109,19 @@ export class Player {
     }
 
     this.angle = ((this.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+
+    // Vertical look: mouse / touch drag (mouseDY: down is +), PageUp / PageDown; Home levels the view.
+    const keys = (input.lookUp ? 1 : 0) - (input.lookDown ? 1 : 0);
+    const dPitch = -(input.mouseDY || 0) * PITCH_SENS + keys * PITCH_KEYS * dt;
+    input.mouseDY = 0;
+    if (dPitch !== 0) {
+      this.pitch = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, this.pitch + dPitch));
+      this._pitchIdle = 0;
+    } else {
+      this._pitchIdle += dt;
+      if (input.autoLevel && this._pitchIdle > AUTO_LEVEL_DELAY) this.pitch *= Math.exp(-3 * dt);
+    }
+    if (input.consumeKey?.('home')) this.pitch = 0;
 
     // Head bob — advance phase while moving, ease the amplitude in/out.
     const moving = mvX !== 0 || mvY !== 0;

@@ -143,6 +143,7 @@ const startScreen = document.getElementById('start-screen');
 
     if (blockMovement) {
       input.mouseDX = 0;            // discard look accumulated while focused
+      input.mouseDY = 0;
     } else {
       player.update(input, dt);
       const pw = pushwall.update(player, input, dt);

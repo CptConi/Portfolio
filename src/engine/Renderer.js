@@ -38,6 +38,7 @@ export class Renderer {
     // ── Camera ───────────────────────────────────────────────────────────
     this._camera = new THREE.PerspectiveCamera(V_FOV_DEG, ASPECT, 0.05, 50);
     this._camera.position.y = 0.5;
+    this._lookK = 1;   // how much of the player's freelook shows (eased to 0 under a camera override)
 
     // ── Scene ────────────────────────────────────────────────────────────
     this._scene = new THREE.Scene();
@@ -407,6 +408,20 @@ export class Renderer {
         eye,
         player.y + Math.sin(player.angle)
       );
+    }
+
+    // Freelook is a vertical SHEAR of the projection (as in Build / Duke 3D), not a tilt of the camera:
+    // walls stay vertical, nothing keystones. A camera override (console glide, tour, intro) owns the
+    // view, so the shear eases out while one is active and back in when it ends.
+    const dt = this._lookT === undefined ? 0 : Math.min(0.1, Math.max(0, tSec - this._lookT));
+    this._lookT = tSec;
+    this._lookK += ((camOverride ? 0 : 1) - this._lookK) * (1 - Math.exp(-dt * 10));
+    const pitch = (player.pitch ?? 0) * this._lookK;
+    this._camera.updateProjectionMatrix();
+    if (Math.abs(pitch) > 1e-4) {
+      const e = this._camera.projectionMatrix.elements;
+      e[9] = Math.tan(pitch) * e[5];   // the horizon (elevation 0) lands at −tan(pitch) × the half-height
+      this._camera.projectionMatrixInverse.copy(this._camera.projectionMatrix).invert();
     }
 
     // After lookAt so the shake also rides on a console's camera override.

@@ -34,8 +34,8 @@
 // floor (the eye is at 0.5), facing the room, away from every door axis and every spot a visitor lands on,
 // and either clear of other interactions or ON the thing they belong to (a console, a plinth), where
 // features/notes.js lets the one you are aiming at win. A sweep of the level proves it (see features/notes.js).
-// The camera never pitches (the eye is at 0.5 m), so a low note (the plinth plates at 0.26 m, the bench tag at
-// 0.24 m) is read from a little farther: its prompt waits until three quarters of it are in the frame.
+// The view is level by default (the eye is at 0.5 m), so a low note (the plinth plates at 0.26 m, the bench tag at
+// 0.24 m) is read from a little farther (or by looking down at it): its prompt waits until three quarters of it are in the frame.
 
 import { PROPS3D } from '../engine/Props3D.js';
 import { SCREENS } from '../engine/Screens.js';

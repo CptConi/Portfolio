@@ -10,6 +10,7 @@ const isTouch = typeof window !== 'undefined' &&
 const STICK_R   = 56;     // max knob travel from the base (px)
 const DEAD      = 0.22;   // deadzone as a fraction of the stick radius
 const LOOK_SENS = 2.5;    // drag px → yaw
+const LOOK_SENS_Y = 1.6;  // drag px → pitch (the vertical field of view is narrow: gentler)
 
 export class TouchControls {
   constructor(container, input) {
@@ -46,6 +47,8 @@ export class TouchControls {
     this._moveId = null;   // touch identifier driving the joystick
     this._lookId = null;   // touch identifier driving look
     this._lookX  = 0;
+    this._lookY  = 0;
+    input.autoLevel = true;   // no Home key on a phone: the view levels itself when the finger rests
 
     root.addEventListener('touchstart',  e => this._onStart(e), { passive: false });
     root.addEventListener('touchmove',   e => this._onMove(e),  { passive: false });
@@ -106,6 +109,7 @@ export class TouchControls {
       } else if (this._lookId === null) {
         this._lookId = t.identifier;
         this._lookX = t.clientX;
+        this._lookY = t.clientY;
       }
     }
   }
@@ -125,7 +129,9 @@ export class TouchControls {
         this._applyMove(ux * mag, uy * mag);
       } else if (t.identifier === this._lookId) {
         this.input.mouseDX += (t.clientX - this._lookX) * LOOK_SENS;
+        this.input.mouseDY += (t.clientY - this._lookY) * LOOK_SENS_Y;
         this._lookX = t.clientX;
+        this._lookY = t.clientY;
       }
     }
   }

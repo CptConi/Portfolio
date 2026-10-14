@@ -24,7 +24,7 @@ Au lieu de scroller une page, on marche dans un atrium, on lit les bornes, on cr
    ╔════════════════════════════════════════════════════════════╗
    ║  WASD / ZQSD / FLÈCHES · bouger     SOURIS · viser         ║
    ║  E / ESPACE · interagir             TACTILE · joystick     ║
-   ║  C contact · M plan · R rapport · V visite                 ║
+   ║  C contact · M plan · R rapport · V visite · HOME : niveau ║
    ╚════════════════════════════════════════════════════════════╝
 ```
 
@@ -54,6 +54,7 @@ Vanilla JS, modules ES, zéro framework UI. Moteur maison : map, sprites, props 
 - 🛋️ **Quartiers** (IDENTITÉ, CONTACT) — profil, passions et contact, dans un salon qui a l'air habité
 - 📋 **Rapport de recette** — vous êtes le testeur : quatre cas de test à valider, un rapport (touche R) qui tient le compte, des secrets facultatifs
 - 🗒️ **Notes** — des post-its, plaques, étiquettes et autres mots laissés dans le niveau, à lire sur demande (E) : rien ne s'affiche tout seul
+- 🌕 **Fenêtres sur la Lune** — chaque salle donne sur l'extérieur : sol lunaire, horizon et Terre au loin ; une verrière dans l'atrium (levez les yeux : souris, PgUp / PgDn, Home pour redresser)
 - 🎬 **Arrivée** — une courte séquence pose le décor de la recette, passable à tout moment
 - 🎥 **Visite guidée** de 40 secondes, annulable à tout moment
 - 📱 **Mobile** — joystick analogique, boutons contextuels, rendu à la résolution de l'appareil

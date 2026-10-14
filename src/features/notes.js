@@ -27,8 +27,8 @@
 //   walkable spot, every heading) proves it, and proves that aiming at the heart of a console, a plinth, the
 //   contact frame or the hub never shows a note.
 //   A note is read from the side it faces, never when the way to it is blocked by a wall, a prop or a standing
-//   lamp, nor while most of it is out of the frame (the camera never pitches: a plate low on a plinth slides
-//   off the bottom of the screen as the visitor closes in), and a fresh press is required for every action (a
+//   lamp, nor while most of it is out of the frame (a plate low on a plinth slides off the bottom of the screen as
+//   the visitor closes in, until they look down at it), and a fresh press is required for every action (a
 //   held E or its auto-repeat never opens, closes or chains).
 //
 // Events emitted   note:read { id }   a card was opened for a note for the first time this visit (the
@@ -59,8 +59,8 @@ export const AIM = {
   cos: 0.93,        // cosine of the aiming cone (~21°): you have to look at it
   view: 0.4,        // cosine of the widest angle between the note's normal and the way back to the eye (~66°)
 };
-// The camera has a fixed horizontal field of view (Renderer.js H_FOV, π/3) and never pitches, so what the
-// frame holds above and below the eye depends on the window: tan(vertical half angle) = tan(30°) / aspect.
+// The camera has a fixed horizontal field of view (Renderer.js H_FOV, π/3) and a level view by default (freelook
+// only shears it, Player.pitch), so what the frame holds above and below the eye depends on the window: tan(vertical half angle) = tan(30°) / aspect.
 // `seen`: the share of a note's height that has to be on screen before its prompt shows. `maxAspect`: windows
 // wider than this (21:9 and beyond) are treated as if they were not, or the lowest notes would be out of reach.
 export const FRAME = { hfov: Math.PI / 3, seen: 0.75, maxAspect: 2.4 };
@@ -151,11 +151,12 @@ export function createAim(items, { aspect = 16 / 9 } = {}) {
     return true;
   }
 
-  // The camera never pitches: once the visitor is close, a note far below (or above) the eye is no longer in
-  // the frame. At `depth` metres ahead the frame holds ±depth·tan above and below the eye.
+  // Once the visitor is close, a note far below (or above) the eye is no longer in the frame, unless they look
+  // toward it (freelook shears the view: the frame is centred `depth·tan(pitch)` above the eye line). At `depth`
+  // metres ahead the frame holds ±depth·tan around that centre.
   function framed(p, t, depth) {
-    const lim = depth * frameTan, mid = t.y - p.eyeY;
-    return Math.min(mid + t.half, lim) - Math.max(mid - t.half, -lim) >= 2 * t.half * FRAME.seen;
+    const lim = depth * frameTan, mid = t.y - p.eyeY, off = depth * Math.tan(p.pitch ?? 0);
+    return Math.min(mid + t.half, off + lim) - Math.max(mid - t.half, off - lim) >= 2 * t.half * FRAME.seen;
   }
 
   // The cosine of the aim of whatever else is offered on [E] here (-1 when nothing is): the nearest console in
