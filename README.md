@@ -54,7 +54,7 @@ Vanilla JS, modules ES, zéro framework UI. Moteur maison : map, sprites, props 
 - 🛋️ **Quartiers** (IDENTITÉ, CONTACT) — profil, passions et contact, dans un salon qui a l'air habité
 - 📋 **Rapport de recette** — vous êtes le testeur : quatre cas de test à valider, un rapport (touche R) qui tient le compte, des secrets facultatifs
 - 🗒️ **Notes** — des post-its, plaques, étiquettes et autres mots laissés dans le niveau, à lire sur demande (E) : rien ne s'affiche tout seul
-- 🌕 **Fenêtres sur la Lune** — chaque salle donne sur l'extérieur : sol lunaire, horizon et Terre au loin ; une verrière dans l'atrium (levez les yeux : souris, PgUp / PgDn, Home pour redresser)
+- 🌕 **Fenêtres sur la Lune** — chaque vitre ouvre sur un vrai monde extérieur, dessiné depuis votre point de vue (vraie parallaxe) : plaine lunaire, antennes, panneaux solaires, et la base elle-même vue de dehors ; un seul ciel, la Terre au sud, le Soleil à l'est, un géant à anneaux au nord, des astéroïdes à l'ouest (et quelques clins d'œil) ; une verrière dans l'atrium (levez les yeux : souris, PgUp / PgDn, Home pour redresser)
 - 🎬 **Arrivée** — une courte séquence pose le décor de la recette, passable à tout moment
 - 🎥 **Visite guidée** de 40 secondes, annulable à tout moment
 - 📱 **Mobile** — joystick analogique, boutons contextuels, rendu à la résolution de l'appareil

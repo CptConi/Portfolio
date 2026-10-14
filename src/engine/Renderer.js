@@ -9,6 +9,7 @@ import { PROPS3D } from './Props3D.js';
 import { SCREENS, ARCADE } from './Screens.js';
 import { buildSprites } from './Sprites2D.js';
 import { buildDecor } from './Decor.js';
+import { buildExterior } from './exterior/Exterior.js';
 import { moodOf } from '../features/mood.js';
 
 const INTERNAL_W = 640;
@@ -46,6 +47,15 @@ export class Renderer {
     this._scene.background = new THREE.Color(0x000000);
     this._scene.fog = new THREE.Fog(0x000000, 2, 18);
 
+    // The world outside, seen through the windows: a second scene drawn with this same camera into its own target, only when a pane is
+    // on screen (render()). Built before the level: the window panes read its target. Without it the panes show a bare horizon.
+    try {
+      this._exterior = buildExterior({ tex: textures });
+    } catch (e) {
+      console.warn('[renderer] the exterior world could not be built, the windows stay bare:', e);
+      this._exterior = null;
+    }
+
     this._buildScene();
 
     // ── Post-processing (cheap at 640×360): bloom ───────────────────────────
@@ -64,6 +74,7 @@ export class Renderer {
     this.fx = this._postfx.api;
     this._composer.addPass(this._postfx.pass);
     this._composer.addPass(new OutputPass());
+    this._syncExterior();
 
     // Mobile: render at the real device resolution with a viewport-matched
     // aspect (horizontal FOV stays fixed) instead of upscaling the 640×360
@@ -82,10 +93,17 @@ export class Renderer {
     this._renderer.setSize(w, h, false);
     this._composer.setPixelRatio(dpr);
     this._composer.setSize(w, h);   // resizes all passes (incl. bloom) to w*dpr
+    this._syncExterior();
     const aspect = w / h;
     this._camera.aspect = aspect;
     this._camera.fov = vFovDeg(aspect);
     this._camera.updateProjectionMatrix();
+  }
+
+  // The exterior target is the composer's size, pixel for pixel: a pane reads it at its own screen pixel (decor/windows.js).
+  _syncExterior() {
+    const rt = this._composer.renderTarget1;
+    this._exterior?.setSize(Math.floor(rt.width), Math.floor(rt.height));
   }
 
   // Quality level: 1 = bloom + feel pass, 0 = neither (the camera shake stays).
@@ -99,6 +117,7 @@ export class Renderer {
   // the first render, behind the title screen.
   warmUp() {
     this._renderer.compile(this._scene, this._camera);
+    this._exterior?.warmUp(this._renderer, this._camera);   // its shaders and its shadow map; the first composer frame reads its target
     this._composer.render();
   }
 
@@ -110,7 +129,7 @@ export class Renderer {
     this._buildWalls();
     this._buildProps();
     this._sprites = buildSprites(this._scene, this._tex);
-    this._decor = buildDecor(this._scene, this._tex);
+    this._decor = buildDecor(this._scene, this._tex, this._exterior);
   }
 
   // Low ambient + a coloured point light at each ceiling spot (consoles, atrium,
@@ -369,6 +388,7 @@ export class Renderer {
   // ── Render loop ────────────────────────────────────────────────────────
 
   get scene() { return this._scene; }
+  get exterior() { return this._exterior; }
   get ambient() { return this._ambient; }
 
   render(player, camOverride = null, tSec = 0) {
@@ -427,6 +447,10 @@ export class Renderer {
     // After lookAt so the shake also rides on a console's camera override.
     this._postfx.update(tSec);
     this._postfx.applyToCamera(this._camera);
+
+    // The exterior world through the panes: same camera (pose, shear and shake are final), drawn only when a pane can be on screen.
+    this._camera.updateMatrixWorld();
+    if (this._exterior && this._decor.windows.anyVisible(this._camera)) this._exterior.render(this._renderer, this._camera, tSec);
 
     this._composer.render();
   }

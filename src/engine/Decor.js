@@ -14,13 +14,13 @@ import { buildWindows } from './decor/windows.js';
 //   armory      Armurerie tech racks
 //   quartiers   lounge warmth
 //   secret      the dark arcade room
-//   windows     portal windows onto the lunar surface (+ the atrium skylight)
-// buildDecor() returns { update(t) } so Renderer can spin the holograms.
+//   windows     panes onto the exterior world (+ the atrium skylight): they read the exterior render target
+// buildDecor() returns { update(t), windows } so Renderer can spin the holograms and ask the windows whether any pane is on screen.
 
 // Player.js derives collision boxes from the racks.
 export { ARMORY_RACK_AABBS } from './decor/armory.js';
 
-export function buildDecor(scene, tex = null) {
+export function buildDecor(scene, tex = null, exterior = null) {
   const anim = [];   // { node, ry, rx, y0, amp, spd }
 
   buildThresholds(scene);
@@ -30,9 +30,10 @@ export function buildDecor(scene, tex = null) {
   buildQuartiers(scene);
   buildSecretRoom(scene);
   buildGuidanceLines(scene);
-  const windows = buildWindows(scene, tex);
+  const windows = buildWindows(scene, exterior);
 
   return {
+    windows,
     update(t) {
       for (const a of anim) {
         a.node.rotation.y = t * a.ry;
