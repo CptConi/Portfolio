@@ -1,3 +1,6 @@
+const LOOK_SETTLE_MS = 150;   // mouse movement ignored this long after a pointer lock / window focus
+const LOOK_SPIKE = 350;       // px: a single mouse event beyond this (0.7 rad, ~40°) is a glitch, not a gesture
+
 export class Input {
   constructor(canvas) {
     this.forward = false;
@@ -27,11 +30,27 @@ export class Input {
     canvas.addEventListener('click', () => {
       if (this.lockOnClick) try { canvas.requestPointerLock()?.catch?.(() => {}); } catch {}
     });
+    // Browsers (Chromium above all) can report a huge, erratic movementX: right after the pointer is
+    // locked again (the cursor is re-centred, so the first event carries the distance it travelled),
+    // when the window regains the focus, or at random. Applied as is, it spins the view, typically
+    // each time a dialog or a console gives the pointer back. Such events are dropped.
+    this._settleUntil = 0;
+    this._dropNext = false;
+    const settle = () => { this._settleUntil = performance.now() + LOOK_SETTLE_MS; this._dropNext = true; };
     document.addEventListener('pointerlockchange', () => {
       this._pointerLocked = document.pointerLockElement === canvas;
+      if (this._pointerLocked) settle();
     });
+    window.addEventListener('focus', settle);
     document.addEventListener('mousemove', e => {
-      if (this._pointerLocked) this.mouseDX += e.movementX;
+      if (!this._pointerLocked) return;
+      const dx = e.movementX, now = performance.now();
+      const dropped = now < this._settleUntil || Math.abs(dx) > LOOK_SPIKE || this._dropNext;
+      if (import.meta.env?.DEV && Math.abs(dx) > 120) {
+        console.warn(`[input] mouse step ${dx}px ${dropped ? 'dropped' : 'kept'}, ${Math.round(now - (this._settleUntil - LOOK_SETTLE_MS))} ms after the last lock/focus`);
+      }
+      if (now >= this._settleUntil) this._dropNext = false;   // only the first event after the settle window goes
+      if (!dropped) this.mouseDX += dx;
     });
   }
 
