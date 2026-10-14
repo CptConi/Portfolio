@@ -10,8 +10,8 @@
 // line of sight (walls and the Props3D boxes block it, so the PROD cat can only be seen from where it
 // can really be seen). The ring drains twice as fast as it fills if the eyes wander. Nothing needs a
 // key: it works the same with a touch screen. On completion: a system toast in the cat's voice
-// ("MROW." first), 'secret:found', and one cute reaction (purr bob and pixel hearts; slow blinks for
-// the eyes; no motion under prefers-reduced-motion, only a still heart).
+// ("MROW." first), 'secret:found', and one reaction (purr bob and rising pickup glyphs, Doom-style health "+";
+// slow blinks for the eyes; no motion under prefers-reduced-motion, only a still pickup).
 //
 // Events emitted: 'secret:found' { id: 'cat-armurerie' | 'cat-quartiers' | 'cat-prod' } (main.js turns
 //                 it into the 'secret-found' analytics event, so nothing is tracked twice here).
@@ -23,11 +23,12 @@
 // Also ticks the PROD room's dressing (decor/secret.js: sign flicker, rack LEDs), which has no hook of its own.
 // DEV only: __game.cats.found() → { count, total, ids }; __game.cats.tp(id) → stands you in front of that cat;
 //           __game.cats.arcade() → the BUG HUNTER game object (set .killed = 16 for the boss, .time = 1 for the deadline…).
-// Draw calls: the loaf cat and the eyes are one sprite each; a reaction adds at most 3 heart sprites for 2.6 s.
+// Draw calls: the loaf cat and the eyes are one sprite each; a reaction adds at most 3 pickup sprites for 2.6 s.
 import '../styles/cats.css';
 import * as THREE from 'three';
 import { createCat } from '../engine/props/cat.js';
 import { Pix } from '../engine/props/pixels.js';
+import { RAMPS, ditherRamp, bayer4 } from '../engine/props/dither.js';
 import { LOUNGE } from '../engine/props/placement.js';
 import { PROPS3D } from '../engine/Props3D.js';
 import { isWall, floorAt } from '../engine/Map.js';
@@ -49,7 +50,7 @@ const GAZE = {
   elevation: 0.2,   // largest height difference per metre of distance (~11°): it must be on screen, not at its edge
   near: 0.6,        // m: closer than this the cat fills the screen anyway
 };
-const HEART_SECONDS = 2.6;
+const PICKUP_SECONDS = 2.6;
 // Transparent things are drawn far to near by their centre, which lets the big black overlays of the PROD
 // room (decor/secret.js) land on top of a small glow that is nearer to the camera than their centre. Anything
 // glowing there takes a later render order than every overlay.
@@ -64,7 +65,7 @@ const nearestProp = (x, z) => PROPS3D.reduce((best, p) => (Math.hypot(p.x - x, p
 const BENCH = nearestProp(4.7, 12.5);
 
 // `base`: world height of the surface the cat stands on; `aim`: height of its face above `base`;
-// `top`: where the hearts start; `stand`: a spot a visitor can aim from (also the dev teleport);
+// `top`: where the pickups start; `stand`: a spot a visitor can aim from (also the dev teleport);
 // `toast`: the line shown when it is found, the final copy verbatim (the cat first, then the system's
 // ticket; the "(SECRETS n/4)" count is appended when it is shown).
 const surface = (x, z, h) => floorAt(x, z) + h;
@@ -113,11 +114,22 @@ export function gazeAt(px, pz, angle, eye, cat) {
 
 const smooth = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
 
-function heartTexture() {
-  const p = new Pix(11, 10);
-  p.grid(['.###.###.', '#########', '#########', '#########', '.#######.', '..#####..', '...###...', '....#....'], { '#': 0xff5d8f }, 1, 1);
-  p.rect(2, 2, 2, 1, 0xffb3c9).set(2, 3, 0xffb3c9);
-  p.outline(0x8a1f45);
+// A health-bonus "+" in the style of Doom's pickups: a chunky bevelled cross, light from the upper left, a
+// dithered green body, a hard drop shadow. 9 x 9, fullbright (no tint), crisp.
+const PICKUP = ['..###..', '..###..', '#######', '#######', '#######', '..###..', '..###..'];
+function pickupTexture() {
+  const p = new Pix(9, 9);
+  const on = (x, y) => PICKUP[y]?.[x] === '#';
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) if (!on(x, y) && (on(x - 1, y - 1) || on(x - 1, y) || on(x, y - 1))) p.set(x + 1, y + 1, RAMPS.olive[0]);
+  }
+  PICKUP.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] !== '#') continue;
+      const lit = !on(x - 1, y) || !on(x, y - 1), dim = !on(x + 1, y) || !on(x, y + 1);
+      p.set(x + 1, y + 1, lit && !dim ? RAMPS.olive[5] : dim ? RAMPS.olive[2] : ditherRamp(RAMPS.olive.slice(3, 6), 0.45 + 0.1 * (6 - x - y) / 6, x, y, bayer4));
+    }
+  });
   return p.toTexture();
 }
 
@@ -179,27 +191,27 @@ export function create({ scene, events, toast, track, screens }) {
   }
 
   // ── Reactions ──
-  let heartMap = null;
+  let pickupMap = null;
   const reactions = [];
 
   function startReaction(c, t, calm) {
     c.api?.react?.(t);
-    heartMap ??= heartTexture();
-    const hearts = [];
+    pickupMap ??= pickupTexture();
+    const pickups = [];
     for (let i = 0; i < (calm ? 1 : 3); i++) {
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: heartMap, transparent: true, depthWrite: false, opacity: 0 }));
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: pickupMap, transparent: true, depthWrite: false, opacity: 0 }));
       sprite.visible = false;
       sprite.renderOrder = AFTER_OVERLAYS;
       scene.add(sprite);
-      hearts.push(sprite);
+      pickups.push(sprite);
     }
-    reactions.push({ c, t0: t, hearts });
+    reactions.push({ c, t0: t, pickups });
   }
 
   function stepReactions(t, calm) {
     for (let k = reactions.length - 1; k >= 0; k--) {
       const r = reactions[k], c = r.c, u = t - r.t0;
-      const over = u >= HEART_SECONDS;
+      const over = u >= PICKUP_SECONDS;
 
       if (c.object && !calm) {
         // Purr: a fast little bob that fades out. The eyes have no body to bob: they blink slowly, twice.
@@ -212,7 +224,7 @@ export function create({ scene, events, toast, track, screens }) {
         c.object.scale.setScalar(c.scale);
       }
 
-      r.hearts.forEach((h, i) => {
+      r.pickups.forEach((h, i) => {
         const v = calm ? u / 1.6 : (u - i * 0.4) / 1.5;
         h.visible = !over && v > 0 && v < 1;
         if (!h.visible) return;
@@ -221,11 +233,11 @@ export function create({ scene, events, toast, track, screens }) {
         h.position.set(c.x + sway + (i - 1) * (calm ? 0 : 0.04), c.base + c.top + rise, c.z);
         h.material.opacity = smooth(0, 0.15, v) * (1 - smooth(0.6, 1, v));
         const s = 0.07 * (0.8 + 0.3 * smooth(0, 0.2, v));
-        h.scale.set(s, s * 0.91, 1);
+        h.scale.set(s, s, 1);
       });
 
       if (over) {
-        for (const h of r.hearts) { scene.remove(h); h.material.dispose(); }
+        for (const h of r.pickups) { scene.remove(h); h.material.dispose(); }
         reactions.splice(k, 1);
       }
     }
@@ -310,9 +322,9 @@ export function create({ scene, events, toast, track, screens }) {
       for (const off of cleanup) off();
       clearTimeout(doneTimer);
       ring.remove();
-      for (const r of reactions) for (const h of r.hearts) { scene.remove(h); h.material.dispose(); }
+      for (const r of reactions) for (const h of r.pickups) { scene.remove(h); h.material.dispose(); }
       reactions.length = 0;
-      heartMap?.dispose();
+      pickupMap?.dispose();
       for (const c of cats) c.object?.scale.setScalar(1);
       for (const c of owned) { scene.remove(c.object); c.api.dispose(); }
     },

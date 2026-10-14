@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { Pix } from './pixels.js';
+import { RAMPS, ditherRamp, bayer4, hash, noise } from './dither.js';
 
-// The house cat, as camera-facing kawaii pixel-art sprites (seen at 640x360, nearest-filtered, from 1.5-3.5 m).
+// The house cat, as camera-facing pixel-art sprites (seen at 640x360, nearest-filtered, from 1.5-3.5 m).
 // Reusable wherever a cat belongs:
 //
-//   const cat = createCat('sleeping');      // a curled ginger tabby, closed happy eyes, tiny "z z"
+//   const cat = createCat('sleeping');      // a curled tabby asleep, eyes shut, tiny "z z"
 //   const eyes = createCat('eyes');          // two glowing eyes with slit pupils, watching from the dark
 //   cat.object.position.set(x, y, z);        // origin = bottom centre (it sits on a surface)
 //   scene.add(cat.object);
@@ -13,41 +14,136 @@ import { Pix } from './pixels.js';
 //
 // Returns { kind, object: THREE.Group, width, height, update(t, calm), dispose() }.
 // Width/height are the sprite's world size in metres. Kinds: 'sleeping' | 'eyes' | 'loaf'
-// ('loaf' = a ginger tabby loafing on a keyboard, eyes on the visitor; sits on a table-top, 0.42 m wide;
+// ('loaf' = a tabby loafing on a keyboard, eyes on the visitor; sits on a table-top, 0.42 m wide;
 // it blinks slowly, twitches an ear and flicks its tail tip, and has react(t), which makes it squint
-// happily for a few seconds).
+// contentedly for a few seconds).
 // Every group carries userData.catKind, so a feature can find a cat that another module built.
 //
-// Art direction: a big round head (about half the sprite's width), large glossy eyes with a one-pixel
-// glint, a tiny pink nose and a "w" mouth, short ears with pink insides, a cream muzzle, soft tabby
-// stripes, blush, a clean 1-px dark-brown outline. At most 12 colours per cat, symmetrical faces.
+// Art direction: an alley cat that has seen the bunker, painted the way Doom's monsters were. Earth-tone
+// ramps (props/dither.js), light from the upper left, every surface a few banded tones with an ordered
+// dither at the seams and a grain of stipple on top (a "digitised clay model"). No clean outline: the
+// darkest tone sits on the shadow side, the lit side is thin and broken, the silhouette is ragged and
+// tufted. A heavy brow shadow over small full-bright amber eyes with slit pupils, a dark nose, a flat
+// downturned mouth, a nicked ear. At most ~24 colours per cat, all from the shared ramps.
 
-const OUTLINE = 0x3b2013, ORANGE = 0xf39b40, SHADE = 0xd97a2b, STRIPE = 0xc2631f, LIGHT = 0xfbbe6e;
-const CREAM = 0xfff0d4, PINK = 0xf8a3b3, BLUSH = 0xf0765f, WHITE = 0xffffff, EYE_LO = 0x8a4a2a;
-const KEY_DARK = 0x2e3544, KEY_TOP = 0x5b6680;
+const FUR = [RAMPS.brown[0], RAMPS.brown[1], RAMPS.rust[1], RAMPS.rust[2], RAMPS.rust[3], RAMPS.rust[4]];
+const BONE = RAMPS.bone, STEEL = RAMPS.steel, EYE = RAMPS.eye;
+const CREAM = [FUR[2], FUR[3], RAMPS.brown[5], RAMPS.brown[6]];   // the pale fur of muzzle, paws and tail tip, warm in the shade
+const LED = RAMPS.olive[4];
 
 // ── Drawing toolkit ──────────────────────────────────────────────────────────────────────
 
-// Lays a shape on `p` with its own 1-px contour, so a head drawn over a body keeps its outline.
-// `draw(mask)` paints the shape (any colour, any alpha > 0) on a scratch image; returns that mask.
-function solid(p, draw, fill, edge = OUTLINE) {
-  const m = new Pix(p.w, p.h);
-  draw(m);
-  const on = (x, y) => m.alpha(x, y) > 0;
-  for (let y = 0; y < p.h; y++) {
-    for (let x = 0; x < p.w; x++) {
-      if (!on(x, y) && (on(x - 1, y) || on(x + 1, y) || on(x, y - 1) || on(x, y + 1))) p.set(x, y, edge);
-    }
-  }
-  for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) if (on(x, y)) p.set(x, y, fill);
-  return m;
+const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
+const smooth = (a, b, x) => { const u = clamp01((x - a) / (b - a)); return u * u * (3 - 2 * u); };
+
+// Light from the upper left and the front, as a unit vector toward the light (x right, y down, z at the viewer).
+const LIGHT = (() => { const v = [-0.58, -0.66, 0.48], n = Math.hypot(...v); return v.map(c => c / n); })();
+const TOWARD_LIGHT = (() => { const n = Math.hypot(LIGHT[0], LIGHT[1]); return [LIGHT[0] / n, LIGHT[1] / n]; })();
+
+// Ordered dither with a little grain in the threshold, so the pattern is not a perfect lattice.
+const threshold = (x, y) => 0.8 * bayer4(x, y) + 0.2 * hash(x, y, 3);
+
+// Colour of `ramp` for light v: flat bands with a narrow dithered seam between neighbouring steps.
+function tone(ramp, v, x, y, seam = 0.55) {
+  const f = clamp01(v) * (ramp.length - 1);
+  const i = Math.min(ramp.length - 2, Math.floor(f));
+  const u = clamp01((f - i - 0.5) / seam + 0.5);
+  return ditherRamp(ramp, (i + u) / (ramp.length - 1), x, y, threshold);
 }
 
-// Repaints the pixels of `p` that are `from`, inside the shape `m`, when `test(x, y)` agrees.
-function recolor(p, m, from, to, test) {
-  for (let y = 0; y < p.h; y++) {
-    for (let x = 0; x < p.w; x++) if (m.alpha(x, y) && p.get(x, y) === from && test(x, y)) p.set(x, y, to);
+// The same colour a few steps down (or up) its ramp, for contours, cast shadows and catch-lights.
+const RAMP_LIST = [FUR, CREAM, BONE, STEEL, EYE];
+function stepDown(c, n = 1) {
+  for (const r of RAMP_LIST) {
+    const i = r.indexOf(c);
+    if (i >= 0) return r[Math.min(r.length - 1, Math.max(0, i - n))];
   }
+  return c;
+}
+const deep = c => stepDown(c, 9);
+const stepUp = c => stepDown(c, -1);
+
+const maskOf = (p, draw) => { const m = new Pix(p.w, p.h); draw(m); return m; };
+
+// How far inside the shape each of its pixels lies (px from the nearest outside pixel, 0.5 at the rim).
+// Rows from `floor` down count as inside, so a shape that rests on something has no rim there.
+// A two-pass chamfer transform: cheap enough to run for every pose at boot.
+function depthOf(m, floor = Infinity) {
+  const { w, h } = m, W = w + 2, D = 1.4142;
+  const d = new Float32Array(W * (h + 2));
+  for (let y = -1; y <= h; y++) {
+    for (let x = -1; x <= w; x++) d[(y + 1) * W + x + 1] = x >= 0 && x < w && y >= 0 && (m.alpha(x, y) || y >= floor) ? 1e9 : 0;
+  }
+  for (let y = 1; y <= h; y++) {
+    for (let x = 1; x <= w; x++) {
+      const i = y * W + x;
+      if (d[i]) d[i] = Math.min(d[i - 1] + 1, d[i - W] + 1, d[i - W - 1] + D, d[i - W + 1] + D);
+    }
+  }
+  for (let y = h; y >= 1; y--) {
+    for (let x = w; x >= 1; x--) {
+      const i = y * W + x;
+      if (d[i]) d[i] = Math.min(d[i], d[i + 1] + 1, d[i + W] + 1, d[i + W + 1] + D, d[i + W - 1] + D);
+    }
+  }
+  const out = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) out[y * w + x] = Math.max(0.5, d[(y + 1) * W + x + 1] - 0.5);
+  return out;
+}
+
+// Paints a shape as a lump of clay: a rounded height field (quarter-circle profile, `R` px deep) lit from
+// the upper left, plus grain and fur strokes. Options:
+//   ramp       colours, dark to light (or a function (x, y) => ramp)
+//   R          rim radius of the dome, in px
+//   base/gain  ambient light and how much the light matters
+//   grain      amplitude of the stipple; flow = [sx, sy] size of the fur streaks (px), fur = their strength
+//   bias(x, y) extra light (negative = shade): stripes, brow shadow, contact shadows
+//   ao         extra darkening toward the bottom of the image, where the cat rests on something
+//   floor      the row where the shape meets its support: from there down it counts as solid (no rim)
+//   shadow     the lump casts a hard shadow down and to the right on what is already painted
+function lump(p, draw, o = {}) {
+  const { ramp = FUR, R = 6, base = 0.1, gain = 1, grain = 0.08, flow = [1.4, 3.2], fur = 0.26, bias, seed = 1, shadow = true, ao = 0, floor = Infinity } = o;
+  const m = maskOf(p, draw);
+  const depth = depthOf(m, floor);
+  const h = (x, y) => {
+    if (y >= floor) return 1;
+    if (!m.alpha(x, y)) return 0;
+    const t = Math.min(depth[y * m.w + x], R) / R;
+    return Math.sqrt(Math.max(0, 1 - (1 - t) * (1 - t)));
+  };
+
+  if (shadow) {
+    // The cast shadow of this lump on whatever is painted below it: hard, down and to the right.
+    const marks = [];
+    for (let y = 0; y < p.h; y++) {
+      for (let x = 0; x < p.w; x++) {
+        if (m.alpha(x, y) || !p.alpha(x, y)) continue;
+        if (m.alpha(x - 1, y - 1) || m.alpha(x, y - 1) || m.alpha(x - 1, y)) marks.push([x, y, 3]);
+        else if (m.alpha(x - 2, y - 2) || m.alpha(x - 2, y - 1) || m.alpha(x - 1, y - 2)) marks.push([x, y, hash(x, y, 5) < 0.55 ? 1 : 0]);
+      }
+    }
+    for (const [x, y, n] of marks) if (n) p.set(x, y, stepDown(p.get(x, y), n));
+  }
+
+  const K = R * 0.85;
+  for (let y = 0; y < p.h; y++) {
+    for (let x = 0; x < p.w; x++) {
+      if (!m.alpha(x, y)) continue;
+      const gx = (h(x + 1, y) - h(x - 1, y)) * 0.5 * K, gy = (h(x, y + 1) - h(x, y - 1)) * 0.5 * K;
+      const inv = 1 / Math.hypot(gx, gy, 1);
+      const lam = Math.max(0, (-gx * LIGHT[0] - gy * LIGHT[1] + LIGHT[2]) * inv);
+      let v = base + gain * lam;
+      v += (hash(x, y, seed) - 0.5) * grain * 2;
+      v += (noise(x / flow[0], y / flow[1], seed + 7) - 0.5) * fur;
+      if (lam > 0.8 && hash(x, y, seed + 1) > 0.93) v += 0.3;           // a few hard highlights
+      if (hash(x, y, seed + 2) > 0.95) v -= 0.3;                         // and some dark flecks
+      if (ao) v -= ao * smooth(0.55, 1, y / p.h);                        // darker toward the ground
+      if (bias) v += bias(x, y);
+      const rp = typeof ramp === 'function' ? ramp(x, y) : ramp;
+      p.set(x, y, tone(rp, v, x, y));
+    }
+  }
+  return m;
 }
 
 // Catmull-Rom spline through `pts` ([x, y] pairs), sampled `n + 1` times with t in 0..1 along it.
@@ -63,173 +159,349 @@ function spline(pts, n = 160) {
   return out;
 }
 
-// A tapered tail along `pts`: `bands` ([t0, t1] along its length) are striped, the last `tip` fraction is cream.
-function tail(p, pts, { r0, r1, bands, tip }) {
+// A tapered tail along `pts`: `bands` ([t0, t1] along its length) are dark rings, the last `tip` fraction is pale.
+function tail(p, pts, { r0, r1, bands, tip, seed = 4, base = 0.1 }) {
   const s = spline(pts);
-  const m = solid(p, mask => { for (const q of s) mask.disc(q.x, q.y, r0 + (r1 - r0) * q.t, WHITE); }, ORANGE);
+  const near = (x, y) => {
+    let best = Infinity, t = 0;
+    for (const q of s) {
+      const d = (q.x - x - 0.5) ** 2 + (q.y - y - 0.5) ** 2;
+      if (d < best) { best = d; t = q.t; }
+    }
+    return t;
+  };
+  lump(p, m => { for (const q of s) m.disc(q.x, q.y, r0 + (r1 - r0) * q.t, 0xffffff); }, {
+    R: 2.4, seed, base, flow: [2.2, 1.2], fur: 0.25,
+    ramp: (x, y) => (near(x, y) > 1 - tip ? CREAM : FUR),
+    bias: (x, y) => {
+      const t = near(x, y);
+      if (t > 1 - tip) return 0.1;
+      return bands.some(([a, b]) => t >= a + 0.03 * (hash(x, y, 8) - 0.5) && t < b) ? -0.42 : 0;
+    },
+  });
+}
+
+// Lays the dark contour on the shadow side of the finished silhouette, thin and broken on the lit side, and
+// frays the edge: a few pixels fall off the lit rim, a few stick out on the shadow rim (fur).
+function contour(p, { fray = 1, ground = Infinity } = {}) {
+  const snap = new Pix(p.w, p.h);
+  snap.data.set(p.data);
+  const on = (x, y) => snap.alpha(x, y) > 0;
+  const edge = [], extra = [];
   for (let y = 0; y < p.h; y++) {
     for (let x = 0; x < p.w; x++) {
-      if (!m.alpha(x, y)) continue;
-      let best = Infinity, t = 0;
-      for (const q of s) {
-        const d = (q.x - x - 0.5) ** 2 + (q.y - y - 0.5) ** 2;
-        if (d < best) { best = d; t = q.t; }
+      if (on(x, y)) {
+        let nx = 0, ny = 0;
+        if (!on(x - 1, y)) nx -= 1;
+        if (!on(x + 1, y)) nx += 1;
+        if (!on(x, y - 1)) ny -= 1;
+        if (!on(x, y + 1)) ny += 1;
+        if (nx || ny) edge.push([x, y, (nx * TOWARD_LIGHT[0] + ny * TOWARD_LIGHT[1]) / Math.hypot(nx, ny)]);
+      } else {
+        // A transparent pixel touching the cat on its shadow side may grow a pixel of dark fur.
+        let nx = 0, ny = 0, c = 0;
+        if (on(x - 1, y)) { nx -= 1; c = snap.get(x - 1, y); }
+        if (on(x + 1, y)) { nx += 1; c = snap.get(x + 1, y); }
+        if (on(x, y - 1)) { ny -= 1; c = snap.get(x, y - 1); }
+        if (on(x, y + 1)) { ny += 1; c = snap.get(x, y + 1); }
+        if ((nx || ny) && (nx * TOWARD_LIGHT[0] + ny * TOWARD_LIGHT[1]) / Math.hypot(nx, ny) > 0.3 && y < ground && hash(x, y, 21) < 0.2 * fray) extra.push([x, y, c]);
       }
-      if (t > 1 - tip) p.set(x, y, CREAM);
-      else if (bands.some(([a, b]) => t >= a && t < b)) p.set(x, y, STRIPE);
     }
   }
+  for (const [x, y, s] of edge) {
+    const c = p.get(x, y);
+    if (s < -0.25) p.set(x, y, deep(c));
+    else if (s < 0.25) p.set(x, y, stepDown(c, 2));
+    else if (hash(x, y, 22) < 0.3) p.set(x, y, stepDown(c, 2));
+    else if (hash(x, y, 24) < 0.22) p.set(x, y, stepUp(c));                  // a hard catch-light on the lit rim
+    else if (hash(x, y, 23) < 0.12 * fray && !snap.alpha(x - 1, y) === !snap.alpha(x, y - 1)) p.set(x, y, c, 0);   // chipped lit rim
+  }
+  for (const [x, y, c] of extra) p.set(x, y, deep(c));
 }
+
+// Lays `src` over `dst` (opaque pixels only).
+function over(dst, src) {
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) if (src.alpha(x, y)) dst.set(x, y, src.get(x, y));
+}
+
+const mirrorPoly = (pts, mirror) => pts.map(([x, y]) => [mirror(x), y]);
+const pixels = (p, list, c) => { for (const [x, y] of list) p.set(x, y, c); };
 
 // ── Sleeping cat ─────────────────────────────────────────────────────────────────────────
 
-// Curled up, seen from the front-left: big sleepy head, paws tucked under the chin, round striped back,
-// tail tip curling up behind. The face's axis is x = 15 (between pixels 14 and 15).
 export const SLEEPING_TEX = { w: 46, h: 33 };
-export function paintSleepingCat(p) {
-  const HX = 15, HY = 20.5;
+export function paintSleepingCat(out) {
+  // Painted one row short and dropped by one, so the cat's last row of fur is the sprite's last row (it sits on its crate).
+  const p = new Pix(out.w, out.h - 1);
+  const HX = 13.5, HY = 21.5;
   const mx = x => 2 * HX - 1 - x;       // pixel mirror about the face's axis
+  const mxc = x => 2 * HX - x;          // continuous mirror
+  const dark = (x, y, n) => { if (p.alpha(x, y)) p.set(x, y, stepDown(p.get(x, y), n)); };
 
   // Tail first (it is behind the body), lying along the ground with its tip curled up.
-  tail(p, [[33, 29.4], [39, 29.2], [42.2, 26], [42.4, 21.6], [41.4, 18.4]], { r0: 2.3, r1: 1.9, bands: [[0.28, 0.36], [0.52, 0.6]], tip: 0.14 });
+  tail(p, [[35, 29.6], [41, 29.6], [44, 26.4], [44, 22], [43, 18.6]], { r0: 2.3, r1: 1.9, bands: [[0.28, 0.38], [0.52, 0.62]], tip: 0.14, seed: 12, base: 0.42 });
 
-  // Body: a round bun, flat underneath, shaded toward the floor; stripes hang from the spine, lit on the ridge.
-  const body = solid(p, m => { m.ellipse(28, 19.5, 12, 12, WHITE); m.rect(0, 32, 46, 1, 0, 0); }, ORANGE);
-  recolor(p, body, ORANGE, SHADE, (x, y) => y >= 29);
-  const spine = x => { for (let y = 3; y < 30; y++) if (body.alpha(x, y)) return y; return -1; };
-  for (const [x, h] of [[24, 3], [28, 4], [32, 4], [36, 3]]) {
-    const y = spine(x);
-    if (y >= 0) p.rect(x, y + 1, 2, h, STRIPE);
-  }
-  for (let x = 22; x < 36; x++) {
-    const y = spine(x);
-    if (y >= 0 && x % 4 > 1) p.set(x, y + 1, LIGHT);
-  }
+  // Body: a big hunched bun, flat underneath, mackerel stripes from the spine.
+  const spine = x => 19 - 12.5 * Math.sqrt(Math.max(0, 1 - ((x - 27) / 15) ** 2));
+  lump(p, m => { m.ellipse(27, 19, 15, 12.5, 0xffffff); m.rect(0, 32, 46, 1, 0, 0); }, {
+    R: 8, seed: 13, ao: 0.2, floor: 32, base: 0.27, flow: [1.2, 3.4], grain: 0.08, fur: 0.26,
+    bias: (x, y) => {
+      const reach = y - spine(x), len = 6 + 8 * noise(x / 2.2, 5.5, 16);
+      if (reach < 0 || reach > len) return 0;
+      const phase = (x + 2.2 * (noise(y / 4, x / 7, 13) - 0.5)) / 4.1;
+      return phase - Math.floor(phase) < 0.5 * (1 - reach / len) + 0.14 ? -0.42 : 0;
+    },
+  });
 
-  // Head and ears (one silhouette), pink ear insides, forehead stripes, cream muzzle, blush.
-  const earL = [[3.9, 16.5], [5.9, 6.1], [12.6, 11.2]];
-  const earR = earL.map(([x, y]) => [2 * HX - x, y]);
-  solid(p, m => {
-    m.ellipse(HX, HY, 12.4, 10.5, WHITE);
-    m.poly(earL, WHITE);
-    m.poly(earR, WHITE);
-  }, ORANGE);
-  const inL = [[5.8, 14], [6.6, 8.6], [10.6, 11.6]];
-  p.poly(inL, PINK);
-  p.poly(inL.map(([x, y]) => [2 * HX - x, y]), PINK);
-  p.rect(12, 11, 1, 3, STRIPE).rect(14, 11, 2, 4, STRIPE).rect(17, 11, 1, 3, STRIPE);
-  p.ellipse(HX, 24.2, 5, 2.6, CREAM);
-  for (const y of [22, 23]) p.rect(5, y, 3, 1, BLUSH).rect(mx(5) - 2, y, 3, 1, BLUSH);
+  // Head and ears (one silhouette): ears pricked even in sleep, cheek ruffs, the right one nicked.
+  const earL = [[2.8, 20], [4.2, 4.8], [12.8, 14.2]];
+  const tuftL = [[3.2, 23], [0.8, 26.4], [3.8, 26.4], [2.8, 29.6], [7.2, 28.8]];
+  lump(p, m => {
+    m.ellipse(HX, HY, 11, 9.2, 0xffffff);
+    m.poly(earL, 0xffffff);
+    m.poly(mirrorPoly(earL, mxc), 0xffffff);
+    m.poly(tuftL, 0xffffff);
+    m.poly(mirrorPoly(tuftL, mxc), 0xffffff);
+    m.poly([[24.6, 8], [22, 9.8], [24.6, 11.6]], 0, 0);
+  }, {
+    R: 5.5, seed: 14, flow: [1.6, 2.4], base: 0.4, grain: 0.05, fur: 0.18,
+    bias: (x, y) => {
+      const dx = Math.abs(x - (HX - 0.5));
+      let b = 0;
+      // The brow sinks over the shut eyes.
+      const yc = 19 + 0.2 * Math.max(0, 6.5 - dx);
+      if (y > 16 && dx < 11) b -= 0.62 * (1 - smooth(0.5, 1.5, Math.abs(y - yc)));
+      return b;
+    },
+  });
+  const hollow = poly => {
+    const m = maskOf(p, q => q.poly(poly, 0xffffff));
+    for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) if (m.alpha(x, y)) p.set(x, y, tone(FUR, 0.12 + 0.2 * hash(x, y, 33), x, y));
+  };
+  const inner = [[4.8, 17.4], [5.2, 8.6], [11, 14]];
+  hollow(inner);
+  hollow(mirrorPoly(inner, mxc));
 
-  // Closed, content eyes (little downward arcs), pink nose, "w" mouth.
-  for (const x0 of [6, 19]) {
-    p.set(x0, 19, OUTLINE).set(x0 + 4, 19, OUTLINE);
-    p.rect(x0 + 1, 20, 3, 1, OUTLINE);
-  }
-  p.set(14, 22, PINK).set(15, 22, PINK);
-  for (const [x, y] of [[12, 23], [14, 23], [15, 23], [17, 23], [13, 24], [16, 24]]) p.set(x, y, OUTLINE);
+  // Dark marks: the forehead's "M", cheek stripes.
+  const darkLine = (x0, y0, x1, y1, n) => { const t = new Pix(p.w, p.h).line(x0, y0, x1, y1, 0xffffff); for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) if (t.alpha(x, y)) dark(x, y, n); };
+  for (const [x0, y0, x1, y1] of [[13, 13, 13, 18], [14, 13, 14, 18], [10, 14, 11, 18], [17, 14, 16, 18], [7, 15, 9, 18], [20, 15, 18, 18]]) darkLine(x0, y0, x1, y1, 3);
+  for (const [x, y, w] of [[3, 23, 4], [2, 25, 4]]) for (let i = 0; i < w; i++) { dark(x + i, y, 2); dark(mx(x + i), y, 2); }
+
+  // Muzzle, nose, mouth.
+  lump(p, m => { m.ellipse(11.9, 25.6, 2.8, 2.1, 0xffffff); m.ellipse(mxc(11.9), 25.6, 2.8, 2.1, 0xffffff); m.rect(12, 23, 3, 3, 0xffffff); }, { ramp: CREAM, R: 2, seed: 15, base: 0.45, gain: 0.85, shadow: false, grain: 0.04, fur: 0.1 });
+  pixels(p, [[12, 24], [13, 24], [14, 24], [15, 24], [13, 25], [14, 25]], FUR[2]);
+  p.set(12, 24, FUR[4]);
+  pixels(p, [[13, 26], [14, 26], [12, 27], [11, 27], [10, 28], [15, 27], [16, 27], [17, 28]], FUR[0]);
+
+  // Shut eyes: two slanted slits under the brow, a thin lit lid beneath each.
+  for (const [x, y] of [[5, 21], [6, 21], [7, 22], [8, 22], [9, 22]]) { p.set(x, y, FUR[0]); p.set(mx(x), y, FUR[0]); }
+  for (const [x, y] of [[5, 22], [6, 22], [7, 23], [8, 23]]) { p.set(x, y, FUR[5]); p.set(mx(x), y, FUR[5]); }
 
   // Front paws under the chin.
-  for (const cx of [9.5, 20.5]) solid(p, m => m.ellipse(cx, 29.4, 3.6, 1.9, WHITE), CREAM);
+  for (const cx of [8, 19]) {
+    lump(p, m => m.ellipse(cx, 29.8, 3.8, 2.1, 0xffffff), { ramp: CREAM, R: 2.2, seed: 17, base: 0.4, gain: 0.85, floor: 32 });
+    for (const dx of [-1.2, 1.2]) { const x = Math.floor(cx + dx); dark(x, 30, 2); dark(x, 31, 2); }
+  }
+  contour(p, { ground: 32 });
+  out.copy(p, 0, 1);
 }
 
 // ── Eyes in the dark ─────────────────────────────────────────────────────────────────────
 
-// Two round glowing eyes with slit pupils and a glint (drawn additive: the dark pixels add nothing).
-// `glance` slides both pupils by one pixel (-1, 0 or 1).
 export const EYES_TEX = { w: 20, h: 8 };
-const IRIS = ['..###..', '.#####.', '#######', '#######', '.#####.', '..###..'];
+const EYE_SHAPE = ['####...', '#######', '#######', '.######', '..####.'];   // the left eye: the lid slants down toward the nose
 export function paintEyes(p, glance = 0) {
-  for (const x0 of [2, 11]) {
-    p.ellipse(x0 + 3.5, 4, 4.7, 3.8, 0x3f5a10, 70);
-    IRIS.forEach((row, j) => {
-      for (let i = 0; i < row.length; i++) if (row[i] === '#') p.set(x0 + i, 1 + j, 0x9ed12a, 215);
+  const AX = 10;                          // the axis between the two eyes (between pixels 9 and 10)
+  const lit = new Pix(p.w, p.h), slit = new Pix(p.w, p.h);
+  for (const side of [-1, 1]) {
+    const X = c => (side < 0 ? 2 + c : 2 * AX - 1 - (2 + c));
+    EYE_SHAPE.forEach((row, j) => {
+      for (let c = 0; c < 7; c++) {
+        if (row[c] !== '#') continue;
+        const rim = row[c - 1] !== '#' || row[c + 1] !== '#';
+        // Brighter toward the lower, inner corner; the rim a step dimmer.
+        const v = 0.28 + 0.16 * j + (side < 0 ? 0.02 * c : 0.02 * (6 - c)) - (rim ? 0.14 : 0);
+        lit.set(X(c), 2 + j, tone(EYE, v, X(c), 2 + j));
+      }
+      // The slit pupil: dark, one pixel wide, slid by the glance; the lids stay lit around it.
+      const sc = 3 + (side < 0 ? glance : -glance);
+      if (j >= 1 && j <= 3 && row[sc] === '#') slit.set(X(sc), 2 + j, 0xffffff);
     });
-    p.rect(x0 + 2 + glance, 2, 3, 4, 0xe6ff6a);
-    p.rect(x0 + 3 + glance, 2, 1, 4, 0x0a1400);
-    p.set(x0 + 1, 2, 0xffffe0);
+  }
+  // A banded, dithered glow around them: denser and warm close by, a thin stipple further out.
+  for (let y = 0; y < p.h; y++) {
+    for (let x = 0; x < p.w; x++) {
+      if (lit.alpha(x, y)) { if (!slit.alpha(x, y)) p.set(x, y, lit.get(x, y)); continue; }
+      let d = Infinity;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (lit.alpha(x + dx, y + dy)) d = Math.min(d, Math.hypot(dx, dy));
+      if (d <= 1.01 && (x + y) % 2 === 0) p.set(x, y, FUR[3]);                       // a checker next to the eye
+      else if (d <= 2.01 && d > 1.01 && x % 2 === 0 && y % 2 === 0) p.set(x, y, FUR[2]);   // a sparser lattice beyond
+    }
   }
 }
 
 // ── Loafing cat ──────────────────────────────────────────────────────────────────────────
 
-// Front on, on a keyboard: round head, big glossy eyes, front paws tucked, tail curling up behind the
-// right shoulder. pose = { eyes: 'open' | 'half' | 'closed' | 'happy', ear: 0 | 1, tail: 0 | 1 | 2 }:
-// the blink goes open > half > closed > half; ear 1 flicks the left ear out; tail 1/2 flick its tip up/out.
 export const LOAF_TEX = { w: 56, h: 44 };
 export function paintLoaf(p, { eyes = 'open', ear = 0, tail: flick = 0 } = {}) {
   const AX = 26;                         // the face's axis (continuous x); the tail takes the room on the right
-  const d = AX - 28;                     // the head was designed around x = 28
   const mx = x => 2 * AX - 1 - x;        // pixel mirror about that axis
+  const mxc = x => 2 * AX - x;           // continuous mirror
 
-  // Keyboard: top face seen from a little above (key gaps), dark front lip.
-  solid(p, m => m.rect(1, 36, 52, 7, WHITE), KEY_DARK);
-  p.rect(1, 36, 52, 5, KEY_TOP);
-  for (let x = 4; x < 52; x += 4) p.rect(x, 38, 1, 2, KEY_DARK);
+  // Keyboard under the cat: worn steel, one row of keycaps, a front lip, one LED; in shade toward the right.
+  const kb = new Pix(p.w, p.h);
+  for (let y = 37; y < 44; y++) {
+    for (let x = 1; x < 53; x++) {
+      const cell = (x - 2) & 3;
+      let v;
+      if (y === 37) v = 0.1;
+      else if (y < 40) {
+        v = cell < 3 ? (y === 38 ? 0.84 : 0.6) : 0.12;
+        if (cell < 3 && hash(x >> 2, 0, 41) < 0.14) v -= 0.22;                // a dead key
+      } else v = y === 40 ? 0.3 : y === 41 ? 0.78 : y === 42 ? 0.5 : 0.1;
+      v += (hash(x, y, 40) - 0.5) * 0.04 - 0.24 * smooth(14, 52, x);
+      kb.set(x, y, tone(STEEL, v, x, y));
+    }
+  }
+  for (let y = 37; y < 44; y++) kb.set(52, y, STEEL[0]);
+  kb.set(49, 42, LED);
+
+  const cat = new Pix(p.w, p.h);
 
   // Tail, curling up behind the right shoulder; the tip curls in, or flicks up, or flicks out.
   const base = [[44, 34], [50, 31], [52.5, 26], [51.5, 20.5]];
   const ends = [[[48.5, 17], [45.6, 18.4]], [[50.8, 15.5], [49.4, 11.8]], [[52.6, 16.8], [53, 13.6]]];
-  tail(p, [...base, ...ends[flick]], { r0: 2.5, r1: 1.9, bands: [[0.34, 0.44], [0.62, 0.72]], tip: 0.1 });
+  tail(cat, [...base, ...ends[flick]], { r0: 2.5, r1: 1.9, bands: [[0.34, 0.44], [0.62, 0.72]], tip: 0.1 });
 
-  // Body: a loaf, flat underneath and round on top, shaded toward the keys, soft stripes on the flanks.
-  const body = solid(p, m => { m.ellipse(28 + d, 31, 23, 10, WHITE); m.rect(5 + d, 31, 46, 6, WHITE); m.rect(0, 37, 56, 7, 0, 0); }, ORANGE);
-  recolor(p, body, ORANGE, SHADE, (x, y) => y >= 34);
-  for (const [x, y] of [[9, 30], [12, 28]]) p.rect(x + d, y, 1, 4, STRIPE).rect(mx(x + d), y, 1, 4, STRIPE);
+  // Body: a loaf, flat underneath and round on top, mackerel stripes hanging from the spine.
+  const spine = x => 31 - 10 * Math.sqrt(Math.max(0, 1 - ((x - 26) / 23) ** 2));
+  lump(cat, m => { m.ellipse(26, 31, 23, 10, 0xffffff); m.rect(3, 31, 46, 6, 0xffffff); m.rect(0, 37, 56, 7, 0, 0); }, {
+    R: 10, seed: 2, ao: 0.22, floor: 37, base: 0.25, flow: [1.2, 3.6],
+    bias: (x, y) => {
+      const reach = y - spine(x), len = 4 + 6 * noise(x / 2.2, 2.5, 6);
+      if (reach < 0 || reach > len) return 0;
+      const phase = (x + 2.2 * (noise(y / 4, x / 7, 3) - 0.5)) / 4.3;
+      return phase - Math.floor(phase) < 0.5 * (1 - reach / len) + 0.14 ? -0.42 : 0;
+    },
+  });
 
-  // Head with its two ears (one silhouette); the left ear can flick outward.
-  const sh = pts => pts.map(([x, y]) => [x + d, y]);
-  const earL = ear ? [[12.6, 14], [11.6, 5.4], [22.5, 7.8]] : [[12.6, 13.5], [13.8, 2.4], [23.2, 7.2]];
-  const earR = [[43.4, 13.5], [42.2, 2.4], [32.8, 7.2]];
-  solid(p, m => {
-    m.ellipse(28 + d, 17, 15.5, 11, WHITE);
-    m.poly(sh(earL), WHITE);
-    m.poly(sh(earR), WHITE);
-  }, ORANGE);
-  p.poly(sh(ear ? [[14.4, 11.4], [12.8, 6.2], [20.6, 8.6]] : [[15, 11], [15.4, 5.2], [20.6, 8.2]]), PINK);
-  p.poly(sh([[41, 11], [40.6, 5.2], [35.4, 8.2]]), PINK);
-
-  // Forehead stripes, cheek dashes, cream muzzle, blush.
-  p.rect(25 + d, 6, 1, 3, STRIPE).rect(27 + d, 6, 2, 4, STRIPE).rect(30 + d, 6, 1, 3, STRIPE);
-  for (const y of [15, 18]) p.rect(13 + d, y, 2, 1, STRIPE).rect(41 + d, y, 2, 1, STRIPE);
-  p.ellipse(28 + d, 24, 5.6, 3.1, CREAM);
-  for (const y of [22, 23]) p.rect(16 + d, y, 3, 1, BLUSH).rect(37 + d, y, 3, 1, BLUSH);
-
-  // Eyes, 6 px wide: big dark ovals with a glint and a lighter lower rim; or a lid; or arcs.
-  const eye = ex => {
-    const ey = 14;
-    if (eyes === 'happy') {
-      p.rect(ex + 1, ey + 3, 4, 1, OUTLINE).set(ex, ey + 4, OUTLINE).set(ex + 5, ey + 4, OUTLINE);
-    } else if (eyes === 'closed') {
-      p.set(ex, ey + 4, OUTLINE).set(ex + 5, ey + 4, OUTLINE).rect(ex + 1, ey + 5, 4, 1, OUTLINE);
-    } else {
-      const rows = eyes === 'half' ? ['######', '######', '.####.'] : ['.####.', '######', '######', '######', '######', '######', '.####.'];
-      const top = eyes === 'half' ? ey + 4 : ey;
-      rows.forEach((row, j) => { for (let i = 0; i < 6; i++) if (row[i] === '#') p.set(ex + i, top + j, OUTLINE); });
-      if (eyes === 'open') p.set(ex + 1, ey + 1, WHITE).rect(ex + 1, ey + 5, 4, 1, EYE_LO);
+  // Head with its two ears (one silhouette), cheek ruffs, the right ear nicked.
+  const earL = ear ? [[9.4, 14.5], [5.6, 4.4], [21, 8.6]] : [[9.4, 14.5], [11, 0.6], [22, 7.6]];
+  const earR = [[42.6, 14.5], [40.8, 0.6], [30, 7.6]];
+  const tuftL = [[11.5, 18], [7.6, 22.4], [11.2, 22.2], [9.6, 26.6], [15, 25]];
+  const browY = x => 12 + 0.42 * Math.max(0, 9.5 - Math.abs(x - 25.5));
+  lump(cat, m => {
+    m.ellipse(26, 17.5, 15, 10.5, 0xffffff);
+    m.poly(earL, 0xffffff);
+    m.poly(earR, 0xffffff);
+    m.poly(tuftL, 0xffffff);
+    m.poly(mirrorPoly(tuftL, mxc), 0xffffff);
+    m.poly([[42.6, 3.2], [39.2, 5.4], [42.6, 7.6]], 0, 0);
+  }, {
+    R: 8, seed: 3, flow: [1.6, 2.4], base: 0.26,
+    bias: (x, y) => {
+      const dx = Math.abs(x - 25.5);
+      let b = 0;
+      // Heavy brow: a dark band slanting down toward the nose; the eye sockets sink a little.
+      if (y > 9 && dx < 15) b -= 0.6 * (1 - smooth(0.8, 2.2, Math.abs(y - browY(x))));
+      if (y > 11 && y < 19 && dx > 2.5 && dx < 11.5) b -= 0.15;
+      return b;
+    },
+  });
+  // Inner ears: dark hollows, stippled.
+  const hollow = (poly, side) => {
+    const m = maskOf(cat, q => q.poly(poly, 0xffffff));
+    for (let y = 0; y < cat.h; y++) for (let x = 0; x < cat.w; x++) {
+      if (!m.alpha(x, y)) continue;
+      const v = 0.12 + 0.2 * hash(x, y, 31) + (side < 0 ? 0.08 * (x - 12) / 8 : 0);
+      cat.set(x, y, tone(FUR, v, x, y));
     }
   };
-  eye(16 + d);
-  eye(34 + d);
+  hollow(ear ? [[11.2, 13], [8.4, 6.6], [19.2, 9.6]] : [[12, 12.4], [12.4, 3.6], [19.6, 8.4]], -1);
+  hollow([[40, 12.4], [39.6, 3.6], [32.4, 8.4]], 1);
 
-  // Pink nose and a "w" mouth.
-  p.set(27 + d, 22, PINK).set(28 + d, 22, PINK);
-  for (const [x, y] of [[25, 24], [27, 24], [28, 24], [30, 24], [26, 25], [29, 25]]) p.set(x + d, y, OUTLINE);
+  // Dark marks on the fur: the forehead's "M", cheek stripes.
+  const dark = (list, n) => { for (const [x, y] of list) if (cat.alpha(x, y)) cat.set(x, y, stepDown(cat.get(x, y), n)); };
+  const darkLine = (x0, y0, x1, y1, n) => { const t = new Pix(p.w, p.h).line(x0, y0, x1, y1, 0xffffff); for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) if (t.alpha(x, y)) dark([[x, y]], n); };
+  for (const [x0, y0, x1, y1] of [[25, 5, 25, 11], [26, 5, 26, 11], [22, 6, 23, 10], [29, 6, 28, 10], [18, 8, 20, 11], [33, 8, 31, 11]]) darkLine(x0, y0, x1, y1, 2);
+  for (const [x, y, w] of [[11, 17, 5], [10, 19, 5], [10, 21, 3]]) for (let i = 0; i < w; i++) { dark([[x + i, y]], 2); dark([[mx(x + i), y]], 2); }
 
-  // Cream chest tuft, and the front paws, tucked.
-  p.ellipse(28 + d, 30.4, 2.6, 1.8, CREAM);
-  for (const cx of [22.5, 33.5]) solid(p, m => m.ellipse(cx + d, 34.4, 3.8, 2.3, WHITE), CREAM);
+  // Muzzle: two pale whisker pads, a dark nose sitting on them, a flat downturned mouth.
+  lump(cat, m => { m.ellipse(23.5, 23.8, 3.2, 2.5, 0xffffff); m.ellipse(mxc(23.5), 23.8, 3.2, 2.5, 0xffffff); m.rect(24, 20, 4, 3, 0xffffff); }, { ramp: CREAM, R: 2.2, seed: 5, base: 0.45, gain: 0.85, shadow: false, grain: 0.04, fur: 0.1 });
+  pixels(cat, [[24, 21], [25, 21], [26, 21], [27, 21], [25, 22], [26, 22]], FUR[1]);
+  pixels(cat, [[24, 21], [25, 21]], FUR[2]);
+  cat.set(24, 21, FUR[4]);
+  pixels(cat, [[25, 23], [26, 23], [24, 24], [23, 24], [22, 25], [27, 24], [28, 24], [29, 25]], FUR[0]);
+  // A small pale chin under the frown.
+  lump(cat, m => m.ellipse(26, 28.2, 2.6, 1.3, 0xffffff), { ramp: CREAM, R: 1.4, seed: 8, base: 0.4, gain: 0.8, shadow: false, grain: 0.04, fur: 0.1 });
+
+  // Eyes: small, full-bright amber, slit pupils under the brow. Left eye drawn from a template, right mirrored.
+  const OPEN = ['####...', '######.', '.######', '..####.'];
+  const eye = (side) => {
+    const X = col => (side < 0 ? 16 + col : mx(16 + col));
+    const Y = 14;
+    const put = (col, row, c) => cat.set(X(col), Y + row, c);
+    const rows = eyes === 'half' ? [2, 3] : eyes === 'open' ? [0, 1, 2, 3] : [];
+    for (const r of rows) {
+      for (let c = 0; c < 7; c++) {
+        if (OPEN[r][c] !== '#') continue;
+        const rim = c === 0 || OPEN[r][c - 1] !== '#' || OPEN[r][c + 1] !== '#' ? 0.12 : 0;
+        const v = 0.4 + 0.2 * r - rim * (eyes === 'half' ? 0 : 1) - (eyes === 'half' ? 0.15 : 0);
+        put(c, r, tone(EYE, v, X(c), Y + r));
+      }
+      if (OPEN[r][3] === '#') put(3, r, FUR[0]);
+    }
+    if (eyes === 'closed') {
+      // Shut: a dark lid line and a thin lit lid edge under it.
+      for (let c = 0; c < 6; c++) put(c, 2, FUR[0]);
+      for (let c = 1; c < 6; c++) put(c, 3, FUR[4]);
+    } else if (eyes === 'happy') {
+      // A content squint: a narrow slit of dim amber between two dark lids.
+      for (let c = 0; c < 7; c++) put(c, 1, FUR[0]);
+      for (let c = 1; c < 6; c++) { put(c, 2, c === 3 ? EYE[2] : EYE[1]); put(c, 3, FUR[1]); }
+    }
+  };
+  eye(-1);
+  eye(1);
+  // The eyes bleed a little light into the brow shadow: a checker of ember on the dark fur next to them.
+  if (eyes === 'open' || eyes === 'half') {
+    const lit = (x, y) => EYE.includes(cat.get(x, y)) && cat.alpha(x, y);
+    const marks = [];
+    for (let y = 11; y < 20; y++) for (let x = 12; x < 40; x++) {
+      if (lit(x, y) || (x + y) % 2) continue;
+      if ([[-1, 0], [1, 0], [0, -1], [0, 1]].some(([dx, dy]) => lit(x + dx, y + dy)) && FUR.indexOf(cat.get(x, y)) <= 2) marks.push([x, y]);
+    }
+    for (const [x, y] of marks) cat.set(x, y, FUR[3]);
+  }
+
+  // The front paws, tucked, with their toes.
+  for (const cx of [20.5, 31.5]) {
+    lump(cat, m => m.ellipse(cx, 34.6, 4, 2.3, 0xffffff), { ramp: CREAM, R: 2.4, seed: 7, base: 0.4, gain: 0.85, floor: 37 });
+    for (const dx of [-1.4, 1.4]) { const x = Math.floor(cx + dx); cat.set(x, 35, stepDown(cat.get(x, 35), 2)); cat.set(x, 36, stepDown(cat.get(x, 36), 2)); }
+  }
+
+  contour(cat, { ground: 37 });
+  // The cat's contact shadow on the keys.
+  for (let y = 37; y < 42; y++) for (let x = 0; x < p.w; x++) {
+    if (kb.alpha(x, y) && !cat.alpha(x, y) && (cat.alpha(x, y - 1) || cat.alpha(x - 1, y - 1))) kb.set(x, y, STEEL[0]);
+  }
+  over(p, kb);
+  over(p, cat);
 }
 
-// A small "z" glyph for the sleeping cat.
+// A small "z" glyph for the sleeping cat: a chunky, bevelled letter with a hard drop shadow, like Doom's own type.
 export const Z_TEX = { w: 9, h: 9 };
+const Z_GLYPH = ['HHHHHHM', 'HHHHHMd', '....MMd', '...MMd.', '..MMd..', '.MMd...', 'HHMMMMM', 'MMMMMdd'];
 export function paintZ(p) {
-  p.grid(['#######', '.....#.', '....#..', '...#...', '..#....', '.#.....', '#######'], { '#': 0xeef2ff }, 1, 1);
-  p.outline(0x4a4f9a);
+  const on = (x, y) => Z_GLYPH[y]?.[x] !== undefined && Z_GLYPH[y][x] !== '.';
+  const ink = { H: BONE[3], M: BONE[2], d: BONE[1] };
+  for (let y = 0; y < Z_GLYPH.length + 1; y++) {
+    for (let x = 0; x < 8; x++) if (!on(x, y) && (on(x - 1, y - 1) || on(x - 1, y) || on(x, y - 1))) p.set(x, y, RAMPS.brown[0]);
+  }
+  Z_GLYPH.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== '.') p.set(x, y, ink[row[x]]); });
 }
 
 const frac = x => x - Math.floor(x);
-const smooth = (a, b, x) => { const u = Math.min(1, Math.max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
 
 function texture(size, paint, opts) {
   const p = new Pix(size.w, size.h);
@@ -352,7 +624,7 @@ function loaf() {
   let happyUntil = -Infinity;
   return {
     kind: 'loaf', object: group, width, height,
-    // Squints happily (closed-eye arcs) for a few seconds, whatever `calm` says: it is a state, not motion.
+    // Squints contentedly (narrow slits) for a few seconds, whatever `calm` says: it is a state, not motion.
     react(t) { happyUntil = t + HAPPY_SECONDS; },
     update(t, calm) {
       sprite.material.map = maps[t < happyUntil ? 'happy' : calm ? 'open' : loafPose(t)];
