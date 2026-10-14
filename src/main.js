@@ -135,6 +135,11 @@ const startScreen = document.getElementById('start-screen');
       if (r.blockMovement) blockMovement = true;
       if (r.prompt && !prompt) prompt = r.prompt;
     }
+    if (!cameraOverride) {
+      // A feature opened a console during this frame: start its glide from where the camera was.
+      cameraOverride = screens.openingCamera();
+      if (cameraOverride) blockMovement = true;
+    }
 
     if (blockMovement) {
       input.mouseDX = 0;            // discard look accumulated while focused

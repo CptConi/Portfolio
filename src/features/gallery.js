@@ -56,7 +56,7 @@ export function create({ screens, events, track }) {
       if (input.consumeInteract() && t >= quietUntil) {
         quietUntil = t + REPEAT_GUARD;
         if (target.mission) {
-          if (screens.focusConsole(player, 'projects', target.mission.page)) {
+          if (screens.focusConsole(player, 'projects', target.mission.page, { glide: true })) {
             track('gallery-open', { name: target.mission.name });
           }
         } else {

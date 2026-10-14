@@ -44,7 +44,9 @@ export class Input {
       case 'KeyA':                   this.strafeLeft  = down; break;
       case 'KeyD':                   this.strafeRight = down; break;
       case 'KeyE': case 'Space':
-        if (down && !this.interact) this.interact = true;
+        // A held key stays "down" without re-arming: its auto-repeat must not fire a second action
+        // (a console would open and close in a loop for as long as E is held).
+        if (down && !e.repeat && !this.interact) this.interact = true;
         if (!down) this.interact = false;
         break;
     }

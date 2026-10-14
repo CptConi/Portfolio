@@ -9,10 +9,18 @@ import { openLink } from '../ui/TerminalScreen.js';
 import { events } from './Events.js';
 
 const FOCUS_TIME = 0.4;            // seconds for the camera glide
+const GLIDE_PER_M = 0.1;           // extra seconds per metre when the glide starts away from the console…
+const GLIDE_MAX  = 0.9;            // …up to this many seconds in all
 const SCREEN_LZ  = 0.205;          // screen centre offset (local Z, toward the player)
 const SCREEN_TILT = -0.347;        // screen plane lean-back to match the slanted panel
 const smooth = u => u * u * (3 - 2 * u);
 const lerp   = (a, b, u) => a + (b - a) * u;
+
+// The camera pose of a player standing where they are, looking where they look.
+const eyePose = p => ({
+  pos:    { x: p.x, y: p.eyeY, z: p.y },
+  target: { x: p.x + Math.cos(p.angle), y: p.eyeY, z: p.y + Math.sin(p.angle) },
+});
 
 const LIGHT_COLORS = [0x00ff41, 0xff8c00, 0xff2200, 0x37c0ff, 0xffee33];
 
@@ -189,6 +197,8 @@ export class ScreenManager {
     this._active = null;
     this._u      = 0;
     this._from   = null;
+    this._origin = null;
+    this._time   = FOCUS_TIME;
     this._escape = false;
 
     document.addEventListener('keydown', e => { if (e.code === 'Escape') this._escape = true; });
@@ -243,7 +253,10 @@ export class ScreenManager {
   // walks the player to a clean approach point in front of it, then plays the
   // usual camera glide. Returns false when `id` is unknown or a screen is already
   // focused.
-  focusConsole(player, id, page = null) {
+  //   glide  the visitor is on screen while this happens (a plinth, not a fade or a tour stop):
+  //          the camera leaves from where they stand instead of snapping to the approach
+  //          point, and they are walked back there when the console closes.
+  focusConsole(player, id, page = null, { glide = false } = {}) {
     if (this._state !== 'idle') return false;
     const it = this._items.find(i => i.id === id);
     if (!it) return false;
@@ -252,21 +265,30 @@ export class ScreenManager {
     // The arcade lives behind the sealed wall; any approach point inside a wall or a
     // solid prop would trap the player.
     if ((it.id === 'arcade' && !isSecretOpen()) || !isFree(px, pz)) return false;
+    const origin = glide ? { x: player.x, z: player.y, angle: player.angle, cam: eyePose(player) } : null;
     player.teleport(px, pz, Math.atan2(-fz, -fx));
     if (page !== null && it.terminal) it.terminal.goTo(page);
-    this._begin(it, player);
+    this._begin(it, player, origin);
     return true;
   }
 
-  _begin(item, player) {
+  _begin(item, player, origin = null) {
     this._active = item;
     item.onEnter();
-    this._from = {
-      pos:    { x: player.x, y: player.eyeY, z: player.y },
-      target: { x: player.x + Math.cos(player.angle), y: player.eyeY, z: player.y + Math.sin(player.angle) },
-    };
+    this._from = eyePose(player);
+    this._origin = origin;    // where the glide starts and ends when the visitor was elsewhere, else null
+    const away = origin ? Math.hypot(origin.x - player.x, origin.z - player.y) : 0;
+    this._time = Math.min(GLIDE_MAX, FOCUS_TIME + GLIDE_PER_M * away);
     this._u = 0; this._state = 'in';
     events.emit('console:open', { id: item.id });
+  }
+
+  // First frame of the glide into a console that a feature opened after this frame's update()
+  // (focusConsole): the camera it starts from, else null. Without it that one frame is drawn
+  // from the approach point the player was just moved to.
+  openingCamera() {
+    if (this._state !== 'in' || this._u !== 0) return null;
+    return this._origin ? this._origin.cam : this._from;
   }
 
   // 'console' | 'arcade' | null — what the player is currently focused on.
@@ -302,11 +324,20 @@ export class ScreenManager {
     }
 
     if (this._state === 'in' || this._state === 'out') {
-      this._u = Math.min(1, this._u + dt / FOCUS_TIME);
+      input.consumeInteract();   // a press during the glide is dropped, not replayed as an instant exit
+      this._u = Math.min(1, this._u + dt / this._time);
       const goingIn = this._state === 'in';
-      const cam = this._blend(this._from, this._active.pose, goingIn ? smooth(this._u) : smooth(1 - this._u));
+      const rest = this._origin ? this._origin.cam : this._from;
+      const cam = this._blend(rest, this._active.pose, goingIn ? smooth(this._u) : smooth(1 - this._u));
       this._active.onPassive(tSec);
-      if (this._u >= 1) this._state = goingIn ? 'focused' : 'idle';
+      if (this._u >= 1) {
+        if (!goingIn && this._origin) {
+          const o = this._origin;
+          player.teleport(o.x, o.z, o.angle);
+          this._origin = null;
+        }
+        this._state = goingIn ? 'focused' : 'idle';
+      }
       return { cameraOverride: cam, prompt: '', blockMovement: true };
     }
 
